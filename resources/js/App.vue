@@ -44,15 +44,28 @@ const handleLogout = () => {
     <main></main>
 
     <footer>
-        <div>Mini-Twitter built with Laravel</div>
-
-        <div>@ Antonio Marrara</div>
+      <div class="main-footer">
+        <ul class="legal-pages">
+          <li class="legal-pages-item">Impressum</li>
+          <li class="legal-pages-item">Datenschutz</li>
+          <li class="legal-pages-item">AGB</li>
+          <li class="legal-pages-item"><a class="legal-pages-link" href="/responsible">Verantwortungsvolles Glücksspiel</a></li>
+          <li class="legal-pages-item">Kontakt</li>
+          <li class="legal-pages-item">Über uns</li>
+        </ul>
+      </div>
     </footer>
 
 </template>
 
 <style scoped>
 
+html, body {
+    height: 100%;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+}
 
 header {
     display: flex;
@@ -63,13 +76,7 @@ header {
     min-height: 104px;
     border-bottom: solid 1px #F1F1F1;
     color: #222222;
-    margin-bottom: 108px;
-}
-
-@media (max-width: 600px) {
-  header {
-    justify-content: space-evenly;
-  }
+    flex-wrap: wrap;
 }
 
 .headline { 
@@ -155,10 +162,10 @@ header {
   }
 }
 
-footer {
+.legal-pages {
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     background-color: #FFFFFF;
     min-height: 48px;
@@ -167,14 +174,30 @@ footer {
     font-weight: 400;
     line-height: 24.2px;
     padding: 0 30px;
+    list-style: none;
+    flex-wrap: wrap;
 }
 
-@media (max-width: 600px) {
-    footer {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
+.legal-pages-item {
+  border-right: 0.8px solid #21068d;
+  padding: 0 5.4em;
+}
+
+@media (max-width: 652px) {
+    .legal-pages-item {
+      border-right: 0;
     }
+}
+
+@media (max-width: 595px) {
+    .legal-pages-item {
+      text-align: center;
+    }
+}
+
+.legal-pages-link {
+  text-decoration: none;
+  color: inherit;
 }
 
 </style>
