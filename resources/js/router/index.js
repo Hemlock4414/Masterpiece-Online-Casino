@@ -50,9 +50,21 @@ const router = createRouter({
         },
         {
             // Hier brauchen wir keine Meta-Informationen, da diese Route für nicht authentifizierte User zugänglich sein soll.
-            path: "/responsible",
-            name: "responsible",
-            component: () => import("../views/ResponsibleView.vue"),
+            path: "/fair-gaming",
+            name: "fair-gaming",
+            component: () => import("../views/FairGamingView.vue"),
+        },
+        {
+            // Hier brauchen wir keine Meta-Informationen, da diese Route für nicht authentifizierte User zugänglich sein soll.
+            path: "/datenschutz",
+            name: "privacy",
+            component: () => import("../views/PrivacyPolicyView.vue"),
+        },
+        {
+            // Hier brauchen wir keine Meta-Informationen, da diese Route für nicht authentifizierte User zugänglich sein soll.
+            path: "/agb",
+            name: "termsofuse",
+            component: () => import("../views/TermsOfUseView.vue"),
         },
     ],
 

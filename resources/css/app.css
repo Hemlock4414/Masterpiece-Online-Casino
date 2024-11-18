@@ -10,7 +10,11 @@
     flex-direction: column;
     background-color: #F9F9F9;
     font-family: Inter; 
-}  
+} 
+
+html {
+    scroll-behavior: smooth;
+}
 
 header { 
     position: sticky;

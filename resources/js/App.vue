@@ -47,9 +47,9 @@ const handleLogout = () => {
       <div class="main-footer">
         <ul class="legal-pages">
           <li class="legal-pages-item">Impressum</li>
-          <li class="legal-pages-item">Datenschutz</li>
-          <li class="legal-pages-item">AGB</li>
-          <li class="legal-pages-item"><a class="legal-pages-link" href="/responsible">Verantwortungsvolles Glücksspiel</a></li>
+          <li class="legal-pages-item"><a class="legal-pages-link" href="/datenschutz">Datenschutz</a></li>
+          <li class="legal-pages-item"><a class="legal-pages-link" href="/agb">AGB</a></li>
+          <li class="legal-pages-item"><a class="legal-pages-link" href="/fair-gaming">Verantwortungsvolles Spielen</a></li>
           <li class="legal-pages-item">Kontakt</li>
           <li class="legal-pages-item">Über uns</li>
         </ul>
@@ -183,21 +183,23 @@ header {
   padding: 0 5.4em;
 }
 
+.legal-pages-link {
+  text-decoration: none;
+  color: inherit;
+}
+
 @media (max-width: 652px) {
     .legal-pages-item {
-      border-right: 0;
+      border-right: none;
     }
 }
 
 @media (max-width: 595px) {
     .legal-pages-item {
       text-align: center;
+      padding: 0 2.4em;
     }
 }
 
-.legal-pages-link {
-  text-decoration: none;
-  color: inherit;
-}
 
 </style>
