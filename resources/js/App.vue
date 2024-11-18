@@ -51,7 +51,7 @@ const handleLogout = () => {
           <li class="legal-pages-item"><a class="legal-pages-link" href="/agb">AGB</a></li>
           <li class="legal-pages-item"><a class="legal-pages-link" href="/fair-gaming">Verantwortungsvolles Spielen</a></li>
           <li class="legal-pages-item">Kontakt</li>
-          <li class="legal-pages-item">Über uns</li>
+          <li class="legal-pages-item">Über mich</li>
         </ul>
       </div>
     </footer>
