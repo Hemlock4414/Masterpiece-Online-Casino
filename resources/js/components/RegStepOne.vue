@@ -57,6 +57,7 @@ const handleNext = () => {
       <div class="button-group">
         <button type="submit" class="btn-primary">Weiter</button>
       </div>
+      <small class="hint">* Erforderliche Information</small>
     </form>
 </template>
 
@@ -105,5 +106,12 @@ input:focus {
 
 .btn-primary:hover {
   background: #2563eb;
+}
+
+.hint {
+  display: block;
+  margin-top: 1.5rem;
+  font-size: 0.875rem;
+  color: #6b7280;
 }
 </style>

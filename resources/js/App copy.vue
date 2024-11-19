@@ -12,32 +12,11 @@ const isActive = ref(false);
 const { authUser } = storeToRefs(useAuthStore());
 const { logout } = useAuthStore();
 
-const username = ref("");
-const password = ref("");
-const rememberMe = ref(false);
-
-const handleLogin = () => {
-  // Beispiel: API-Login-Logik
-  console.log("Login:", { username: username.value, password: password.value, rememberMe: rememberMe.value });
-  // Fügen Sie hier Ihre API-Logik hinzu
-};
-
 // Handle Logout
 const handleLogout = () => {
     logout();
     router.push("/login");
 };
-
-// Handle Registrierung
-const handleRegister = () => {
-  router.push("/registrieren");
-};
-
-// Handle PAsswort vergessen
-const handleForgotPassword = () => {
-  router.push("/passwort-vergessen");
-};
-
 </script>
 
 <template>
@@ -50,7 +29,7 @@ const handleForgotPassword = () => {
                 <!-- <RouterLink to="/">Home</RouterLink> -->
                 <RouterLink to="/dashboard" v-if="authUser">Meine Tweets</RouterLink>
                 <RouterLink to="/einloggen" v-if="authUser == null">Einloggen</RouterLink>
-                <!-- <RouterLink to="/registrieren" v-if="!authUser">Registrieren</RouterLink> -->
+                <RouterLink to="/registrieren" v-if="!authUser">Registrieren</RouterLink>
                 <!-- <RouterLink to="/edit" v-if="authUser">Tweet bearbeiten</RouterLink> -->
                 <!-- <RouterLink to="/post/create" v-if="authUser">Tweet erstellen</RouterLink> -->
                 <RouterLink :to="{name: 'post-create'}" v-if="authUser" class="special-link">+ Tweet erstellen</RouterLink>
@@ -58,39 +37,6 @@ const handleForgotPassword = () => {
 
                  <!-- Logout Button -->
                 <button class="logout-btn" @click="handleLogout" v-if="authUser">Logout</button>
-                <div class="login-container">
-                  <!-- Eingabefelder nebeneinander -->
-                  <div class="inputs-wrapper">
-                    <input
-                      type="text"
-                      v-model="username"
-                      placeholder="Benutzername"
-                      class="login-input"
-                    />
-                    <input
-                      type="password"
-                      v-model="password"
-                      placeholder="Passwort"
-                      class="login-input"
-                    />
-                  </div>
-
-                  <!-- Buttons und Optionen -->
-                  <div class="buttons-wrapper">
-                    <!-- Login- und Registrierungsbuttons übereinander -->
-                    <button class="login-btn" @click="handleLogin">Einloggen</button>
-                    <button class="register-btn" @click="handleRegister">Registrieren</button>
-                  </div>
-                </div>
-
-                <!-- Optionen -->
-                <div class="login-options">
-                  <label>
-                    <input type="checkbox" v-model="rememberMe" />
-                    Benutzernamen merken
-                  </label>
-                  <a href="#" @click.prevent="handleForgotPassword">Passwort vergessen?</a>
-                </div>
             </nav>
     </header>
     <RouterView />
@@ -184,58 +130,6 @@ header {
 
 .logout-btn:hover {
     background-color: #888888;
-}
-
-/* Login Container */
-.login-container {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-/* Eingabefelder nebeneinander */
-.inputs-wrapper {
-  display: flex;
-  gap: 10px; /* Abstand zwischen den Feldern */
-}
-
-.login-input {
-  padding: 8px;
-  font-size: 14px;
-  width: 150px; /* Breite der Eingabefelder */
-}
-
-/* Buttons übereinander rechts neben den Eingabefeldern */
-.buttons-wrapper {
-  display: flex;
-  flex-direction: column; /* Übereinander */
-  gap: 10px; /* Abstand zwischen den Buttons */
-}
-
-.login-btn, .register-btn {
-  padding: 8px 16px;
-  border: none;
-  font-size: 14px;
-  cursor: pointer;
-  width: 120px; /* Einheitliche Breite der Buttons */
-}
-
-.login-btn {
-  background-color: #0056b3;
-  color: white;
-}
-
-.register-btn {
-  background-color: #28a745;
-  color: white;
-}
-
-/* Optionen unterhalb */
-.login-options {
-  margin-top: 10px;
-  display: flex;
-  justify-content: space-between;
-  font-size: 12px;
 }
 
 @media (max-width: 690px) {
