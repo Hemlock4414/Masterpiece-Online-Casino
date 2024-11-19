@@ -40,7 +40,7 @@
                             <li><a class="sidebar-nav-link" href="#C11"><h3>Laufzeit</h3></a></li>
                             <li><a class="sidebar-nav-link" href="#C12"><h3>Fassung / Änderungen</h3></a></li>
                             <li>
-                                <a class="sidebar-nav-link" href="#C13"><h3>Cookie-Richtlinien</h3></a>
+                                <a class="sidebar-nav-link" href="#C13"><h3>Cookie-Richtlinie</h3></a>
                                 <ul class="sub-list">
                                     <li><a class="sidebar-nav-link" href="#C14"><h4>Allgemeine Informationen</h4></a></li>
                                     <li><a class="sidebar-nav-link" href="#C15"><h4>Was ist ein Cookie?</h4></a></li>
@@ -285,7 +285,7 @@
                         </section>
 
                         <section>
-                            <h2 class="heading" id="C13">Cookie-Richtlinien</h2>
+                            <h2 class="heading" id="C13">Cookie-Richtlinie</h2>
 
                             <article>
 

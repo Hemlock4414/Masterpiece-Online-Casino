@@ -66,6 +66,12 @@ const router = createRouter({
             name: "termsofuse",
             component: () => import("../views/TermsOfUseView.vue"),
         },
+        {
+            // Hier brauchen wir keine Meta-Informationen, da diese Route für nicht authentifizierte User zugänglich sein soll.
+            path: "/kontakt",
+            name: "contact",
+            component: () => import("../views/ContactView.vue"),
+        },
     ],
 
 });
