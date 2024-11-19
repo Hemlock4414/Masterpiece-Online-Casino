@@ -10,6 +10,35 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue', 'previous', 'submit']);
 
+// Konvertierung des Datums in deutsches Format für die Anzeige
+const formatDateToGerman = (isoDate) => {
+  if (!isoDate) return '';
+  const [year, month, day] = isoDate.split('-');
+  return `${day}.${month}.${year}`;
+};
+
+// Konvertierung des deutschen Datums zurück in ISO-Format für v-model
+const formatDateToISO = (germanDate) => {
+  if (!germanDate) return '';
+  const [day, month, year] = germanDate.split('.');
+  return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+};
+
+// Lokales Date-Handling
+const localDate = ref(formatDateToGerman(props.modelValue.geburtsdatum));
+
+// Datum-Update Handler
+const handleDateChange = (event) => {
+  const germanDate = event.target.value;
+  localDate.value = germanDate;
+  
+  // Update des v-model mit ISO-Format
+  emit('update:modelValue', {
+    ...props.modelValue,
+    geburtsdatum: formatDateToISO(germanDate)
+  });
+};
+
 const handleSubmit = () => {
   emit('submit');
 };
@@ -240,12 +269,15 @@ const maxDate = ref(new Date().toISOString().split('T')[0]);
     <div class="form-group">
       <label for="geburtsdatum">Geburtsdatum *</label>
       <input
-        type="date"
+        type="text"
         id="geburtsdatum"
-        v-model="modelValue.geburtsdatum"
+        :value="localDate"
+        @input="handleDateChange"
         required
-        :max="maxDate"
-        lang="de"
+        placeholder="TT.MM.JJJJ"
+        pattern="\d{2}.\d{2}.\d{4}"
+        maxlength="10"
+        class="date-input"
       >
     </div>
     <div class="form-group">
@@ -280,6 +312,7 @@ const maxDate = ref(new Date().toISOString().split('T')[0]);
       </button>
       <button type="submit" class="btn-primary">Abschliessen</button>
     </div>
+    <small class="hint">* Erforderliche Information</small>
   </form>
 </template>
 
@@ -343,5 +376,39 @@ input:focus, select:focus  {
 
 .btn-secondary:hover {
   background: #d1d5db;
+}
+
+.hint {
+  display: block;
+  margin-top: 1.5rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.date-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  outline: none;
+  transition: border-color 0.2s;
+  background-color: white;
+  font-family: inherit;
+}
+
+.date-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Für Browser, die type="date" unterstützen aber wir wollen das deutsche Format erzwingen */
+.date-input::-webkit-calendar-picker-indicator {
+  display: none;
+}
+
+.date-input::-webkit-inner-spin-button,
+.date-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 </style>

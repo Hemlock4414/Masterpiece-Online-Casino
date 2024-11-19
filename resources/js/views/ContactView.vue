@@ -6,22 +6,22 @@
       <div class="purple-line"></div>
 
       <div class="form-group">
-        <label for="name">Name/Spielername*</label>
+        <label for="name">Name/Spielername *</label>
         <input v-model="contact.name" type="text" id="name" required />
       </div>
 
       <div class="form-group">
-        <label for="email">E-Mail*</label>
+        <label for="email">E-Mail *</label>
         <input v-model="contact.email" type="email" id="email" required />
       </div>
 
       <div class="form-group">
-        <label for="subject">Betreff*</label>
+        <label for="subject">Betreff *</label>
         <input v-model="contact.subject" type="text" id="subject" required />
       </div>
 
       <div class="form-group">
-        <label for="message">Nachricht*</label>
+        <label for="message">Nachricht *</label>
         <textarea
           v-model="contact.message"
           id="message"
@@ -37,9 +37,9 @@
           id="terms"
           required
         />
-        <label for="terms">Ich habe die <a href="/datenschutz" class="privacy-link">Datenschutzerklärung</a> gelesen und akzeptiere sie.*</label>
+        <label for="terms">Ich habe die <a href="/datenschutz" class="privacy-link">Datenschutzerklärung</a> gelesen und akzeptiere sie. *</label>
       </div>
-
+      <small class="hint">* Erforderliche Information</small>
       <button
         class="send-btn"
         @click="sendMessage"
@@ -199,7 +199,17 @@ textarea {
 
 .privacy-link {
   color: red;
+}
 
+.privacy-link:hover {
+  color: black;
+}
+
+.hint {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: #6b7280;
 }
 
 </style>

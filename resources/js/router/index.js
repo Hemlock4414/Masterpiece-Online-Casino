@@ -26,13 +26,13 @@ const router = createRouter({
         },
         {
             // Hier brauchen wir keine Meta-Informationen, da diese Route für nicht authentifizierte User zugänglich sein soll.
-            path: "/login",
+            path: "/einloggen",
             name: "login",
             component: () => import("../views/LoginView.vue"),
         },
         {
             // Hier brauchen wir keine Meta-Informationen, da diese Route für nicht authentifizierte User zugänglich sein soll.
-            path: "/register",
+            path: "/registrieren",
             name: "register",
             component: () => import("../views/RegisterView.vue"),
         },
@@ -69,6 +69,22 @@ const router = createRouter({
             path: "/kontakt",
             name: "contact",
             component: () => import("../views/ContactView.vue"),
+        },
+        {
+            path: "/neues-passwort",
+            name: "new-password",
+            component: () => import("../views/PasswordNewView.vue"),
+/*             beforeEnter: (to, from, next) => {
+              if (to.query.token) {
+                next();
+              } else {
+                next({ name: "home" }); // oder zu einer anderen Seite umleiten
+              } */
+        },  
+        {
+            path: "/passwort-vergessen",
+            name: "forgot-password",
+            component: () => import("../views/PasswordResetView.vue"),
         },
     ],
 
