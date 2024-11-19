@@ -37,13 +37,11 @@ const router = createRouter({
             component: () => import("../views/RegisterView.vue"),
         },
         {
-            // Hier brauchen wir keine Meta-Informationen, da diese Route für nicht authentifizierte User zugänglich sein soll.
             path: "/post/edit/:id",
             name: "post-edit",
             component: () => import("../views/EditView.vue"),
         },
         {
-            // Hier brauchen wir keine Meta-Informationen, da diese Route für nicht authentifizierte User zugänglich sein soll.
             path: "/post/create",
             name: "post-create",
             component: () => import("../views/CreateView.vue"),
@@ -58,13 +56,13 @@ const router = createRouter({
             // Hier brauchen wir keine Meta-Informationen, da diese Route für nicht authentifizierte User zugänglich sein soll.
             path: "/datenschutz",
             name: "privacy",
-            component: () => import("../views/PrivacyPolicyView.vue"),
+            component: () => import("../views/PrivacyView.vue"),
         },
         {
             // Hier brauchen wir keine Meta-Informationen, da diese Route für nicht authentifizierte User zugänglich sein soll.
             path: "/agb",
-            name: "termsofuse",
-            component: () => import("../views/TermsOfUseView.vue"),
+            name: "terms",
+            component: () => import("../views/TermsView.vue"),
         },
         {
             // Hier brauchen wir keine Meta-Informationen, da diese Route für nicht authentifizierte User zugänglich sein soll.
