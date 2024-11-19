@@ -45,7 +45,7 @@
                     <div class="main-content">
 
                         <section>
-                            <h2  class="heading" id="C1">Kein Spiel für Minderjährige</h2>
+                            <h2 class="heading" id="C1">Kein Spiel für Minderjährige</h2>
 
                             <p>Glücksspiel unter 18 Jahren ist in allen internationalen Gerichtsbarkeiten illegal</p>
 

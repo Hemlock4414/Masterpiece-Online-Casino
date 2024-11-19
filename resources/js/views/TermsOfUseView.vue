@@ -47,7 +47,7 @@
                                     <li><a class="sidebar-nav-link" href="#C16"><h4>Was sind die Vorteile von Cookies?</h4></a></li>
                                     <li><a class="sidebar-nav-link" href="#C17"><h4>Welche Cookie-Typen verwenden wir?</h4></a></li>
                                     <li><a class="sidebar-nav-link" href="#C18"><h4>Unbedint notwendige Cookies</h4></a></li>
-                                    <li><a class="sidebar-nav-link" href="#C19"><h4>Wie können Sie Cookies kontrollieren und löschen?</h4></a></li>
+                                    <li><a class="sidebar-nav-link" href="#C19"><h4>Cookie-Präferenzen einstellen</h4></a></li>
                                     <li><a class="sidebar-nav-link" href="#C20"><h4>Änderungen der Cookie-Richtlinien</h4></a></li>
                                 </ul>
                             </li>
@@ -409,13 +409,9 @@
     margin-left: 10px;
 }
 
-.main-content {
-    padding-right: 10px;
-}
-
 .sidebar-list {
     list-style: none;
-}
+} 
 
 .sidebar-list li {
     padding: 20px 0;
@@ -464,8 +460,11 @@ article {
 }
 
 @media (max-width: 400px) {
-    .main-content {
+    .content {
         margin: 0 5px;
+    }
+    .headline {
+        padding: 0 5px;
     }
 }
 </style>
