@@ -175,6 +175,7 @@
 
 .headline {
     margin: 20px 0;
+    padding: 0 10px;
 }
 
 .topline {
@@ -252,7 +253,7 @@ article {
 }
 
 @media (max-width: 580px) {
-    .page-content {
+    .content {
         grid-template-columns: 1fr;
     }
     .main-content {
@@ -262,7 +263,7 @@ article {
         display: flex;
     }
     .sidebar {
-        margin: 0 auto;
+        margin: 0 10px;
         margin-top: 20px;
     }
     .sidebar-list li {
@@ -273,6 +274,9 @@ article {
 @media (max-width: 400px) {
     .main-content {
         margin: 0 5px;
+    }
+    .headline {
+        padding: 0 5px;
     }
 }
 

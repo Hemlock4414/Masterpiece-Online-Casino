@@ -28,8 +28,8 @@ const handleLogout = () => {
             <nav :class="['navi', { active: isActive }]">
                 <!-- <RouterLink to="/">Home</RouterLink> -->
                 <RouterLink to="/dashboard" v-if="authUser">Meine Tweets</RouterLink>
-                <RouterLink to="/login" v-if="authUser == null">Login</RouterLink>
-                <RouterLink to="/register" v-if="!authUser">Register</RouterLink>
+                <RouterLink to="/login" v-if="authUser == null">Einloggen</RouterLink>
+                <RouterLink to="/register" v-if="!authUser">Registrieren</RouterLink>
                 <!-- <RouterLink to="/edit" v-if="authUser">Tweet bearbeiten</RouterLink> -->
                 <!-- <RouterLink to="/post/create" v-if="authUser">Tweet erstellen</RouterLink> -->
                 <RouterLink :to="{name: 'post-create'}" v-if="authUser" class="special-link">+ Tweet erstellen</RouterLink>
@@ -50,7 +50,7 @@ const handleLogout = () => {
           <li class="legal-pages-item"><a class="legal-pages-link" href="/datenschutz">Datenschutz</a></li>
           <li class="legal-pages-item"><a class="legal-pages-link" href="/agb">AGB</a></li>
           <li class="legal-pages-item"><a class="legal-pages-link" href="/fair-gaming">Verantwortungsvolles Spielen</a></li>
-          <li class="legal-pages-item">Kontakt</li>
+          <li class="legal-pages-item"><a class="legal-pages-link" href="/kontakt">Kontakt</a></li>
           <li class="legal-pages-item">Über mich</li>
         </ul>
       </div>

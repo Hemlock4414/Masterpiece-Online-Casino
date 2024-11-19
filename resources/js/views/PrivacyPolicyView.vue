@@ -37,10 +37,10 @@
             Daten, die mithilfe von Cookies während Ihrer Nutzung von unserer Webseite gesammelt werden und 
             nicht gänzlich anonym erfasst werden, sondern mit Personendaten in Verbindung stehen oder 
             verknüpft sind. Weitere Informationen über Cookies und deren Verwaltung finden Sie in 
-            unseren <a href="/agb#C13">Cookie-Richtlinien</a>.
+            unseren <a href="/agb#C13">Cookie-Richtlinie</a>.
             </p><br>
         </section>
-        
+
         <section>
             <h2 class="heading">Für welche Zwecke werden Ihre Personendaten bearbeitet?</h2>
 
@@ -103,7 +103,7 @@
         <section>  
             <h2 class="heading">Cookies</h2>
 
-            <p>Wir setzen auf unserer Website Cookies ein. Wir haben separate <a href="/agb#C13">Cookie-Richtlinien</a> festgelegt, die 
+            <p>Wir setzen auf unserer Website Cookies ein. Wir haben separate <a href="/agb#C13">Cookie-Richtlinie</a> festgelegt, die 
             ein integraler Bestandteil der vorliegenden Datenschutzerklärung sind.</p><br>
             
             <h2 class="heading">Änderungen dieser Erklärung</h2>
