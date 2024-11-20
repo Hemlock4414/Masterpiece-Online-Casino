@@ -1,4 +1,5 @@
 <script setup>
+import { ref } from 'vue';
 import { RouterLink, RouterView } from "vue-router";
 
 // Importiere die Logout-Funktion und Router
@@ -6,15 +7,13 @@ import { storeToRefs } from "pinia";
 import { useAuthStore } from "@/store/AuthStore";
 import router from "@/router";
 
-import { ref } from 'vue';
-
-const isActive = ref(false);
 const { authUser } = storeToRefs(useAuthStore());
 const { logout } = useAuthStore();
 
 const username = ref("");
 const password = ref("");
 const rememberMe = ref(false);
+const isPasswordVisible = ref(false); // Zustand für das Passwort-Toggle
 
 const handleLogin = () => {
   // Beispiel: API-Login-Logik
@@ -69,15 +68,25 @@ const handleForgotPassword = () => {
                     placeholder="Benutzername"
                     class="login-input"
                   />
+                  <div class="password-wrapper">
                     <input
-                      type="password"
+                      :type="isPasswordVisible ? 'text' : 'password'"
                       v-model="password"
                       placeholder="Passwort"
                       class="login-input"
                     />
-                  </div>  
-                <div>
-                    
+                    <button
+                      type="button"
+                      class="toggle-password-btn"
+                      @click="isPasswordVisible = !isPasswordVisible"
+                      aria-label="Toggle Passwort Sichtbarkeit"
+                    >
+                      {{ isPasswordVisible ? '🙈' : '👁️' }}
+                    </button>
+                  </div>
+                </div>  
+
+                <div>                    
                   <div class="login-options">
                     <label>
                       <input type="checkbox" v-model="rememberMe" />
@@ -200,7 +209,7 @@ header {
 .login-input {
   padding: 8px;
   font-size: 14px;
-  width: 160px; /* Breite der Eingabefelder */
+  width: 160px; 
 }
 
 .login-options {
@@ -230,6 +239,33 @@ header {
   color: #0056b3;   
   text-decoration: none;
   margin-left: 10px;    
+}
+
+.password-wrapper {
+  position: relative;
+  width: 160px;
+}
+
+.password-wrapper input {
+  width: 100%;
+  padding-right: 35px;
+}
+
+.toggle-password-btn {
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 5px;
+  color: #555;
+}
+
+.toggle-password-btn:hover {
+  color: #000;
 }
 
 /* Buttons */
@@ -301,23 +337,22 @@ header {
     align-items: flex-start;
     gap: 15px; 
   }
-
   .inputs-wrapper {
     flex-direction: column; 
     width: 100%;
   }
-
+  .password-wrapper {
+    width: 100%;
+  }
   .login-input {
     width: 100%; 
   }
-
   .buttons-wrapper {
     align-items: stretch;
     width: 100%;
   }
-
   .login-btn, .register-btn {
-    width: 100%; /* Buttons nehmen die volle Breite ein */
+    width: 100%;
   }
 }
 
