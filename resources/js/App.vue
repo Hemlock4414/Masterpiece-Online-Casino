@@ -45,60 +45,60 @@ const handleForgotPassword = () => {
         <a href="/" class="link-div">
             <div class="headline">MINI-TWITTER</div>
         </a>  
-        <button class="menu-btn" @click="isActive = !isActive">☰</button>
-            <nav :class="['navi', { active: isActive }]">
-                <!-- <RouterLink to="/">Home</RouterLink> -->
-                <RouterLink to="/dashboard" v-if="authUser">Meine Tweets</RouterLink>
-                <!-- <RouterLink to="/einloggen" v-if="authUser == null">Einloggen</RouterLink> -->
-                <!-- <RouterLink to="/registrieren" v-if="!authUser">Registrieren</RouterLink> -->
-                <!-- <RouterLink to="/edit" v-if="authUser">Tweet bearbeiten</RouterLink> -->
-                <!-- <RouterLink to="/post/create" v-if="authUser">Tweet erstellen</RouterLink> -->
-                <RouterLink :to="{name: 'post-create'}" v-if="authUser" class="special-link">+ Tweet erstellen</RouterLink>
-                <!-- <RouterLink :to="{name: 'post-view'}" v-if="authUser">Tweet ansehen</RouterLink> -->
+        
+        <nav class="navi">
+            <!-- <RouterLink to="/">Home</RouterLink> -->
+            <!-- <RouterLink to="/dashboard" v-if="authUser">Meine Tweets</RouterLink> -->
+            <!-- <RouterLink to="/einloggen" v-if="authUser == null">Einloggen</RouterLink> -->
+            <!-- <RouterLink to="/registrieren" v-if="!authUser">Registrieren</RouterLink> -->
+            <!-- <RouterLink to="/edit" v-if="authUser">Tweet bearbeiten</RouterLink> -->
+            <!-- <RouterLink to="/post/create" v-if="authUser">Tweet erstellen</RouterLink> -->
+            <!-- <RouterLink :to="{name: 'post-create'}" v-if="authUser" class="special-link">+ Tweet erstellen</RouterLink> -->
+            <!-- <RouterLink :to="{name: 'post-view'}" v-if="authUser">Tweet ansehen</RouterLink> -->
 
-                 <!-- Logout Button -->
-                <button class="logout-btn" @click="handleLogout" v-if="authUser">Logout</button>
+              <!-- Logout Button -->
+            <!-- <button class="logout-btn" @click="handleLogout" v-if="authUser">Logout</button> -->
 
-                <div class="login-container">
-                  <!-- Eingabefelder nebeneinander -->
-                  <div>
-                    <div class="inputs-wrapper">
-                      <input
-                        type="text"
-                        v-model="username"
-                        placeholder="Benutzername"
-                        class="login-input"
-                      />
-                        <input
-                          type="password"
-                          v-model="password"
-                          placeholder="Passwort"
-                          class="login-input"
-                        />
-                      </div>  
-                    <div>
-                       
-                      <div class="login-options">
-                        <label>
-                          <input type="checkbox" v-model="rememberMe" />
-                          Benutzernamen merken
-                        </label>
-                        <a href="#" @click.prevent="handleForgotPassword">
-                          Passwort vergessen?
-                        </a>
-                      </div>
-                    </div>  
+            <div class="login-container">
+              <!-- Eingabefelder nebeneinander -->
+              <div>
+                <div class="inputs-wrapper">
+                  <input
+                    type="text"
+                    v-model="username"
+                    placeholder="Benutzername"
+                    class="login-input"
+                  />
+                    <input
+                      type="password"
+                      v-model="password"
+                      placeholder="Passwort"
+                      class="login-input"
+                    />
+                  </div>  
+                <div>
+                    
+                  <div class="login-options">
+                    <label>
+                      <input type="checkbox" v-model="rememberMe" />
+                      Benutzernamen merken
+                    </label>
+                    <a href="#" @click.prevent="handleForgotPassword">
+                      Passwort vergessen?
+                    </a>
                   </div>
+                </div>  
+              </div>
 
-                  <!-- Buttons (Einloggen und Registrieren) -->
-                  <div class="buttons-wrapper">
-                    <button class="login-btn" @click="handleLogin">Einloggen</button>
-                    <button class="register-btn" @click="handleRegister">Registrieren</button>
-                  </div>
-                </div>
-            </nav>
+              <!-- Buttons (Einloggen und Registrieren) -->
+              <div class="buttons-wrapper">
+                <button class="login-btn" @click="handleLogin">Einloggen</button>
+                <button class="register-btn" @click="handleRegister">Registrieren</button>
+              </div>
+            </div>
+        </nav>
     </header>
-    <RouterView />
+  <RouterView />
 
     <main></main>
 
@@ -137,6 +137,7 @@ header {
   font-weight: 900;
   line-height: 29.05px;
   letter-spacing: -0.02em;  /* Letter -2% */
+  padding: 10px 0;
 }
 
 .link-div {
@@ -144,14 +145,11 @@ header {
   color: inherit;
 }
 
-/* .navi a {
-  margin-left: 50px; 
-  text-decoration: none;
-  color: #222222;
-  font-size: 18px;
-  font-weight: 400;
-  line-height: 21.78px;
-} */
+.navi {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
 
 .special-link {
   background-color: #1D9BF0;
@@ -205,32 +203,6 @@ header {
   width: 160px; /* Breite der Eingabefelder */
 }
 
-/* Buttons */
-.buttons-wrapper {
-  display: flex;
-  flex-direction: column; 
-  justify-content: space-between; 
-  gap: 10px; 
-}
-
-.login-btn, .register-btn {
-  padding: 8px 16px;
-  border: none;
-  font-size: 14px;
-  cursor: pointer;
-  width: 120px;
-}
-
-.login-btn {
-  background-color: #0056b3;
-  color: white;
-}
-
-.register-btn {
-  background-color: #28a745;
-  color: white;
-}
-
 .login-options {
   display: flex;
   justify-content: flex-start;
@@ -260,34 +232,30 @@ header {
   margin-left: 10px;    
 }
 
-@media (max-width: 690px) {
-  .navi a, .logout-btn {
-    margin-left: 10px;
-  }
+/* Buttons */
+.buttons-wrapper {
+  display: flex;
+  flex-direction: column; 
+  justify-content: space-between; 
+  gap: 10px; 
 }
 
-.menu-btn {
-  display: none;
-  background: none;
+.login-btn, .register-btn {
+  padding: 8px 16px;
   border: none;
-  font-size: 1.5rem;
+  font-size: 14px;
   cursor: pointer;
+  width: 120px;
 }
 
-@media (max-width: 600px) {
-  .menu-btn {
-    display: block;
-  }
+.login-btn {
+  background-color: #0056b3;
+  color: white;
+}
 
-  .navi {
-    display: none;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .menu-btn.active + .navi {
-    display: flex;
-  }
+.register-btn {
+  background-color: #28a745;
+  color: white;
 }
 
 .legal-pages {
@@ -314,6 +282,43 @@ header {
 .legal-pages-link {
   text-decoration: none;
   color: inherit;
+}
+
+@media (max-width: 500px) {
+  header {
+    flex-direction: column;
+    align-items: center;
+  }
+  .headline {
+    margin-bottom: 10px;
+  }
+  .navi {
+    width: 100%;
+    justify-content: center;
+  }
+  .login-container {
+    flex-direction: column; 
+    align-items: flex-start;
+    gap: 15px; 
+  }
+
+  .inputs-wrapper {
+    flex-direction: column; 
+    width: 100%;
+  }
+
+  .login-input {
+    width: 100%; 
+  }
+
+  .buttons-wrapper {
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .login-btn, .register-btn {
+    width: 100%; /* Buttons nehmen die volle Breite ein */
+  }
 }
 
 @media (max-width: 652px) {
