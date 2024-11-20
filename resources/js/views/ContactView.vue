@@ -39,7 +39,7 @@
         />
         <label for="terms">Ich habe die <a href="/datenschutz" class="privacy-link">Datenschutzerklärung</a> gelesen und akzeptiere sie. *</label>
       </div>
-      <small class="hint">* Erforderliche Information</small>
+      <small class="hint">* Erforderlich</small>
       <button
         class="send-btn"
         @click="sendMessage"

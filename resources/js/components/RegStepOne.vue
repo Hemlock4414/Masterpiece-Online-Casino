@@ -57,7 +57,7 @@ const handleNext = () => {
       <div class="button-group">
         <button type="submit" class="btn-primary">Weiter</button>
       </div>
-      <small class="hint">* Erforderliche Information</small>
+      <small class="hint">* Erforderlich</small>
     </form>
 </template>
 

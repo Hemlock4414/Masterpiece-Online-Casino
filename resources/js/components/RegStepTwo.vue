@@ -312,7 +312,7 @@ const maxDate = ref(new Date().toISOString().split('T')[0]);
       </button>
       <button type="submit" class="btn-primary">Abschliessen</button>
     </div>
-    <small class="hint">* Erforderliche Information</small>
+    <small class="hint">* Erforderlich</small>
   </form>
 </template>
 
