@@ -100,10 +100,11 @@ const handleForgotPassword = () => {
               </div>
 
               <!-- Buttons (Einloggen und Registrieren) -->
-              <div class="buttons-wrapper">
-                <button class="login-btn" @click="handleLogin">Einloggen</button>
-                <button class="register-btn" @click="handleRegister">Registrieren</button>
-              </div>
+                <div class="buttons-wrapper">
+                  <button class="login-btn" @click="handleLogin">Einloggen</button>
+                  <button class="register-btn" @click="handleRegister">Registrieren</button>
+                </div>
+              
             </div>
         </nav>
     </header>
@@ -139,6 +140,8 @@ header {
   border-bottom: solid 1px #F1F1F1;
   color: #222222;
   flex-wrap: wrap;
+  height: auto;
+  align-items: stretch;
 }
 
 .headline { 
@@ -152,12 +155,6 @@ header {
 .link-div {
   text-decoration: none;
   color: inherit;
-}
-
-.navi {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
 }
 
 .special-link {
@@ -324,17 +321,18 @@ header {
   header {
     flex-direction: column;
     align-items: center;
+    padding: 0;
+    padding-bottom: 20px;
   }
   .headline {
     margin-bottom: 10px;
   }
   .navi {
-    width: 100%;
-    justify-content: center;
+    max-width: 400px;
   }
   .login-container {
     flex-direction: column; 
-    align-items: flex-start;
+    align-items: center;
     gap: 15px; 
   }
   .inputs-wrapper {
@@ -348,7 +346,6 @@ header {
     width: 100%; 
   }
   .buttons-wrapper {
-    align-items: stretch;
     width: 100%;
   }
   .login-btn, .register-btn {
