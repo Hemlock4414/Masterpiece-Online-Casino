@@ -49,7 +49,7 @@ const handleForgotPassword = () => {
             <nav :class="['navi', { active: isActive }]">
                 <!-- <RouterLink to="/">Home</RouterLink> -->
                 <RouterLink to="/dashboard" v-if="authUser">Meine Tweets</RouterLink>
-                <RouterLink to="/einloggen" v-if="authUser == null">Einloggen</RouterLink>
+                <!-- <RouterLink to="/einloggen" v-if="authUser == null">Einloggen</RouterLink> -->
                 <!-- <RouterLink to="/registrieren" v-if="!authUser">Registrieren</RouterLink> -->
                 <!-- <RouterLink to="/edit" v-if="authUser">Tweet bearbeiten</RouterLink> -->
                 <!-- <RouterLink to="/post/create" v-if="authUser">Tweet erstellen</RouterLink> -->
@@ -58,38 +58,43 @@ const handleForgotPassword = () => {
 
                  <!-- Logout Button -->
                 <button class="logout-btn" @click="handleLogout" v-if="authUser">Logout</button>
+
                 <div class="login-container">
                   <!-- Eingabefelder nebeneinander -->
-                  <div class="inputs-wrapper">
-                    <input
-                      type="text"
-                      v-model="username"
-                      placeholder="Benutzername"
-                      class="login-input"
-                    />
-                    <input
-                      type="password"
-                      v-model="password"
-                      placeholder="Passwort"
-                      class="login-input"
-                    />
+                  <div>
+                    <div class="inputs-wrapper">
+                      <input
+                        type="text"
+                        v-model="username"
+                        placeholder="Benutzername"
+                        class="login-input"
+                      />
+                        <input
+                          type="password"
+                          v-model="password"
+                          placeholder="Passwort"
+                          class="login-input"
+                        />
+                      </div>  
+                    <div>
+                       
+                      <div class="login-options">
+                        <label>
+                          <input type="checkbox" v-model="rememberMe" />
+                          Benutzernamen merken
+                        </label>
+                        <a href="#" @click.prevent="handleForgotPassword">
+                          Passwort vergessen?
+                        </a>
+                      </div>
+                    </div>  
                   </div>
 
-                  <!-- Buttons und Optionen -->
+                  <!-- Buttons (Einloggen und Registrieren) -->
                   <div class="buttons-wrapper">
-                    <!-- Login- und Registrierungsbuttons übereinander -->
                     <button class="login-btn" @click="handleLogin">Einloggen</button>
                     <button class="register-btn" @click="handleRegister">Registrieren</button>
                   </div>
-                </div>
-
-                <!-- Optionen -->
-                <div class="login-options">
-                  <label>
-                    <input type="checkbox" v-model="rememberMe" />
-                    Benutzernamen merken
-                  </label>
-                  <a href="#" @click.prevent="handleForgotPassword">Passwort vergessen?</a>
                 </div>
             </nav>
     </header>
@@ -114,30 +119,24 @@ const handleForgotPassword = () => {
 
 <style scoped>
 
-html, body {
-    height: 100%;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-}
-
 header {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-around;
-    align-items: center;
-    background-color: #FFFFFF;
-    min-height: 104px;
-    border-bottom: solid 1px #F1F1F1;
-    color: #222222;
-    flex-wrap: wrap;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+  padding: 10px 20px;
+  background-color: #FFFFFF;
+  min-height: 104px;
+  border-bottom: solid 1px #F1F1F1;
+  color: #222222;
+  flex-wrap: wrap;
 }
 
 .headline { 
-    font-size: 24px;
-    font-weight: 900;
-    line-height: 29.05px;
-    letter-spacing: -0.02em;  /* Letter -2% */
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 29.05px;
+  letter-spacing: -0.02em;  /* Letter -2% */
 }
 
 .link-div {
@@ -145,51 +144,51 @@ header {
   color: inherit;
 }
 
-.navi a {
+/* .navi a {
   margin-left: 50px; 
   text-decoration: none;
   color: #222222;
   font-size: 18px;
   font-weight: 400;
   line-height: 21.78px;
-}
+} */
 
 .special-link {
-    background-color: #1D9BF0;
-    padding: 10px 15px;
-    border-radius: 50px;
-    width: fit-content;
-    color: #FFFFFF !important;
-    font-size: 16px !important;
-    line-height: 19.36px !important;
+  background-color: #1D9BF0;
+  padding: 10px 15px;
+  border-radius: 50px;
+  width: fit-content;
+  color: #FFFFFF !important;
+  font-size: 16px !important;
+  line-height: 19.36px !important;
 }
 
 .special-link:hover {
-    background-color: #0056b3;;
+  background-color: #0056b3;;
 }
 
 .logout-btn {
-    width: fit-content;
-    height: fit-content;
-    padding: 10px 15px;
-    font-size: 16px;
-    font-weight: 900;
-    border-radius: 8px;
-    background-color: #222222;
-    color: #FFFFFF;
-    text-align: center;
-    cursor: pointer;
-    margin-left: 50px;
+  width: fit-content;
+  height: fit-content;
+  padding: 10px 15px;
+  font-size: 16px;
+  font-weight: 900;
+  border-radius: 8px;
+  background-color: #222222;
+  color: #FFFFFF;
+  text-align: center;
+  cursor: pointer;
+  margin-left: 50px;
 }
 
 .logout-btn:hover {
-    background-color: #888888;
+  background-color: #888888;
 }
 
 /* Login Container */
 .login-container {
   display: flex;
-  align-items: center;
+  align-items: flex-start; /* Bündige Ausrichtung oben */
   gap: 20px;
 }
 
@@ -197,19 +196,21 @@ header {
 .inputs-wrapper {
   display: flex;
   gap: 10px; /* Abstand zwischen den Feldern */
+  justify-content: space-between;
 }
 
 .login-input {
   padding: 8px;
   font-size: 14px;
-  width: 150px; /* Breite der Eingabefelder */
+  width: 160px; /* Breite der Eingabefelder */
 }
 
-/* Buttons übereinander rechts neben den Eingabefeldern */
+/* Buttons */
 .buttons-wrapper {
   display: flex;
-  flex-direction: column; /* Übereinander */
-  gap: 10px; /* Abstand zwischen den Buttons */
+  flex-direction: column; 
+  justify-content: space-between; 
+  gap: 10px; 
 }
 
 .login-btn, .register-btn {
@@ -217,7 +218,7 @@ header {
   border: none;
   font-size: 14px;
   cursor: pointer;
-  width: 120px; /* Einheitliche Breite der Buttons */
+  width: 120px;
 }
 
 .login-btn {
@@ -230,12 +231,33 @@ header {
   color: white;
 }
 
-/* Optionen unterhalb */
 .login-options {
-  margin-top: 10px;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
+  align-items: center;
   font-size: 12px;
+  margin-top: 20px;
+}
+
+.login-options label {
+  display: flex; 
+  align-items: center; 
+  font-size: 14px; 
+  gap: 5px; 
+}
+
+.login-options input[type="checkbox"] {
+  width: 16px; 
+  height: 16px;
+  margin: 0;
+}
+
+.login-options a {
+  font-size: 14px;
+  line-height: 1.2;   
+  color: #0056b3;   
+  text-decoration: none;
+  margin-left: 10px;    
 }
 
 @media (max-width: 690px) {
@@ -269,19 +291,19 @@ header {
 }
 
 .legal-pages {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    background-color: #FFFFFF;
-    min-height: 48px;
-    font-size: 20px;
-    color: #222222;
-    font-weight: 400;
-    line-height: 24.2px;
-    padding: 0 30px;
-    list-style: none;
-    flex-wrap: wrap;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  background-color: #FFFFFF;
+  min-height: 48px;
+  font-size: 20px;
+  color: #222222;
+  font-weight: 400;
+  line-height: 24.2px;
+  padding: 0 30px;
+  list-style: none;
+  flex-wrap: wrap;
 }
 
 .legal-pages-item {
