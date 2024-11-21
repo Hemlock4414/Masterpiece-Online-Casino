@@ -24,17 +24,12 @@ const handleLogin = () => {
 // Handle Logout
 const handleLogout = () => {
     logout();
-    router.push("/login");
+    // router.push("/"); // Diese Zeile entfernen
 };
 
 // Handle Registrierung
 const handleRegister = () => {
   router.push("/registrieren");
-};
-
-// Handle PAsswort vergessen
-const handleForgotPassword = () => {
-  router.push("/passwort-vergessen");
 };
 
 </script>
@@ -92,7 +87,7 @@ const handleForgotPassword = () => {
                       <input type="checkbox" v-model="rememberMe" />
                       Benutzernamen merken
                     </label>
-                    <a href="#" @click.prevent="handleForgotPassword">
+                    <a href="/passwort-vergessen">
                       Passwort vergessen?
                     </a>
                   </div>
@@ -110,7 +105,6 @@ const handleForgotPassword = () => {
     </header>
   <RouterView />
 
-    <main></main>
 
     <footer>
       <div class="main-footer">
@@ -136,7 +130,6 @@ header {
   align-items: center;
   padding: 10px 20px;
   background-color: #FFFFFF;
-  min-height: 104px;
   border-bottom: solid 1px #F1F1F1;
   color: #222222;
   flex-wrap: wrap;

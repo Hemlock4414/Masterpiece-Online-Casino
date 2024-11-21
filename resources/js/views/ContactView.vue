@@ -1,54 +1,59 @@
 <template>
-   
-  <div class="main-content">
-    <div class="contact-container">
-      <h1>Kontakt</h1>
-      <div class="purple-line"></div>
+  <main>  
+    <div class="main-content">
+      <div class="contact-container">
+        <h1>Kontakt</h1>
+        <div class="purple-line"></div>
 
-      <div class="form-group">
-        <label for="name">Name/Spielername *</label>
-        <input v-model="contact.name" type="text" id="name" required />
-      </div>
+        <div class="form-group">
+          <label for="name">Name/Spielername *</label>
+          <input v-model="contact.name" type="text" id="name" required />
+        </div>
 
-      <div class="form-group">
-        <label for="email">E-Mail *</label>
-        <input v-model="contact.email" type="email" id="email" required />
-      </div>
+        <div class="form-group">
+          <label for="email">E-Mail *</label>
+          <input v-model="contact.email" type="email" id="email" required />
+        </div>
 
-      <div class="form-group">
-        <label for="subject">Betreff *</label>
-        <input v-model="contact.subject" type="text" id="subject" required />
-      </div>
+        <div class="form-group">
+          <label for="subject">Betreff *</label>
+          <input v-model="contact.subject" type="text" id="subject" required />
+        </div>
 
-      <div class="form-group">
-        <label for="message">Nachricht *</label>
-        <textarea
-          v-model="contact.message"
-          id="message"
-          rows="10"
-          required
-        ></textarea>
-      </div>
+        <div class="form-group">
+          <label for="message">Nachricht *</label>
+          <textarea
+            v-model="contact.message"
+            id="message"
+            rows="10"
+            required
+          ></textarea>
+        </div>
 
-      <div class="form-group checkbox-group">
-        <input
-          v-model="contact.agreeToTerms"
-          type="checkbox"
-          id="terms"
-          required
-        />
-        <label for="terms">Ich habe die <a href="/datenschutz" class="privacy-link">Datenschutzerklärung</a> gelesen und akzeptiere sie. *</label>
+        <div class="form-group checkbox-group">
+          <input
+            v-model="contact.agreeToTerms"
+            type="checkbox"
+            id="terms"
+            required
+          />
+          <label for="terms">Ich habe die <a href="/datenschutz" class="privacy-link">Datenschutzerklärung</a> gelesen und akzeptiere sie. *</label>
+        </div>
+        <small class="hint">* Erforderlich</small>
+
+        <div class="button-container">
+          <a href="/" class="cancel-btn">Abbrechen</a>
+          <button
+            class="send-btn"
+            @click="sendMessage"
+            :disabled="!isFormValid || isSending"
+          >
+            {{ isSending ? "Wird gesendet..." : "Senden" }}
+          </button>
+        </div>
       </div>
-      <small class="hint">* Erforderlich</small>
-      <button
-        class="send-btn"
-        @click="sendMessage"
-        :disabled="!isFormValid || isSending"
-      >
-        {{ isSending ? "Wird gesendet..." : "Senden" }}
-      </button>
     </div>
-  </div>
+  </main>
 </template>
 
 <script setup>
@@ -84,7 +89,6 @@ const isFormValid = computed(() => {
     contact.value.agreeToTerms
   );
 });
-
 
 const sendMessage = async () => {
   if (!isFormValid.value) return;
@@ -180,6 +184,32 @@ textarea {
   margin-bottom: 4px;
 }
 
+.hint {
+  display: block;
+  margin-top: 0.1rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.button-container { 
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 15px;
+}
+
+.cancel-btn {
+  padding: 10px 20px;
+  font-weight: 600;
+  font-size: 14px;
+  border: 1px solid #909090;
+  border-radius: 14px;
+  cursor: pointer;
+  background-color: #ffffff;
+  color: black;
+  text-decoration: none;
+}
+
 .send-btn {
   padding: 10px 20px;
   font-weight: 600;
@@ -203,13 +233,6 @@ textarea {
 
 .privacy-link:hover {
   color: black;
-}
-
-.hint {
-  display: block;
-  margin-top: 0.5rem;
-  font-size: 0.875rem;
-  color: #6b7280;
 }
 
 </style>

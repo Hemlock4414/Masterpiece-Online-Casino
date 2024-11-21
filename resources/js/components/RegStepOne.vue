@@ -1,5 +1,6 @@
 <script setup>
-import { defineProps, defineEmits } from 'vue';
+import { defineProps, defineEmits, ref } from 'vue';
+import CancelRegModal from '../components/CancelRegModal.vue';
 
 const props = defineProps({
   modelValue: {
@@ -10,13 +11,35 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue', 'next']);
 
+// Variable für Modal-Steuerung
+const showCancelModal = ref(false);
+
 const handleNext = () => {
   emit('next');
 };
+
+const openCancelModal = () => {
+  showCancelModal.value = true;
+};
+
+const closeCancelModal = () => {
+  showCancelModal.value = false;
+};
+
 </script>
 
-
 <template>
+
+  <div>
+    <div class="cancel-button-container">
+      <button 
+        type="button" 
+        class="btn-cancel"
+        @click="openCancelModal"
+      >
+        ✕
+      </button>
+    </div>
     <form @submit.prevent="handleNext">
       <div class="form-group">
         <label for="spielername">Spielername *</label>
@@ -59,6 +82,13 @@ const handleNext = () => {
       </div>
       <small class="hint">* Erforderlich</small>
     </form>
+
+    <CancelRegModal 
+      :is-visible="showCancelModal"
+      @close="closeCancelModal"
+    />
+  </div>  
+
 </template>
 
 <style scoped>
@@ -113,5 +143,25 @@ input:focus {
   margin-top: 1.5rem;
   font-size: 0.875rem;
   color: #6b7280;
+}
+
+/* Styles Cancel Button */
+.cancel-button-container {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+}
+
+.btn-cancel {
+  background: none;
+  border: none;
+  color: #6b7280;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+.btn-cancel:hover {
+  color: #374151;
 }
 </style>

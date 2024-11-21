@@ -37,8 +37,8 @@ const handleRegister = async () => {
     return alert("Bei der Registrierung ist ein Fehler aufgetreten");
   }
 
-  const resUser = await getAuthUser();
-  if (resUser.status === 200) router.push("/dashboard");
+  const resUser = await getAuthUser(); 
+  if (resUser.status === 200) router.push("/");
 };
 
 const nextStep = () => {
@@ -51,10 +51,12 @@ const previousStep = () => {
 </script>
 
 <template>
+  <main>
     <div class="container">
       <div class="registration-wrapper">
         <div class="text-wrapper">
-          <h3>Jetzt Mitglied werden!</h3>
+          <h3>Herzlich Willkommen auf NAME</h3>
+          <p>Beginnen Sie jetzt Ihre Registrierung in nur wenigen Schritten</p>
         </div>
   
         <div class="steps-indicator">
@@ -78,6 +80,7 @@ const previousStep = () => {
         </div>
       </div>
     </div>
+  </main>  
 </template>
 
 <style scoped>
@@ -89,9 +92,10 @@ const previousStep = () => {
 
 .registration-wrapper {
   background: white;
-  padding: 2rem;
+  padding: 3rem;
   border-radius: 12px;
   box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  position: relative;
 }
 
 .text-wrapper {
