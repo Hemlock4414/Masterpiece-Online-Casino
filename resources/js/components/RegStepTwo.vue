@@ -1,5 +1,7 @@
 <script setup>
-import { defineProps, defineEmits, ref, onMounted } from 'vue';
+import { defineProps, defineEmits, ref, onMounted, computed } from 'vue';
+import CancelRegModal from '../components/CancelRegModal.vue';
+
 
 const props = defineProps({
   modelValue: {
@@ -9,6 +11,17 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['update:modelValue', 'previous', 'submit']);
+
+// Variable für Modal-Steuerung
+const showCancelModal = ref(false);
+
+const openCancelModal = () => {
+  showCancelModal.value = true;
+};
+
+const closeCancelModal = () => {
+  showCancelModal.value = false;
+};
 
 // Konvertierung des Datums in deutsches Format für die Anzeige
 const formatDateToGerman = (isoDate) => {
@@ -39,9 +52,9 @@ const handleDateChange = (event) => {
   });
 };
 
-const handleSubmit = () => {
+/* const handleSubmit = () => {
   emit('submit');
-};
+}; */
 
 const hauptLaender = [
   "Schweiz",
@@ -244,76 +257,121 @@ onMounted(() => {
 // Maximales Datum für das Geburtsdatum (heute)
 const maxDate = ref(new Date().toISOString().split('T')[0]);
 
+// Reactive Variable für AGB-Akzeptanz
+const agbAccepted = ref(false);
+
+// Modifizierte handleSubmit-Methode mit AGB-Prüfung
+const handleSubmit = () => {
+  if (!agbAccepted.value) {
+    alert('Bitte akzeptieren Sie die AGB, um die Registrierung abzuschließen.');
+    return;
+  }
+  emit('submit');
+};
+
 </script>
 
-<template>
-  <form @submit.prevent="handleSubmit">
-    <div class="form-group">
-      <label for="vorname">Vorname *</label>
-      <input
-        type="text"
-        id="vorname"
-        v-model="modelValue.vorname"
-        required
+  <template>
+  <div>
+    <div class="cancel-button-container">
+      <button 
+        type="button" 
+        class="btn-cancel"
+        @click="openCancelModal"
       >
-    </div>
-    <div class="form-group">
-      <label for="nachname">Nachname *</label>
-      <input
-        type="text"
-        id="nachname"
-        v-model="modelValue.nachname"
-        required
-      >
-    </div>
-    <div class="form-group">
-      <label for="geburtsdatum">Geburtsdatum *</label>
-      <input
-        type="text"
-        id="geburtsdatum"
-        :value="localDate"
-        @input="handleDateChange"
-        required
-        placeholder="TT.MM.JJJJ"
-        pattern="\d{2}.\d{2}.\d{4}"
-        maxlength="10"
-        class="date-input"
-      >
-    </div>
-    <div class="form-group">
-      <label for="nationalitaet">Nationalität *</label>
-      <select
-        id="nationalitaet"
-        v-model="modelValue.nationalitaet"
-        required
-        class="select-input"
-      >
-        <option value="" disabled>Bitte wählen Sie Ihr Land</option>
-        <option 
-          v-for="land in hauptLaender" 
-          :key="land" 
-          :value="land"
-        >
-          {{ land }}
-        </option>
-        <option disabled>──────────</option>
-        <option 
-          v-for="land in uebrigeLaender" 
-          :key="land" 
-          :value="land"
-        >
-          {{ land }}
-        </option>
-      </select>
-    </div>
-    <div class="button-group">
-      <button type="button" class="btn-secondary" @click="$emit('previous')">
-        Zurück
+        ✕
       </button>
-      <button type="submit" class="btn-primary">Abschliessen</button>
-    </div>
-    <small class="hint">* Erforderlich</small>
-  </form>
+    </div>  
+
+    <form @submit.prevent="handleSubmit">
+      <div class="form-group">
+        <label for="vorname">Vorname *</label>
+        <input
+          type="text"
+          id="vorname"
+          v-model="modelValue.vorname"
+          required
+        >
+      </div>
+      <div class="form-group">
+        <label for="nachname">Nachname *</label>
+        <input
+          type="text"
+          id="nachname"
+          v-model="modelValue.nachname"
+          required
+        >
+      </div>
+      <div class="form-group">
+        <label for="geburtsdatum">Geburtsdatum *</label>
+        <input
+          type="text"
+          id="geburtsdatum"
+          :value="localDate"
+          @input="handleDateChange"
+          required
+          placeholder="TT.MM.JJJJ"
+          pattern="\d{2}.\d{2}.\d{4}"
+          maxlength="10"
+          class="date-input"
+        >
+      </div>
+      <div class="form-group">
+        <label for="nationalitaet">Nationalität</label>
+        <select
+          id="nationalitaet"
+          v-model="modelValue.nationalitaet"
+          class="select-input"
+        >
+          <option value="" disabled>Bitte wählen Sie Ihr Land</option>
+          <option 
+            v-for="land in hauptLaender" 
+            :key="land" 
+            :value="land"
+          >
+            {{ land }}
+          </option>
+          <option disabled>──────────</option>
+          <option 
+            v-for="land in uebrigeLaender" 
+            :key="land" 
+            :value="land"
+          >
+            {{ land }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Checkbox für AGB-Akzeptanz -->
+      <div class="form-group">
+        <div class="agb-checkbox">
+          <input 
+            type="checkbox" 
+            id="agb-acceptance" 
+            v-model="agbAccepted"
+            required
+          >
+          <label for="agb-acceptance">
+            Ich akzeptiere die
+            <a href="/agb" target="_blank">AGB</a>&nbsp;*
+          </label>
+        </div>
+      </div>
+
+      <div class="button-group">
+        <button type="button" class="btn-secondary" @click="$emit('previous')">
+          Zurück
+        </button>
+        <button type="submit" class="btn-primary">Abschliessen</button>
+      </div>
+      <small class="hint">* Erforderlich</small>
+    </form>
+
+    <CancelRegModal 
+      :is-visible="showCancelModal"
+      @close="closeCancelModal"
+    />
+  </div>  
 </template>
 
 <style scoped>
@@ -342,6 +400,27 @@ input:focus, select:focus  {
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
+/* Styles für die AGB-Checkbox */
+.agb-checkbox {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.agb-checkbox input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+}
+
+.agb-checkbox label {
+  display: inline;
+  font-weight: 400;
+  margin: 0;
+}
+
+/* Styles für die Buttons */
 .button-group {
   display: flex;
   justify-content: space-between;
@@ -376,6 +455,26 @@ input:focus, select:focus  {
 
 .btn-secondary:hover {
   background: #d1d5db;
+}
+
+/* Styles Cancel Button */
+.cancel-button-container {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+}
+
+.btn-cancel {
+  background: none;
+  border: none;
+  color: #6b7280;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+.btn-cancel:hover {
+  color: #374151;
 }
 
 .hint {
