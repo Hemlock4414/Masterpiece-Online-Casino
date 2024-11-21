@@ -133,7 +133,6 @@ header {
   border-bottom: solid 1px #F1F1F1;
   color: #222222;
   flex-wrap: wrap;
-  height: auto;
   align-items: stretch;
 }
 
