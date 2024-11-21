@@ -48,7 +48,7 @@ const router = createRouter({
         },
         {
             // Hier brauchen wir keine Meta-Informationen, da diese Route für nicht authentifizierte User zugänglich sein soll.
-            path: "/fair-gaming",
+            path: "/spielerschutz",
             name: "fair-gaming",
             component: () => import("../views/FairGamingView.vue"),
         },
@@ -70,6 +70,11 @@ const router = createRouter({
             name: "contact",
             component: () => import("../views/ContactView.vue"),
         },
+        {
+            path: "/profil",
+            name: "profile",
+            component: () => import("../views/ProfileView.vue"),
+          },
 
     ],
 
