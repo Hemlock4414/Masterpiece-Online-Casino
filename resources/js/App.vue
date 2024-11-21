@@ -112,7 +112,7 @@ const handleRegister = () => {
           <li class="legal-pages-item">Impressum</li>
           <li class="legal-pages-item"><a class="legal-pages-link" href="/datenschutz">Datenschutz</a></li>
           <li class="legal-pages-item"><a class="legal-pages-link" href="/agb">AGB</a></li>
-          <li class="legal-pages-item"><a class="legal-pages-link" href="/fair-gaming">Verantwortungsvolles Spielen</a></li>
+          <li class="legal-pages-item"><a class="legal-pages-link" href="/spielerschutz">Verantwortungsvolles Spielen</a></li>
           <li class="legal-pages-item"><a class="legal-pages-link" href="/kontakt">Kontakt</a></li>
           <li class="legal-pages-item">Über mich</li>
         </ul>

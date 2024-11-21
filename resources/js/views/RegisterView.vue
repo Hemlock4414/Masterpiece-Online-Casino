@@ -49,7 +49,7 @@ const previousStep = () => {
   currentStep.value--;
 };
 </script>
-
+ 
 <template>
   <main>
     <div class="container">
