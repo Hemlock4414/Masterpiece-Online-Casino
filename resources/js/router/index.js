@@ -70,22 +70,7 @@ const router = createRouter({
             name: "contact",
             component: () => import("../views/ContactView.vue"),
         },
-        {
-            path: "/neues-passwort",
-            name: "new-password",
-            component: () => import("../views/PasswordNewView.vue"),
-/*             beforeEnter: (to, from, next) => {
-              if (to.query.token) {
-                next();
-              } else {
-                next({ name: "home" }); // oder zu einer anderen Seite umleiten
-              } */
-        },  
-        {
-            path: "/passwort-vergessen",
-            name: "forgot-password",
-            component: () => import("../views/PasswordResetView.vue"),
-        },
+
     ],
 
 });

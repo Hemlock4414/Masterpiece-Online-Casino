@@ -19,7 +19,7 @@
                     <p class="topline">
                     Personendaten im Sinn dieser Erklärung sind alle Daten, die wir im Zusammenhang mit Ihrer Nutzung 
                     von dieser Webseite erhalten und anhand derer Sie direkt oder indirekt identifiziert werden können, wie 
-                    beispielsweise Name, Adresse, Geburtsdatum und E-Mail-Adresse.</p><br>
+                    beispielsweise Name, Geburtsdatum und E-Mail-Adresse.</p><br>
                     <p class="topline">
                     Wir erwarten, dass Sie diese Erklärung lesen, bevor Sie diese Webseite nutzen. Mit Ihrer Nutzung  
                     dieser Webseite akzeptieren Sie diese Erklärung.</p><br>
