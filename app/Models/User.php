@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Notifications\ResetPasswordNotification;
 
 class User extends Authenticatable
 {
@@ -18,9 +19,16 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
+        'playername',
+        'firstname',
+        'lastname',
+        'birth_date',
+        'nationality',
+        'balance',
         'email',
         'password',
+        'profile_pic',
+        'last_login',
     ];
 
     /**
@@ -38,6 +46,30 @@ class User extends Authenticatable
      *
      * @return array<string, string>
      */
+
+    protected $appends = ['profile_pic_url'];
+
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+        ];
+    }
+
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new ResetPasswordNotification($token));
+    }
+
+    public function getProfilePicUrlAttribute()
+    {
+        if ($this->profile_pic) {
+            return asset('storage/' . $this->profile_pic);
+        }
+    }
+
+
     protected function casts(): array
     {
         return [

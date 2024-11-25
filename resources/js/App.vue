@@ -8,23 +8,39 @@ import { useAuthStore } from "@/store/AuthStore";
 import router from "@/router";
 
 const { authUser } = storeToRefs(useAuthStore());
-const { logout } = useAuthStore();
+const { login, logout } = useAuthStore();
 
 const username = ref("");
 const password = ref("");
 const rememberMe = ref(false);
 const isPasswordVisible = ref(false); // Zustand für das Passwort-Toggle
+const errorMessage = ref("");
 
-const handleLogin = () => {
-  // Beispiel: API-Login-Logik
-  console.log("Login:", { username: username.value, password: password.value, rememberMe: rememberMe.value });
-  // Fügen Sie hier Ihre API-Logik hinzu
+const handleLogin = async () => {
+  try {
+    errorMessage.value = "";
+    await login({
+      username: username.value,
+      password: password.value,
+      remember: rememberMe.value
+    });
+    // Nach erfolgreichem Login Felder zurücksetzen
+    username.value = "";
+    password.value = "";
+    rememberMe.value = false;
+  } catch (error) {
+    errorMessage.value = "Login fehlgeschlagen. Bitte überprüfen Sie Ihre Eingaben.";
+    console.error("Login error:", error);
+  }
 };
 
-// Handle Logout
-const handleLogout = () => {
-    logout();
+const handleLogout = async () => {
+  try {
+    await logout();
     // router.push("/"); // Diese Zeile entfernen
+  } catch (error) {
+    console.error("Logout error:", error);
+  }
 };
 
 // Handle Registrierung
@@ -32,12 +48,16 @@ const handleRegister = () => {
   router.push("/registrieren");
 };
 
+const navigateToProfile = () => {
+  router.push("/profil");
+};
+
 </script>
 
 <template>
     <header>
         <a href="/" class="link-div">
-            <div class="headline">MINI-TWITTER</div>
+            <div class="headline">FORTUNA FORTUNE Online Casino</div> 
         </a>  
         
         <nav class="navi">
@@ -50,11 +70,9 @@ const handleRegister = () => {
             <!-- <RouterLink :to="{name: 'post-create'}" v-if="authUser" class="special-link">+ Tweet erstellen</RouterLink> -->
             <!-- <RouterLink :to="{name: 'post-view'}" v-if="authUser">Tweet ansehen</RouterLink> -->
 
-              <!-- Logout Button -->
-            <!-- <button class="logout-btn" @click="handleLogout" v-if="authUser">Logout</button> -->
-
-            <div class="login-container">
-              <!-- Eingabefelder nebeneinander -->
+            <!-- Login Container (nur anzeigen wenn nicht eingeloggt) -->
+            <div v-if="!authUser" class="login-container">
+              
               <div>
                 <div class="inputs-wrapper">
                   <input
@@ -101,6 +119,20 @@ const handleRegister = () => {
                 </div>
               
             </div>
+
+            <!-- User Menu (nur anzeigen wenn eingeloggt) -->
+            <div v-else class="user-menu">
+            <div class="balance-display">
+              Guthaben: {{ authUser.balance || '0.00' }}€
+            </div>
+            <button class="profile-btn" @click="navigateToProfile">
+              Mein Profil
+            </button>
+            <button class="logout-btn" @click="handleLogout">
+              Ausloggen
+            </button>
+          </div>
+
         </nav>
     </header>
   <RouterView />
@@ -188,7 +220,6 @@ header {
   gap: 20px;
 }
 
-/* Eingabefelder nebeneinander */
 .inputs-wrapper {
   display: flex;
   gap: 10px; /* Abstand zwischen den Feldern */
@@ -281,6 +312,44 @@ header {
 .register-btn {
   background-color: #28a745;
   color: white;
+}
+
+/* User Menu Container */
+.user-menu {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.balance-display {
+  background: #f0f0f0;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.profile-btn, .logout-btn {
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.profile-btn {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.logout-btn {
+  background-color: #f44336;
+  color: white;
+}
+
+.error-message {
+  color: #f44336;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
 }
 
 .legal-pages {

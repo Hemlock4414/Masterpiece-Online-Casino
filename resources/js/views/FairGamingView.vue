@@ -117,7 +117,7 @@
 
                                 <div class="helpline">
                                     <div class="helpline-img">
-                                        <img src="/home/opportunity/Projekte/Masterpiece Online Casino/public/img/helpline.jpg" alt="">
+                                        <img src="/public/img/helpline.jpg" alt="">
                                     </div>
                                     <div><p><b>SoS-Spielsucht</b> - Interkantonale Beratungsstelle<br>
                                         Webseite: &emsp;<a class="helpline-link" href="https://www.sos-spielsucht.ch">www.sos-spielsucht.ch</a></p><br />
@@ -150,7 +150,7 @@
                                     bearbeiten. Gehen Sie die 7 Kapitel in Ihrer eigenen Geschwindigkeit durch. Das Handbuch 
                                     können Sie allein, mit Ihrem Partner / Ihrer Partnerin, einer Vertrauensperson oder mit 
                                     Unterstützung eines Therapeuten bearbeiten.</p>
-                                <p>Laden Sie hier das <a href="/home/opportunity/Projekte/Masterpiece Online Casino/public/selbsthilfe-manual.pdf" download="filename.pdf">Selbsthilfe-Manual</a> als PDF herunter.</p>
+                                <p>Laden Sie hier das <a href="/public/selbsthilfe-manual.pdf" download="selbsthilfe-manual.pdf">Selbsthilfe-Manual</a> als PDF herunter.</p>
 
                             </article>
                         </section>
