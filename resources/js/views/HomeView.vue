@@ -54,9 +54,12 @@ onMounted(() => {
 
         <div class="container">
         
-            <div class="hero-container">
-                <img src="/public/img/Hero-Header-2.jpg" alt="">
-            </div>
+            <div class="upper-container">
+                <div class="hero-container">
+                    <img src="/public/img/Hero-Header-2.jpg" alt="">
+             
+                </div>
+            </div>    
 
             <div class="row">
                 <!-- Alle 6 Kacheln in einer Row -->
@@ -140,15 +143,22 @@ onMounted(() => {
     align-items: center;
     justify-content: center;
 }
+
+.upper-container {
+    width: 100%;
+    background-color: black;  
+    display: flex; 
+    justify-content: center;
+}
   
 .hero-container {
-    max-width: 1440px;
-    height: auto;    
+    max-width: 1280px;    
 }
 
 .hero-container img {
     width: 100%;  
     height: auto;  
+    display: block;
 }
 
 .row {

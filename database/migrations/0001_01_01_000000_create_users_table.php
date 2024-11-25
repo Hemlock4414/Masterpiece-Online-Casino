@@ -18,11 +18,11 @@ return new class extends Migration
             $table->string('lastname');
             $table->string('birth_date');
             $table->string('nationality');
-            $table->integer('balance');
+            $table->integer('balance')->default(1000);
             $table->string('profile_pic')->nullable();
             $table->string('email')->unique();
             $table->string('password');
-            $table->timestamps('last_login');
+            $table->timestamp('last_login')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });
