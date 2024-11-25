@@ -17,48 +17,50 @@ Route::get('/test', function () {
 
 Route::post('/register', [UserController::class, 'register']);
 
+Route::get('/users-info', [UserController::class, 'index']);
+
 //Contact
 Route::post('/contact', [ContactController::class, 'send']);
 
 
 // Geschützte Routen
 
-    Route::group(['middleware' => ['auth:sanctum']], function () {
+Route::group(['middleware' => ['auth:sanctum']], function () {
+
+    //User
     Route::get('/user', [UserController::class, 'show']);
+    
+    Route::post('/user/update/name', [UserController::class, 'updateUsername']);
+    Route::post('/user/update/password', [UserController::class, 'updatePassword']);
+    Route::post('/user/update/email', [UserController::class, 'updateEmail']);
+    Route::post('/user/update/pic', [UserController::class, 'updateProfilePic']);
+    Route::delete('/user/delete', [UserController::class, 'deleteAccount']);
+    Route::get('/user', [UserController::class, 'getUser']);
+
 });
 
-//User
-Route::post('/user/update/name', [UserController::class, 'updateUsername']);
-Route::post('/user/update/password', [UserController::class, 'updatePassword']);
-Route::post('/user/update/email', [UserController::class, 'updateEmail']);
-Route::post('/user/update/pic', [UserController::class, 'updateProfilePic']);
-Route::delete('/user/delete', [UserController::class, 'deleteAccount']);
-Route::get('/user', [UserController::class, 'getUser']);
 
+    Route::get('/users-info', [UserController::class, 'index']);
 
+    Route::get('/posts', [PostController::class, 'index']);
 
+    Route::post('/posts', [PostController::class, 'store']);
 
-Route::get('/users-info', [UserController::class, 'index']);
+    Route::get('/posts/my-posts', [PostController::class, 'getMyPost']);
 
-Route::get('/posts', [PostController::class, 'index']);
+    Route::get('/posts/by-user/{user_id}', [PostController::class, 'getByUserId']);
 
-Route::post('/posts', [PostController::class, 'store']);
+    Route::get('/posts/{id}', [PostController::class, 'show']);
 
-Route::get('/posts/my-posts', [PostController::class, 'getMyPost']);
+    Route::put('/posts/{id}', [PostController::class, 'update']);
 
-Route::get('/posts/by-user/{user_id}', [PostController::class, 'getByUserId']);
+    Route::delete('/posts/{id}', [PostController::class, 'destroy']);
 
-Route::get('/posts/{id}', [PostController::class, 'show']);
+    Route::get('/postcomments', [PostCommentController::class, 'index']);
 
-Route::put('/posts/{id}', [PostController::class, 'update']);
+    Route::post('/postcomments', [PostCommentController::class, 'store']);
 
-Route::delete('/posts/{id}', [PostController::class, 'destroy']);
-
-Route::get('/postcomments', [PostCommentController::class, 'index']);
-
-Route::post('/postcomments', [PostCommentController::class, 'store']);
-
-Route::get('/postcomments/{id}', [PostCommentController::class, 'show']);
+    Route::get('/postcomments/{id}', [PostCommentController::class, 'show']);
 
 
 

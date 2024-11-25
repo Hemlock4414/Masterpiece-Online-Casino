@@ -78,7 +78,7 @@ const navigateToProfile = () => {
                   <input
                     type="text"
                     v-model="username"
-                    placeholder="Benutzername"
+                    placeholder="Benutzername/E-Mail"
                     class="login-input"
                   />
                   <div class="password-wrapper">
@@ -103,7 +103,7 @@ const navigateToProfile = () => {
                   <div class="login-options">
                     <label>
                       <input type="checkbox" v-model="rememberMe" />
-                      Benutzernamen merken
+                      Anmeldedaten merken
                     </label>
                     <a href="/passwort-vergessen">
                       Passwort vergessen?
@@ -258,7 +258,8 @@ header {
   line-height: 1.2;   
   color: #0056b3;   
   text-decoration: none;
-  margin-left: 10px;    
+  margin-left: 10px; 
+  margin-bottom: -3px;   
 }
 
 .password-wrapper {
