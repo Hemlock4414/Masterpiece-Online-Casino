@@ -7,6 +7,7 @@ import RegStepOne from '../components/RegStepOne.vue';
 import RegStepTwo from '../components/RegStepTwo.vue';
 
 const { register, getAuthUser } = useAuthStore();
+
 const currentStep = ref(1);
 const formData = ref({
   // Schritt 1

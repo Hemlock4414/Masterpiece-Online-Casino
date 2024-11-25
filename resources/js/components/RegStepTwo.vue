@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps, defineEmits, ref, onMounted, computed } from 'vue';
+import { defineProps, defineEmits, ref, onMounted } from 'vue';
 import CancelRegModal from '../components/CancelRegModal.vue';
 
 
@@ -38,23 +38,27 @@ const formatDateToISO = (germanDate) => {
 };
 
 // Lokales Date-Handling
-const localDate = ref(formatDateToGerman(props.modelValue.geburtsdatum));
+const localDate = ref(formatDateToGerman(props.modelValue.birth_date));
 
 // Datum-Update Handler
 const handleDateChange = (event) => {
   const germanDate = event.target.value;
+
+  // Validiere das Format
+  if (germanDate && !/^\d{2}\.\d{2}\.\d{4}$/.test(germanDate)) {
+    return; // Ungültiges Format, keine Aktualisierung
+  }
+
   localDate.value = germanDate;
   
-  // Update des v-model mit ISO-Format
-  emit('update:modelValue', {
-    ...props.modelValue,
-    geburtsdatum: formatDateToISO(germanDate)
+  // Update des v-model mit ISO-Format, nur updaten wenn das Datum vollständig ist
+  if (germanDate.length === 10) {
+    emit('update:modelValue', {
+      ...props.modelValue,
+      birth_date: formatDateToISO(germanDate)
   });
+  }
 };
-
-/* const handleSubmit = () => {
-  emit('submit');
-}; */
 
 const hauptLaender = [
   "Schweiz",
@@ -303,10 +307,10 @@ const handleSubmit = () => {
         >
       </div>
       <div class="form-group">
-        <label for="geburtsdatum">Geburtsdatum *</label>
+        <label for="birth_date">Geburtsdatum *</label>
         <input
           type="text"
-          id="geburtsdatum"
+          id="birth_date"
           :value="localDate"
           @input="handleDateChange"
           required
@@ -314,6 +318,7 @@ const handleSubmit = () => {
           pattern="\d{2}.\d{2}.\d{4}"
           maxlength="10"
           class="date-input"
+          title="Bitte geben Sie das Datum im Format TT.MM.JJJJ ein"
         >
       </div>
       <div class="form-group">
