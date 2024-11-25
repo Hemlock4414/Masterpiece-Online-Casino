@@ -13,6 +13,15 @@ use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
+    public function index()
+    {
+        // Hole alle Benutzer aus der Datenbank
+        $users = User::all();
+
+        // Gib die Benutzer zurück
+        return $users;
+    }
+
     public function getUser()
     {
         $user = Auth::user();
@@ -137,6 +146,51 @@ class UserController extends Controller
         }
     }
 
+    public function show(Request $request)
+    {
+        try {
+            Log::info('User-Abfrage gestartet', ['user_id' => $request->user()->id]);
+            
+            $user = $request->user();
+
+            if (!$user) {
+                Log::warning('Kein authentifizierter User gefunden');
+                return response()->json(['error' => 'Nicht authentifiziert'], 401);
+            }
+
+            // Generiere die öffentliche URL des Profilbildes
+            $profilePicUrl = $user->profile_pic ? asset('storage/' . $user->profile_pic) : null;
+
+            // Formatiere das Datum ins deutsche Format
+            $birthDate = $user->birth_date ? Carbon::parse($user->birth_date)->format('d.m.Y') : null;
+
+            Log::info('User-Daten erfolgreich abgerufen', ['user_id' => $user->id]);
+
+            return response()->json([
+                'user' => [
+                    'id' => $user->id,
+                    'playername' => $user->playername,
+                    'firstname' => $user->firstname,
+                    'lastname' => $user->lastname,
+                    'email' => $user->email,
+                    'birth_date' => $birthDate,
+                    'nationality' => $user->nationality,
+                    'balance' => $user->balance,
+                    'profile_pic_url' => $profilePicUrl,
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Fehler beim Abrufen der User-Daten:', [
+                'error' => $e->getMessage(),
+                'stack_trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'error' => 'Fehler beim Abrufen der User-Daten'
+            ], 500);
+        }
+    }
 
     public function updatePassword(Request $request)
     {
