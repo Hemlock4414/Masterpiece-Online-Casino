@@ -11,9 +11,32 @@ Route::get('/test', function () {
     return response()->json(['message' => 'Hello World!'], 200);
 });
 
-Route::group(['middleware' => ['auth:sanctum']], function () {
+// Öffentliche Route für alle Posts (ohne Authentifizierung)
+
+//User
+
+Route::post('/register', [UserController::class, 'register']);
+
+//Contact
+Route::post('/contact', [ContactController::class, 'send']);
+
+
+// Geschützte Routen
+
+    Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('/user', [UserController::class, 'show']);
 });
+
+//User
+Route::post('/user/update/name', [UserController::class, 'updateUsername']);
+Route::post('/user/update/password', [UserController::class, 'updatePassword']);
+Route::post('/user/update/email', [UserController::class, 'updateEmail']);
+Route::post('/user/update/pic', [UserController::class, 'updateProfilePic']);
+Route::delete('/user/delete', [UserController::class, 'deleteAccount']);
+Route::get('/user', [UserController::class, 'getUser']);
+
+
+
 
 Route::get('/users-info', [UserController::class, 'index']);
 
