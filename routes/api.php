@@ -47,6 +47,12 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     //Neues Spiel starten
     Route::post('/memory-games/create', [MemoryGameController::class, 'create']);
 
+    // Spiel anzeigen
+    Route::get('/games/{game}', [MemoryGameController::class, 'show']);
+
+    // Spiel beenden
+    Route::post('/games/{game}/stop', [MemoryGameController::class, 'stop']);
+
     Route::get('/memory-games/{game}/cards', [MemoryCardController::class, 'index']);
     Route::post('/memory-games/{game}/cards/flip', [MemoryCardController::class, 'flip']);
     
