@@ -5,9 +5,6 @@ import { storeToRefs } from "pinia";
 import { useAuthStore, authClient } from "@/store/AuthStore";
 import router from "@/router";
 
-import TweetCard from '../components/TweetCard.vue';
-
-
 // Pinia Store (authUser und logout aus dem Store)
 const { authUser } = storeToRefs(useAuthStore());
 const { logout } = useAuthStore();

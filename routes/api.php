@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\PostCommentController;
+use App\Http\Controllers\MemoryCardController;
+use App\Http\Controllers\MemoryGameController;
 
 // TODO remove this on public release, only for testing!
 Route::get('/test', function () {
@@ -40,18 +42,14 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
 });
 
-// Memory 4x4
+// Memory
 
-Route::get('/cards', function () {
-    $values = range('A', 'H'); // 8 einzigartige Werte
-    $cards = array_merge($values, $values); // Paare erstellen
-    shuffle($cards); // Zufällige Reihenfolge
+    //Neues Spiel starten
+    Route::post('/memory-games/create', [MemoryGameController::class, 'create']);
 
-    return response()->json(array_map(function ($value, $index) {
-        return ['id' => $index + 1, 'value' => $value, 'flipped' => false];
-    }, $cards, array_keys($cards)));
-});
-
+    Route::get('/memory-games/{game}/cards', [MemoryCardController::class, 'index']);
+    Route::post('/memory-games/{game}/cards/flip', [MemoryCardController::class, 'flip']);
+    
 
 
 
