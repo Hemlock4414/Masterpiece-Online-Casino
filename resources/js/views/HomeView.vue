@@ -67,12 +67,14 @@ onMounted(() => {
                     <button class="button">Play Blackjack</button>
                 </div>
                 
-                <div class="card-container">
-                    <div class="card">
-                        <img src="/public/img/casino-placeholder.jpg" alt="Bild 2" class="card-image">
+                <a href="/memory/play">
+                    <div class="card-container">
+                        <div class="card">
+                            <img src="/public/img/casino-placeholder.jpg" alt="Bild 2" class="card-image">
+                        </div>
+                        <button class="button">Play Memory</button>
                     </div>
-                    <button class="button">Play Memory</button>
-                </div>
+                </a>
                 
                 <div class="card-container">
                     <div class="card">

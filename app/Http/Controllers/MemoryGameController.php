@@ -3,22 +3,69 @@
 namespace App\Http\Controllers;
 
 use App\Models\MemoryGame;
+use App\Models\MemoryCard;
 use Illuminate\Http\Request;
 
 class MemoryGameController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Show the form for creating a new resource.
      */
-    public function index()
+    // Neues Spiel erstellen
+    public function create(Request $request)
     {
-        //
+        // Neues Spiel in der Datenbank erstellen
+        $game = MemoryGame::create([
+            'status' => 'waiting', // Status: Warten auf Start
+        ]);
+
+        // Anzahl Paare vom Benutzer festlegen (Standard: 8 Paare = 16 Karten)
+        $pairs = $request->input('pairs', 8);
+
+        // Karten generieren
+        for ($i = 1; $i <= $pairs; $i++) {
+            // Zwei Karten für jedes Paar erstellen
+            MemoryCard::factory()->create([
+                'game_id' => $game->id,
+                'group_id' => $i,
+            ]);
+
+            MemoryCard::factory()->create([
+                'game_id' => $game->id,
+                'group_id' => $i,
+            ]);
+        }
+
+        return response()->json($game->load('cards')); // Rückgabe des Spiels mit den Karten
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Display the specified resource.
      */
-    public function create()
+    // Ein vorhandenes Spiel mit seinen Karten abrufen:
+    public function show(MemoryGame $game)
+    {
+        return response()->json($game->load('cards'));
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    // Ein Spiel als "beendet" markieren:
+    public function stop(MemoryGame $game)
+    {
+        $game->update([
+            'status' => 'finished',
+            'stopped_at' => now(),
+        ]);
+    
+        return response()->json(['message' => 'Game finished successfully']);
+    }
+
+    /**
+     * Display a listing of the resource.
+     */
+    public function index()
     {
         //
     }
@@ -32,25 +79,9 @@ class MemoryGameController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     */
-    public function show(MemoryGame $memoryGame)
-    {
-        //
-    }
-
-    /**
      * Show the form for editing the specified resource.
      */
     public function edit(MemoryGame $memoryGame)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, MemoryGame $memoryGame)
     {
         //
     }

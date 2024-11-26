@@ -74,7 +74,12 @@ const router = createRouter({
             path: "/profil",
             name: "profile",
             component: () => import("../views/ProfileView.vue"),
-          },
+        },
+        {
+            path: "/memory/play",
+            name: "memory",
+            component: () => import("../views/MemoryView.vue"),
+        },
 
     ],
 
