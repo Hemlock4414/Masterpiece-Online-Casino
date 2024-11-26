@@ -65,68 +65,44 @@ onMounted(() => {
                 <!-- Alle 6 Kacheln in einer Row -->
                 <div class="card-container">
                     <div class="card">
-                        <img src="" alt="Bild 1" class="card-image">
-                        <div class="card-content">
-                            <h3>Kachel 1</h3>
-
-                        </div>
+                        <img src="/public/img/casino-placeholder.jpg" alt="Bild 1" class="card-image">
                     </div>
                     <button class="button">Play Blackjack</button>
                 </div>
                 
                 <div class="card-container">
                     <div class="card">
-                        <img src="" alt="Bild 2" class="card-image">
-                        <div class="card-content">
-                            <h3>Kachel 2</h3>
-
-                        </div>
+                        <img src="/public/img/casino-placeholder.jpg" alt="Bild 2" class="card-image">
                     </div>
                     <button class="button">Play Memory</button>
                 </div>
                 
                 <div class="card-container">
                     <div class="card">
-                        <img src="" alt="Bild 3" class="card-image">
-                        <div class="card-content">
-                            <h3>Kachel 3</h3>
-
-                        </div>
+                        <img src="/public/img/casino-placeholder.jpg" alt="Bild 3" class="card-image">
                     </div>
-                    <button class="button">Button 3</button>
+                    <button class="button">Play Poker</button>
                 </div>
                 
                 <div class="card-container">
                     <div class="card">
-                        <img src="" alt="Bild 4" class="card-image">
-                        <div class="card-content">
-                            <h3>Kachel 4</h3>
-
-                        </div>
+                        <img src="/public/img/casino-placeholder.jpg" alt="Bild 4" class="card-image">
                     </div>
-                    <button class="button">Button 4</button>
+                    <button class="button">Play Baccarat</button>
                 </div>
                 
                 <div class="card-container">
                     <div class="card">
-                        <img src="" alt="Bild 5" class="card-image">
-                        <div class="card-content">
-                            <h3>Kachel 5</h3>
-
-                        </div>
+                        <img src="/public/img/casino-placeholder.jpg" alt="Bild 5" class="card-image">
                     </div>
-                    <button class="button">Button 5</button>
+                    <button class="button">Play Sabacc</button>
                 </div>
                 
                 <div class="card-container">
                     <div class="card">
-                        <img src="" alt="Bild 6" class="card-image">
-                        <div class="card-content">
-                            <h3>Kachel 6</h3>
-
-                        </div>
+                        <img src="/public/img/casino-placeholder.jpg" alt="Bild 6" class="card-image">
                     </div>
-                    <button class="button">Button 6</button>
+                    <button class="button">Play Roulette</button>
                 </div>
             </div>
 
@@ -137,7 +113,6 @@ onMounted(() => {
 
 <style scoped>
 .container {
-    /* max-width: 1440px; */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -162,10 +137,11 @@ onMounted(() => {
 }
 
 .row {
+    max-width: 1280px;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 100px;
-    margin-bottom: 20px;
+    gap: 50px;
+    margin-bottom: 10px;
     margin-top: 30px;
 }
 
@@ -173,24 +149,19 @@ onMounted(() => {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    margin: 0 10px;
 }
 
 .card {
-    background: #f5f5f5;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     overflow: hidden;
-    height: 100%;
 }
 
 .card-image {
     width: 100%;
-    height: 200px;
+    height: 100%;
     object-fit: cover;
-}
-
-.card-content {
-    padding: 20px;
 }
 
 .button {
@@ -201,6 +172,8 @@ onMounted(() => {
     border: none;
     border-radius: 4px;
     cursor: pointer;
+    font-size: large;
+    font-weight: 900;
 }
 
 .button:hover {
