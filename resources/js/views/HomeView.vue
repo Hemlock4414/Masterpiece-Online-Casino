@@ -60,14 +60,16 @@ onMounted(() => {
 
             <div class="row">
                 <!-- Alle 6 Kacheln in einer Row -->
-                <div class="card-container">
-                    <div class="card">
-                        <img src="/public/img/casino-placeholder.jpg" alt="Bild 1" class="card-image">
+                <a href="/blackjack/play" style="text-decoration: none;">
+                    <div class="card-container">
+                        <div class="card">
+                            <img src="/public/img/casino-placeholder.jpg" alt="Bild 1" class="card-image">
+                        </div>
+                        <button class="button">Play Blackjack</button>
                     </div>
-                    <button class="button">Play Blackjack</button>
-                </div>
+                </a>
                 
-                <a href="/memory/play">
+                <a href="/memory/play" style="text-decoration: none;">
                     <div class="card-container">
                         <div class="card">
                             <img src="/public/img/casino-placeholder.jpg" alt="Bild 2" class="card-image">

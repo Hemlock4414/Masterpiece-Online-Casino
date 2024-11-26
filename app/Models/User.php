@@ -69,9 +69,20 @@ class User extends Authenticatable
         }
     }
 
+    public function memoryPlayers()
+    {
+    return $this->hasMany(MemoryPlayer::class, 'user_id');
+    }
+
+
+
+    
+
     public function posts(): HasMany
     {
         return $this->belongsTo(Post::class);
     }
+
+
 
 }

@@ -4,9 +4,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PostController;
-use App\Http\Controllers\PostCommentController;
 use App\Http\Controllers\MemoryCardController;
 use App\Http\Controllers\MemoryGameController;
+use App\Http\Controllers\MemoryPlayerController;
 
 // TODO remove this on public release, only for testing!
 Route::get('/test', function () {
@@ -48,14 +48,27 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/memory-games/create', [MemoryGameController::class, 'create']);
 
     // Spiel anzeigen
-    Route::get('/games/{game}', [MemoryGameController::class, 'show']);
+    Route::get('/memory-games/{game}', [MemoryGameController::class, 'show']);
 
     // Spiel beenden
-    Route::post('/games/{game}/stop', [MemoryGameController::class, 'stop']);
+    Route::post('/memory-games/{game}/stop', [MemoryGameController::class, 'stop']);
 
+    // Spieler abrufen
+    Route::get('/memory-games/{game}/players', [MemoryPlayerController::class, 'index']); 
+
+    // Spieler hinzufügen
+    Route::post('/memory-games/{game}/players', [MemoryPlayerController::class, 'store']); 
+
+    // Punktestand aktualisieren
+    Route::put('/memory-games/{game}/players/{player}', [MemoryPlayerController::class, 'update']); 
+
+    // alle Karten eines Memory-Spiels abrufen
     Route::get('/memory-games/{game}/cards', [MemoryCardController::class, 'index']);
+
+    // den Status einer Karte aktualisieren
     Route::post('/memory-games/{game}/cards/flip', [MemoryCardController::class, 'flip']);
     
+
 
 
 

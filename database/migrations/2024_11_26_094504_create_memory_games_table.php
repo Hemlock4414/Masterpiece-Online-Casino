@@ -18,8 +18,8 @@ return new class extends Migration
                 ->nullable()
                 ->constrained('memory_players', 'player_id')
                 ->onDelete('set null');
-            $table->timestamp('created_at')->useCurrent();
             $table->timestamp('stopped_at')->nullable();
+            $table->timestamps();
         });
     }
 
