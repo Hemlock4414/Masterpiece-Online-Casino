@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('players', function (Blueprint $table) {
+        Schema::create('memory_players', function (Blueprint $table) {
             $table->id('player_id');
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->timestamps();
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade'); // Verknüpfung mit der Users-Tabelle
+            $table->timestamps();   // Erstellt created_at und updated_at
         });
     }
 

@@ -11,10 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('games', function (Blueprint $table) {
+        Schema::create('memory_games', function (Blueprint $table) {
             $table->id('game_id');
             $table->enum('status', ['waiting', 'in_progress', 'finished']);
-            $table->foreignId('player_turn')->nullable()->constrained('players')->onDelete('set null');
+            $table->foreignId('player_turn')
+                ->nullable()
+                ->constrained('memory_players', 'player_id')
+                ->onDelete('set null');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('stopped_at')->nullable();
         });
