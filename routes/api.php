@@ -28,6 +28,7 @@ Route::post('/contact', [ContactController::class, 'send']);
 Route::group(['middleware' => ['auth:sanctum']], function () {
 
     //User
+    
     Route::get('/user', [UserController::class, 'show']);
     
     Route::post('/user/update/name', [UserController::class, 'updateUsername']);
@@ -39,8 +40,21 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
 });
 
+// Memory 4x4
 
-    Route::get('/users-info', [UserController::class, 'index']);
+Route::get('/cards', function () {
+    $values = range('A', 'H'); // 8 einzigartige Werte
+    $cards = array_merge($values, $values); // Paare erstellen
+    shuffle($cards); // Zufällige Reihenfolge
+
+    return response()->json(array_map(function ($value, $index) {
+        return ['id' => $index + 1, 'value' => $value, 'flipped' => false];
+    }, $cards, array_keys($cards)));
+});
+
+
+
+
 
     Route::get('/posts', [PostController::class, 'index']);
 
