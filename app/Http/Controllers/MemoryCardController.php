@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Card;
+use App\Models\MemoryCard;
 use Illuminate\Http\Request;
 
-class CardController extends Controller
+class MemoryCardController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -20,19 +20,14 @@ class CardController extends Controller
     // Karte aufdecken
     public function flip(Card $card, Request $request)
     {
-        $playerId = $request->input('player_id'); // ID des Spielers, der die Karte aufdeckt
-
         // Überprüfen, ob die Karte bereits aufgedeckt wurde
         if ($card->is_flipped) {
             return response()->json(['error' => 'Card already flipped'], 400);
         }
-
+    
         // Karte aktualisieren
-        $card->update([
-            'is_flipped' => true,
-            'last_flipped_by' => $playerId,
-        ]);
-
+        $card->update(['is_flipped' => true]);
+    
         return response()->json($card);
     }
     

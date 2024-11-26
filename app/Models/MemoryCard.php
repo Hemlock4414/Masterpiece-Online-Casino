@@ -5,14 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Card extends Model
+class MemoryCard extends Model
 {
     use HasFactory;
 
-    use HasFactory;
-
     // Tabelle, die dieses Modell repräsentiert
-    protected $table = 'cards';
+    protected $table = 'memory_cards';
 
     // Primärschlüssel
     protected $primaryKey = 'card_id';
@@ -20,6 +18,7 @@ class Card extends Model
     // Felder, die für Massenbearbeitung erlaubt sind
     protected $fillable = [
         'game_id',
+        'matched_by',
         'is_matched',
         'is_flipped',
         'card_image',
@@ -29,6 +28,13 @@ class Card extends Model
     // Beziehung: Eine Karte gehört zu einem Spiel
     public function game()
     {
-        return $this->belongsTo(Game::class, 'game_id');
+        return $this->belongsTo(MemoryGame::class, 'game_id');
+    }
+
+    // Beziehung: Eine Karte wurde von einem Spieler gematcht
+    public function matchedBy()
+    {
+        return $this->belongsTo(MemoryPlayer::class, 'matched_by');
     }
 }
+
