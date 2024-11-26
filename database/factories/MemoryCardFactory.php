@@ -17,6 +17,7 @@ class MemoryCardFactory extends Factory
             'is_flipped' => false,
             'card_image' => $this->faker->imageUrl(100, 100, 'abstract'), // Zufälliges Bild
             'group_id' => null, // Wird später dynamisch gesetzt
+            //$this->faker->numberBetween(1, 8), //
         ];
     }
 }

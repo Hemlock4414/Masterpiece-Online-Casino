@@ -22,4 +22,10 @@ class MemoryPlayer extends Model
                     ->using(MemoryGamePlayer::class)
                     ->withPivot('player_score');
     }
+
+    public function user()
+    {
+    return $this->belongsTo(User::class, 'user_id');
+    }
+    
 }
