@@ -20,11 +20,10 @@ const handleLogin = async () => {
   try {
     errorMessage.value = "";
     await login({
-      username: username.value,
+      login: username.value,     // Hier verwenden wir ein generisches 'login'-Feld
       password: password.value,
       remember: rememberMe.value
     });
-    // Nach erfolgreichem Login Felder zurücksetzen
     username.value = "";
     password.value = "";
     rememberMe.value = false;
@@ -73,6 +72,9 @@ const navigateToProfile = () => {
             <!-- Login Container (nur anzeigen wenn nicht eingeloggt) -->
             <div v-if="!authUser" class="login-container">
               
+              <div v-if="errorMessage" class="error-message">
+                {{ errorMessage }}
+              </div>
               <div>
                 <div class="inputs-wrapper">
                   <input
@@ -123,7 +125,7 @@ const navigateToProfile = () => {
             <!-- User Menu (nur anzeigen wenn eingeloggt) -->
             <div v-else class="user-menu">
             <div class="balance-display">
-              Guthaben: {{ authUser.balance || '0.00' }}€
+              Guthaben: {{ authUser.balance || '0' }}€
             </div>
             <button class="profile-btn" @click="navigateToProfile">
               Mein Profil

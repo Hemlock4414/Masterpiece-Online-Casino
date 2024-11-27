@@ -42,7 +42,7 @@ class UserController extends Controller
 
         // Validierung der Eingabedaten
         $validator = Validator::make($request->all(), [
-            'playername' => 'required|string|max:255|unique:users',
+            'username' => 'required|string|max:255|unique:users',
             'firstname' => 'required|string|max:255',
             'lastname' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
@@ -52,8 +52,8 @@ class UserController extends Controller
             'profile_pic' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ], [
             // Hier fügen wir deutsche Fehlermeldungen hinzu
-            'playername.required' => 'Bitte geben Sie einen Spielernamen ein',
-            'playername.unique' => 'Dieser Spielername ist bereits vergeben',
+            'username.required' => 'Bitte geben Sie einen Spielernamen ein',
+            'username.unique' => 'Dieser Spielername ist bereits vergeben',
             'firstname.required' => 'Bitte geben Sie Ihren Vornamen ein',
             'lastname.required' => 'Bitte geben Sie Ihren Nachnamen ein',
             'email.required' => 'Bitte geben Sie eine E-Mail-Adresse ein',
@@ -108,7 +108,7 @@ class UserController extends Controller
 
             // Speichere den Benutzer
             $user = User::create([
-                'playername' => $request->playername,
+                'username' => $request->username,
                 'firstname' => $request->firstname,
                 'lastname' => $request->lastname,
                 'email' => $request->email,
@@ -128,13 +128,18 @@ class UserController extends Controller
                 Log::info('Profilbild gespeichert', ['path' => $path]);
             }
 
+            // Nach erfolgreicher Registrierung direkt einloggen
+            Auth::login($user);
+            // Session regenerieren für Sicherheit
+            $request->session()->regenerate();
+
             // Generiere die öffentliche URL des Profilbildes
             $profilePicUrl = $user->profile_pic ? asset('storage/' . $user->profile_pic) : null;
 
             return response()->json([
                 'user' => [
                     'id' => $user->id,
-                    'playername' => $user->playername,
+                    'username' => $user->username,
                     'firstname' => $user->firstname,
                     'lastname' => $user->lastname,
                     'email' => $user->email,
@@ -160,6 +165,35 @@ class UserController extends Controller
         }
     }
 
+    public function login(Request $request)
+    {
+    $credentials = $request->validate([
+        'login' => 'required|string',  // Ein Feld für beide (username oder email)
+        'password' => 'required|string'
+    ]);
+
+    // Prüfe, ob die Eingabe eine E-Mail-Adresse ist
+    $loginType = filter_var($credentials['login'], FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+
+    // Versuche den Login mit dem entsprechenden Feld
+    $loginData = [
+        $loginType => $credentials['login'],
+        'password' => $credentials['password']
+    ];
+
+    if (Auth::attempt($loginData, $request->boolean('remember'))) {
+        $request->session()->regenerate();
+        
+        return response()->json([
+            'user' => Auth::user()
+        ], 200);
+    }
+
+    return response()->json([
+        'message' => 'Die Anmeldedaten sind ungültig.'
+    ], 422);
+    }
+
     public function show(Request $request)
     {
         try {
@@ -183,7 +217,7 @@ class UserController extends Controller
             return response()->json([
                 'user' => [
                     'id' => $user->id,
-                    'playername' => $user->playername,
+                    'username' => $user->username,
                     'firstname' => $user->firstname,
                     'lastname' => $user->lastname,
                     'email' => $user->email,
