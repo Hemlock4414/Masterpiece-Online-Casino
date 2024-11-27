@@ -24,6 +24,18 @@ const formData = ref({
 
 const handleRegister = async () => {
   try {
+    // Log der Daten zur Überprüfung
+    console.log('Registrierungsdaten:', {
+      playername: formData.value.spielername,
+      firstname: formData.value.vorname,
+      lastname: formData.value.nachname,
+      email: formData.value.email,
+      birth_date: formData.value.geburtsdatum,
+      nationality: formData.value.nationalitaet,
+      password: formData.value.password,
+      password_confirmation: formData.value.password_confirmation
+    });
+
     const respReg = await register({
       playername: formData.value.spielername,
       firstname: formData.value.vorname,
@@ -40,19 +52,13 @@ const handleRegister = async () => {
       router.push("/");
     }
   } catch (error) {
-    if (error.response) {
-      if (error.response.status === 422) {
-        // Validierungsfehler
-        const errors = error.response.data.errors;
-        const errorMessages = Object.values(errors)
-          .flat()
-          .join('\n');
-        alert(errorMessages);
-      } else {
-        alert(error.response.data.message || "Bei der Registrierung ist ein Fehler aufgetreten");
-      }
+    if (error.response?.data?.errors) {
+      const errorMessages = Object.values(error.response.data.errors)
+        .flat()
+        .join('\n');
+      alert(errorMessages);
     } else {
-      alert("Ein unerwarteter Fehler ist aufgetreten");
+      alert("Bei der Registrierung ist ein Fehler aufgetreten");
     }
   }
 };

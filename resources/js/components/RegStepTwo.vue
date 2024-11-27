@@ -55,7 +55,7 @@ const handleDateChange = (event) => {
   if (germanDate.length === 10) {
     emit('update:modelValue', {
       ...props.modelValue,
-      birth_date: formatDateToISO(germanDate)
+      geburtsdatum: formatDateToISO(germanDate)
   });
   }
 };
