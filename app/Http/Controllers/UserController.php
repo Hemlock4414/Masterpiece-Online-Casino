@@ -50,6 +50,20 @@ class UserController extends Controller
             'nationality' => 'required|string|max:255',
             'password' => 'required|string|min:8|confirmed',
             'profile_pic' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ], [
+            // Hier fügen wir deutsche Fehlermeldungen hinzu
+            'playername.required' => 'Bitte geben Sie einen Spielernamen ein',
+            'playername.unique' => 'Dieser Spielername ist bereits vergeben',
+            'firstname.required' => 'Bitte geben Sie Ihren Vornamen ein',
+            'lastname.required' => 'Bitte geben Sie Ihren Nachnamen ein',
+            'email.required' => 'Bitte geben Sie eine E-Mail-Adresse ein',
+            'email.email' => 'Bitte geben Sie eine gültige E-Mail-Adresse ein',
+            'email.unique' => 'Diese E-Mail-Adresse ist bereits registriert',
+            'birth_date.required' => 'Bitte geben Sie Ihr Geburtsdatum ein',
+            'nationality.required' => 'Bitte geben Sie Ihre Nationalität an',
+            'password.required' => 'Bitte geben Sie ein Passwort ein',
+            'password.min' => 'Das Passwort muss mindestens 8 Zeichen lang sein',
+            'password.confirmed' => 'Die Passwörter stimmen nicht überein'
         ]);
 
         if ($validator->fails()) {

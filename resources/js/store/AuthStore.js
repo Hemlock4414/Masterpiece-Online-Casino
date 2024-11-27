@@ -13,19 +13,19 @@ export const useAuthStore = defineStore("AuthStore", {
         };
     },
 
-    actions: {
+    actions: {  
         async register(credentials) {
             try {
                 await authClient.get("/sanctum/csrf-cookie");
-                let response = await authClient.post(
-                    "/api/register",
-                    credentials
-                );
+                const response = await authClient.post("/api/register", credentials);
                 return response;
             } catch (error) {
                 this.user = null;
-                alert("something went wrong");
-                throw error;
+                if (error.response && error.response.data && error.response.data.errors) {
+                    // Werfe den Fehler weiter, damit er in der Komponente behandelt werden kann
+                    throw error;
+                }
+                throw new Error("Bei der Registrierung ist ein Fehler aufgetreten");
             }
         },
         async login(credentials) {
