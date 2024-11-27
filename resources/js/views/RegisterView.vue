@@ -26,7 +26,7 @@ const handleRegister = async () => {
   try {
     // Log der Daten zur Überprüfung
     console.log('Registrierungsdaten:', {
-      playername: formData.value.spielername,
+      username: formData.value.spielername,
       firstname: formData.value.vorname,
       lastname: formData.value.nachname,
       email: formData.value.email,
@@ -37,7 +37,7 @@ const handleRegister = async () => {
     });
 
     const respReg = await register({
-      playername: formData.value.spielername,
+      username: formData.value.spielername,
       firstname: formData.value.vorname,
       lastname: formData.value.nachname,
       email: formData.value.email,

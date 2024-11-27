@@ -31,7 +31,18 @@ export const useAuthStore = defineStore("AuthStore", {
         async login(credentials) {
             try {
                 await authClient.get("/sanctum/csrf-cookie");
-                let response = await authClient.post("/api/login", credentials);
+                // Sende die Anmeldedaten mit dem generischen 'login'-Feld
+                const response = await authClient.post("/api/login", {
+                    login: credentials.login,
+                    password: credentials.password,
+                    remember: credentials.remember
+                });
+                
+                // Wenn der Login erfolgreich war, hole die Benutzerdaten
+                if (response.status === 200) {
+                    await this.getAuthUser();
+                }
+                
                 return response;
             } catch (error) {
                 this.user = null;

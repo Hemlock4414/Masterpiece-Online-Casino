@@ -53,7 +53,7 @@
             <div>
               <p>Spielername</p>
 
-              <p class="info-display">{{ authUser.user.playername }}</p>
+              <p class="info-display">{{ authUser.user.username }}</p>
             </div>
 
             <div>
@@ -160,7 +160,7 @@ const joinedDate = ref(""); // das Beitrittsdatum speichern
 const authUser = ref({
   // Benutzerinformationen hier speichern
   user: {
-    playername: "",
+    username: "",
     firstname: "",
     lastname: "",
     birthdate: "",
