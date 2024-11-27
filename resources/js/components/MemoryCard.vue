@@ -1,22 +1,23 @@
+<script setup>
+import { defineProps } from 'vue';
+
+const props = defineProps({
+  card: Object,
+});
+
+const flipCard = () => {
+  card.flipped = !card.flipped; // Einfacher Flip
+  emit('flip', card);
+};
+</script>
+
 <template>
     <div class="card" :class="{ flipped: card.flipped }" @click="flipCard">
       <div v-if="card.flipped">{{ card.value }}</div>
       <div v-else>?</div>
     </div>
-  </template>
+</template>
   
-  <script setup>
-  import { defineProps } from 'vue';
-  
-  const props = defineProps({
-    card: Object,
-  });
-  
-  const flipCard = () => {
-    card.flipped = !card.flipped; // Einfacher Flip
-    emit('flip', card);
-  };
-  </script>
   
   <style>
   .card {

@@ -23,23 +23,38 @@ const formData = ref({
 });
 
 const handleRegister = async () => {
-  const respReg = await register({
-    name: formData.value.spielername,
-    email: formData.value.email,
-    password: formData.value.password,
-    password_confirmation: formData.value.password_confirmation,
-    first_name: formData.value.vorname,
-    last_name: formData.value.nachname,
-    birth_date: formData.value.geburtsdatum,
-    nationality: formData.value.nationalitaet
-  });
+  try {
+    const respReg = await register({
+      playername: formData.value.spielername,
+      firstname: formData.value.vorname,
+      lastname: formData.value.nachname,
+      email: formData.value.email,
+      birth_date: formData.value.geburtsdatum,
+      nationality: formData.value.nationalitaet,
+      password: formData.value.password,
+      password_confirmation: formData.value.password_confirmation
+    });
 
-  if (respReg.status !== 201) {
-    return alert("Bei der Registrierung ist ein Fehler aufgetreten");
+    if (respReg.status === 201) {
+      await getAuthUser();
+      router.push("/");
+    }
+  } catch (error) {
+    if (error.response) {
+      if (error.response.status === 422) {
+        // Validierungsfehler
+        const errors = error.response.data.errors;
+        const errorMessages = Object.values(errors)
+          .flat()
+          .join('\n');
+        alert(errorMessages);
+      } else {
+        alert(error.response.data.message || "Bei der Registrierung ist ein Fehler aufgetreten");
+      }
+    } else {
+      alert("Ein unerwarteter Fehler ist aufgetreten");
+    }
   }
-
-  const resUser = await getAuthUser(); 
-  if (resUser.status === 200) router.push("/");
 };
 
 const nextStep = () => {

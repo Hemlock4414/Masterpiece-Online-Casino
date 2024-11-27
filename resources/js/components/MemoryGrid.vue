@@ -1,15 +1,4 @@
-<template>
-    <div class="grid">
-      <MemoryCard
-        v-for="card in cards"
-        :key="card.id"
-        :card="card"
-        @flip="handleCardFlip"
-      />
-    </div>
-  </template>
-  
-  <script setup>
+<script setup>
   import { ref, onMounted } from 'vue';
   import { getCards } from '../services/api';
   import MemoryCard from './MemoryCard.vue';
@@ -25,6 +14,18 @@
     // Logik für Memory (Paarprüfung) kommt später
   };
   </script>
+
+<template>
+    <div class="grid">
+      <MemoryCard
+        v-for="card in cards"
+        :key="card.id"
+        :card="card"
+        @flip="handleCardFlip"
+      />
+    </div>
+</template>
+    
   
   <style>
   .grid {
