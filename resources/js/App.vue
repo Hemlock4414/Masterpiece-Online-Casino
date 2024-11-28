@@ -47,6 +47,7 @@ const handleRegister = () => {
   router.push("/registrieren");
 };
 
+// Handle Profilseite
 const navigateToProfile = () => {
   router.push("/profil");
 };
@@ -55,9 +56,9 @@ const navigateToProfile = () => {
 
 <template>
     <header>
-        <a href="/" class="link-div">
+        <RouterLink to="/" class="link-div">
             <div class="headline">FORTUNA FORTUNE Online Casino</div> 
-        </a>  
+        </RouterLink>  
         
         <nav class="navi">
             <!-- <RouterLink to="/">Home</RouterLink> -->

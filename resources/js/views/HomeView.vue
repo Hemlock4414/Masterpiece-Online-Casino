@@ -16,15 +16,6 @@ const handleLogout = () => {
     router.push("/login");
 };
 
-// Funktion, um das Datum in TT.MM.JJJJ zu formatieren
-const formatDate = (dateString) => {
-  const date = new Date(dateString);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0'); // Monate sind 0-basiert, daher +1
-  const day = String(date.getDate()).padStart(2, '0'); // Tag holen und formatieren
-  return `${day}.${month}.${year}`; // Format TT.MM.JJJJ
-};
-
 </script>
 
 <template>
@@ -41,14 +32,14 @@ const formatDate = (dateString) => {
 
             <div class="row">
                 <!-- Alle 6 Kacheln in einer Row -->
-                <a href="/blackjack/play" style="text-decoration: none;">
+                <RouterLink to="/blackjack/play" style="text-decoration: none;">
                     <div class="card-container">
                         <div class="card">
                             <img src="/public/img/casino-placeholder.jpg" alt="Bild 1" class="card-image">
                         </div>
                         <button class="button">Play Blackjack</button>
                     </div>
-                </a>
+                </RouterLink>
                 
                 <RouterLink to="/memory/play" style="text-decoration: none;">
                     <div class="card-container">

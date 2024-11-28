@@ -1,12 +1,13 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import MemoryGrid from '../components/MemoryGrid.vue';
-import { createGame, getGame, stopGame } from '../services/MemoryService';
+import { createGame, getGame, stopGame, flipCard } from '../services/MemoryService';
 
 const gameId = ref(null);
 const gameStatus = ref(null);
 const players = ref([]);
 const cards = ref([]);
+const flippedCards = ref([]);
 
 const startNewGame = async () => {
   try {
@@ -14,8 +15,7 @@ const startNewGame = async () => {
     gameId.value = game.game_id;
     gameStatus.value = game.status;
 
-    // Lade das Spiel
-    const loadedGame = await getGame(gameId.value); // Initialisierung
+    const loadedGame = await getGame(game.game_id);
     cards.value = loadedGame.cards;
     players.value = loadedGame.players;
   } catch (error) {
@@ -27,7 +27,7 @@ const endGame = async () => {
   try {
     if (gameId.value) {
       const response = await stopGame(gameId.value);
-      gameStatus.value = response.status || 'finished'; // Aktualisiere den Status
+      gameStatus.value = response.status || 'finished';
       console.log('Spiel wurde beendet.');
     }
   } catch (error) {
@@ -35,16 +35,14 @@ const endGame = async () => {
   }
 };
 
-
-// Neues Spiel starten, wenn die Komponente geladen wird
-onMounted(() => {
-  startNewGame();
-});
-
-const flippedCards = ref([]);
-
 const handleCardFlip = async (card) => {
   try {
+    // Prüfen ob die Karte bereits aufgedeckt ist
+    if (card.is_flipped) return;
+    
+    // Prüfen ob bereits zwei Karten aufgedeckt sind
+    if (flippedCards.value.length >= 2) return;
+
     const updatedCard = await flipCard(gameId.value, card.card_id);
 
     // Lokale Karten aktualisieren
@@ -52,7 +50,6 @@ const handleCardFlip = async (card) => {
       c.card_id === updatedCard.card_id ? updatedCard : c
     );
 
-    // Paarprüfung
     flippedCards.value.push(updatedCard);
 
     if (flippedCards.value.length === 2) {
@@ -60,10 +57,9 @@ const handleCardFlip = async (card) => {
 
       if (first.group_id === second.group_id) {
         console.log('Paar gefunden!');
-        // Optionale Logik: Spielerpunkte erhöhen
+        // Hier könnte man die Punkte aktualisieren
       } else {
         console.log('Kein Paar.');
-        // Karten zurückdrehen
         setTimeout(() => {
           cards.value = cards.value.map((c) =>
             c.card_id === first.card_id || c.card_id === second.card_id
@@ -73,29 +69,36 @@ const handleCardFlip = async (card) => {
         }, 1000);
       }
 
-      flippedCards.value = [];
+      setTimeout(() => {
+        flippedCards.value = [];
+      }, 1000);
     }
   } catch (error) {
     console.error('Fehler beim Kartenflip:', error);
   }
 };
 
-console.log('MemoryView loaded!');
+onMounted(() => {
+  startNewGame();
+});
 </script>
 
 <template>
-  <div>
+  <div class="memory-game">
     <h1>Memory Game</h1>
-    <p v-if="gameStatus">Spielstatus: {{ gameStatus }}</p>
+    <div class="game-controls">
+      <p v-if="gameStatus">Spielstatus: {{ gameStatus }}</p>
+      <button v-if="gameStatus !== 'finished'" @click="endGame">Spiel Beenden</button>
+      <button v-if="gameStatus === 'finished'" @click="startNewGame">Neues Spiel</button>
+    </div>
 
-    <button v-if="gameStatus !== 'finished'" @click="endGame">Spiel Beenden</button>
-    <button v-if="gameStatus === 'finished'" @click="startNewGame">Neues Spiel</button>
+    <MemoryGrid 
+      v-if="cards.length" 
+      :cards="cards" 
+      @flipCard="handleCardFlip" 
+    />
 
-    <!-- Memory Grid für Kartenanzeige -->
-    <MemoryGrid v-if="cards.length" :cards="cards" />
-
-    <!-- Spielerinformationen anzeigen -->
-    <div v-if="players.length">
+    <div v-if="players.length" class="player-list">
       <h2>Spieler</h2>
       <ul>
         <li v-for="player in players" :key="player.id">
@@ -107,9 +110,19 @@ console.log('MemoryView loaded!');
 </template>
 
 <style scoped>
+.memory-game {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.game-controls {
+  margin: 20px 0;
+}
+
 button {
   margin: 10px;
-  padding: 10px;
+  padding: 10px 20px;
   background-color: #007bff;
   color: white;
   border: none;
@@ -119,6 +132,10 @@ button {
 
 button:hover {
   background-color: #0056b3;
+}
+
+.player-list {
+  margin-top: 20px;
 }
 
 h1, h2 {

@@ -1,40 +1,74 @@
 <script setup>
-import { defineProps, defineEmits } from 'vue';
-
 const props = defineProps({
-  card: Object,
+  card: {
+    type: Object,
+    required: true
+  }
 });
 
 const emit = defineEmits(['flip']);
 
-const flipCard = () => {
-  if (!card.is_flipped) {
-    emit('flip', card);
+const handleClick = () => {
+  if (!props.card.is_flipped) {
+    emit('flip', props.card);
   }
 };
 </script>
 
 <template>
-  <div class="card" :class="{ flipped: card.is_flipped }" @click="flipCard">
-    <div v-if="card.is_flipped">{{ card.group_id }}</div>
-    <div v-else>?</div>
+  <div 
+    class="card" 
+    :class="{ flipped: props.card.is_flipped }" 
+    @click="handleClick"
+  >
+    <div class="card-inner">
+      <div class="card-front">?</div>
+      <div class="card-back">{{ props.card.group_id }}</div>
+    </div>
   </div>
 </template>
 
-<style>
+<style scoped>
 .card {
-  width: 100px;
-  height: 100px;
+  aspect-ratio: 1;
+  perspective: 1000px;
+  cursor: pointer;
+}
+
+.card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  transition: transform 0.3s;
+  transform-style: preserve-3d;
+}
+
+.card.flipped .card-inner {
+  transform: rotateY(180deg);
+}
+
+.card-front,
+.card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: lightgray;
-  border: 1px solid #ddd;
-  cursor: pointer;
-  user-select: none;
+  font-size: 24px;
+  background-color: #fff;
+  border: 2px solid #ddd;
+  border-radius: 8px;
 }
 
-.card.flipped {
+.card-front {
+  background-color: #f0f0f0;
+}
+
+.card-back {
   background-color: white;
+  transform: rotateY(180deg);
 }
 </style>
