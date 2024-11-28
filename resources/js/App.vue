@@ -71,11 +71,8 @@ const navigateToProfile = () => {
 
             <!-- Login Container (nur anzeigen wenn nicht eingeloggt) -->
             <div v-if="!authUser" class="login-container">
-              
-              <div v-if="errorMessage" class="error-message">
-                {{ errorMessage }}
-              </div>
-              <div>
+
+              <div class="login-n-error">
                 <div class="inputs-wrapper">
                   <input
                     type="text"
@@ -99,21 +96,22 @@ const navigateToProfile = () => {
                       {{ isPasswordVisible ? '🙈' : '👁️' }}
                     </button>
                   </div>
-                </div>  
-
-                <div>                    
-                  <div class="login-options">
-                    <label>
-                      <input type="checkbox" v-model="rememberMe" />
-                      Anmeldedaten merken
-                    </label>
-                    <a href="/passwort-vergessen">
-                      Passwort vergessen?
-                    </a>
-                  </div>
-                </div>  
+                </div> 
+               
+                <div class="error-message" :data-visible="!!errorMessage">
+                  {{ errorMessage }}
+                </div>
+                  
+                <div class="login-options">
+                  <label>
+                    <input type="checkbox" v-model="rememberMe" />
+                    Anmeldedaten merken
+                  </label>
+                  <a href="/passwort-vergessen">
+                    Passwort vergessen?
+                  </a>
+                </div>
               </div>
-
               <!-- Buttons (Einloggen und Registrieren) -->
                 <div class="buttons-wrapper">
                   <button class="login-btn" @click="handleLogin">Einloggen</button>
@@ -125,7 +123,7 @@ const navigateToProfile = () => {
             <!-- User Menu (nur anzeigen wenn eingeloggt) -->
             <div v-else class="user-menu">
             <div class="balance-display">
-              Guthaben: {{ authUser.balance || '0' }}€
+              Guthaben: {{ authUser.balance || '0' }}CHF
             </div>
             <button class="profile-btn" @click="navigateToProfile">
               Mein Profil
@@ -218,14 +216,19 @@ header {
 /* Login Container */
 .login-container {
   display: flex;
-  align-items: flex-start; /* Bündige Ausrichtung oben */
+  align-items: flex-start; 
   gap: 20px;
 }
 
 .inputs-wrapper {
   display: flex;
-  gap: 10px; /* Abstand zwischen den Feldern */
-  justify-content: space-between;
+  gap: 10px;
+  justify-content: space-between;  
+}
+
+.login-n-error {
+  display: flex;
+  flex-direction: column; 
 }
 
 .login-input {
@@ -236,10 +239,10 @@ header {
 
 .login-options {
   display: flex;
-  justify-content: flex-start;
+  justify-content: space-between;
   align-items: center;
   font-size: 12px;
-  margin-top: 20px;
+  margin-top: 0px;
 }
 
 .login-options label {
@@ -262,6 +265,19 @@ header {
   text-decoration: none;
   margin-left: 10px; 
   margin-bottom: -3px;   
+}
+
+.error-message {
+  color: red;
+  font-size: 12px;
+  min-height: 15px;  /* Feste Höhe für die Fehlermeldung */
+  margin-top: 2px;
+  visibility: hidden;
+}
+
+.error-message[data-visible="true"] {
+  visibility: visible; /* Sichtbar machen */
+  opacity: 1; /* Voll sichtbar */
 }
 
 .password-wrapper {
@@ -291,7 +307,6 @@ header {
   color: #000;
 }
 
-/* Buttons */
 .buttons-wrapper {
   display: flex;
   flex-direction: column; 
@@ -347,12 +362,6 @@ header {
 .logout-btn {
   background-color: #f44336;
   color: white;
-}
-
-.error-message {
-  color: #f44336;
-  margin-top: 0.5rem;
-  font-size: 0.9rem;
 }
 
 .legal-pages {

@@ -14,12 +14,13 @@ class MemoryGameController extends Controller
     public function create(Request $request)
     {
         // Neues Spiel in der Datenbank erstellen
-        $game = MemoryGame::create([
-            'status' => 'waiting', // Status: Warten auf Start
+        $game = new MemoryGame([
+            'status' => 'waiting',
         ]);
+        $game->save();
 
             // Debugging: Protokolliere die Game-ID
-            \Log::info('Erstelltes Spiel:', ['game_id' => $game->id]);
+            \Log::info('Erstelltes Spiel:', ['game_id' => $game->game_id]);
 
         // Anzahl Paare vom Benutzer festlegen (Standard: 8 Paare = 16 Karten)
         $pairs = $request->input('pairs', 8);
@@ -28,12 +29,12 @@ class MemoryGameController extends Controller
         for ($i = 1; $i <= $pairs; $i++) {
             // Zwei Karten für jedes Paar erstellen
             MemoryCard::factory()->create([
-                'game_id' => $game->id, // Spiel-ID explizit setzen
+                'game_id' => $game->game_id, // Spiel-ID explizit setzen
                 'group_id' => $i,       // Paar-ID setzen
             ]);
 
             MemoryCard::factory()->create([
-                'game_id' => $game->id,
+                'game_id' => $game->game_id,
                 'group_id' => $i,
             ]);
         }
