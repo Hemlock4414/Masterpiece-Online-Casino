@@ -17,12 +17,14 @@ Route::get('/test', function () {
 
 //User
 
+Route::post('/login', [UserController::class, 'login']);
+
 Route::post('/register', [UserController::class, 'register']);
 
 Route::get('/users-info', [UserController::class, 'index']);
 
 //Contact
-Route::post('/contact', [ContactController::class, 'send']);
+// Route::post('/contact', [ContactController::class, 'send']);
 
 
 // Geschützte Routen
@@ -31,9 +33,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
     //User
     
-    Route::get('/user', [UserController::class, 'show']);
-
-    Route::post('/login', [UserController::class, 'login']);
+    Route::get('/user', [UserController::class, 'show']);    
     
     Route::post('/user/update/name', [UserController::class, 'updateUsername']);
     Route::post('/user/update/password', [UserController::class, 'updatePassword']);
@@ -73,7 +73,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
 
 
-
+/* 
 
     Route::get('/posts', [PostController::class, 'index']);
 
@@ -95,5 +95,5 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
     Route::get('/postcomments/{id}', [PostCommentController::class, 'show']);
 
-
+ */
 
