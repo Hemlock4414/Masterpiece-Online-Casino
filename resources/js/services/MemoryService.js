@@ -35,3 +35,11 @@ export const flipCard = async (gameId, cardId) => {
   const response = await apiClient.post(`/memory-games/${gameId}/cards/flip`, { card_id: cardId });
   return response.data;
 };
+
+// Punkte eines Spielers aktualisieren
+export const updatePlayerScore = async (gameId, playerId, score) => {
+  const response = await apiClient.put(`/memory-games/${gameId}/players/${playerId}`, {
+    player_score: score,
+  });
+  return response.data;
+};
