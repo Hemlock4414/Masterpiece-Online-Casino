@@ -15,29 +15,25 @@ onMounted(async () => {
   cards.value = await getCards(gameId.value);
 });
 
-const handleCardFlip = async (card) => {
-  try {
-    const updatedCard = await flipCard(gameId.value, card.id);
+const props = defineProps({
+  cards: Array,
+});
 
-    // Lokale Karten aktualisieren
-    cards.value = cards.value.map((c) =>
-      c.id === updatedCard.id ? updatedCard : c
-    );
-  } catch (error) {
-    console.error('Fehler beim Flip:', error);
-  }
-};
+const emit = defineEmits(['flipCard']);
 </script>
 
 <template>
   <div class="grid">
     <MemoryCard
       v-for="card in cards"
-      :key="card.id"
+      :key="card.card_id""
       :card="card"
-      @flip="handleCardFlip"
+      @flip="emit('flipCard', card)"
     />
   </div>
+
+  <MemoryGrid v-if="cards.length" :cards="cards" @flipCard="handleCardFlip" />
+
 </template>
 
 <style>

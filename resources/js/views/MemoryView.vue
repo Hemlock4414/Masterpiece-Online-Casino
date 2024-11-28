@@ -10,12 +10,12 @@ const cards = ref([]);
 
 const startNewGame = async () => {
   try {
-    const game = await createGame(8); // Standard: 8 Paare
+    const game = await createGame(8);
     gameId.value = game.game_id;
     gameStatus.value = game.status;
 
-    // Karten und Spieler laden
-    const loadedGame = await getGame(gameId.value);
+    // Lade das Spiel
+    const loadedGame = await getGame(gameId.value); // Initialisierung
     cards.value = loadedGame.cards;
     players.value = loadedGame.players;
   } catch (error) {
@@ -26,8 +26,8 @@ const startNewGame = async () => {
 const endGame = async () => {
   try {
     if (gameId.value) {
-      await stopGame(gameId.value);
-      gameStatus.value = 'finished';
+      const response = await stopGame(gameId.value);
+      gameStatus.value = response.status || 'finished'; // Aktualisiere den Status
       console.log('Spiel wurde beendet.');
     }
   } catch (error) {
@@ -35,10 +35,50 @@ const endGame = async () => {
   }
 };
 
+
 // Neues Spiel starten, wenn die Komponente geladen wird
 onMounted(() => {
   startNewGame();
 });
+
+const flippedCards = ref([]);
+
+const handleCardFlip = async (card) => {
+  try {
+    const updatedCard = await flipCard(gameId.value, card.card_id);
+
+    // Lokale Karten aktualisieren
+    cards.value = cards.value.map((c) =>
+      c.card_id === updatedCard.card_id ? updatedCard : c
+    );
+
+    // Paarprüfung
+    flippedCards.value.push(updatedCard);
+
+    if (flippedCards.value.length === 2) {
+      const [first, second] = flippedCards.value;
+
+      if (first.group_id === second.group_id) {
+        console.log('Paar gefunden!');
+        // Optionale Logik: Spielerpunkte erhöhen
+      } else {
+        console.log('Kein Paar.');
+        // Karten zurückdrehen
+        setTimeout(() => {
+          cards.value = cards.value.map((c) =>
+            c.card_id === first.card_id || c.card_id === second.card_id
+              ? { ...c, is_flipped: false }
+              : c
+          );
+        }, 1000);
+      }
+
+      flippedCards.value = [];
+    }
+  } catch (error) {
+    console.error('Fehler beim Kartenflip:', error);
+  }
+};
 
 console.log('MemoryView loaded!');
 </script>

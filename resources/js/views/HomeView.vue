@@ -25,26 +25,6 @@ const formatDate = (dateString) => {
   return `${day}.${month}.${year}`; // Format TT.MM.JJJJ
 };
 
-// Get Posts
-const posts = ref([])
-
-const getPosts = async () => {
-    const response = await authClient.get("/api/posts")
-
-/*     const response = await fetch("/api/posts") // mit Fetch als Alternative
-    const data = res.data */
-
-    // Datum für jeden Post formatieren
-    posts.value = response.data.map(post => ({
-        ...post,
-        created_at: formatDate(post.created_at) // Datum formatieren
-    }));
-
-    console.log(posts.value);
-}
-onMounted(() => {
-    getPosts()
-})
 </script>
 
 <template>
