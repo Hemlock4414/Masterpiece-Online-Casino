@@ -9,13 +9,9 @@ class MemoryCard extends Model
 {
     use HasFactory;
 
-    // Tabelle, die dieses Modell repräsentiert
     protected $table = 'memory_cards';
-
-    // Primärschlüssel
     protected $primaryKey = 'card_id';
 
-    // Felder, die für Massenbearbeitung erlaubt sind
     protected $fillable = [
         'game_id',
         'matched_by',
@@ -25,16 +21,45 @@ class MemoryCard extends Model
         'group_id',
     ];
 
-    // Beziehung: Eine Karte gehört zu einem Spiel
+    protected $casts = [
+        'is_matched' => 'boolean',
+        'is_flipped' => 'boolean',
+    ];
+
+    // Relationships
     public function game()
     {
         return $this->belongsTo(MemoryGame::class, 'game_id');
     }
 
-    // Beziehung: Eine Karte wurde von einem Spieler gematcht
     public function matchedBy()
     {
         return $this->belongsTo(MemoryPlayer::class, 'matched_by');
     }
-}
 
+    // Helper Methoden
+    public function flip()
+    {
+        $this->update(['is_flipped' => !$this->is_flipped]);
+        return $this;
+    }
+
+    public function match(MemoryPlayer $player)
+    {
+        $this->update([
+            'is_matched' => true,
+            'matched_by' => $player->player_id
+        ]);
+        return $this;
+    }
+
+    public function reset()
+    {
+        $this->update([
+            'is_flipped' => false,
+            'is_matched' => false,
+            'matched_by' => null
+        ]);
+        return $this;
+    }
+}

@@ -5,109 +5,77 @@ namespace App\Http\Controllers;
 use App\Models\MemoryGame;
 use App\Models\MemoryCard;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class MemoryCardController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    // Karten abrufen
     public function index(MemoryGame $game)
     {
-        $cards = $game->cards; // Holt alle Karten, die zu einem Spiel gehören
-        return response()->json($cards);
+        try {
+            $cards = $game->cards()->inRandomOrder()->get();
+            return response()->json($cards);
+        } catch (\Exception $e) {
+            Log::error('Fehler beim Abrufen der Karten:', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Fehler beim Abrufen der Karten'], 500);
+        }
     }
 
-    // Karte aufdecken
     public function flip(Request $request, MemoryGame $game)
     {
-        $cardId = $request->input('card_id'); // ID der Karte, die aufgedeckt werden soll
-        $card = $game->cards()->where('card_id', $cardId)->first();
-    
-        if (!$card) {
-            return response()->json(['error' => 'Card not found'], 404);
-        }
-    
-        if ($card->is_flipped) {
-            return response()->json(['error' => 'Card already flipped'], 400);
-        }
-    
-        // Karte als "aufgedeckt" markieren
-        $card->update(['is_flipped' => true]);
-    
-        return response()->json(['message' => 'Card flipped successfully', 'card' => $card]);
-    }
-    
-    
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create(Request $request)
-    {
-        // Neues Spiel erstellen
-        $game = MemoryGame::create([
-            'status' => 'waiting', // Status des Spiels
-        ]);
-
-        // Anzahl der Paare vom Benutzer festlegen (Standard: 8)
-        $pairs = $request->input('pairs', 8);
-
-        // Karten mit der Factory erstellen
-        for ($i = 1; $i <= $pairs; $i++) {
-            // Zwei Karten pro Paar generieren
-            MemoryCard::factory()->create([
-                'game_id' => $game->id, // Spiel-ID
-                'group_id' => $i,       // Paar-ID
+        try {
+            // Validiere Request
+            $validated = $request->validate([
+                'card_id' => 'required|integer'
             ]);
 
-            MemoryCard::factory()->create([
-                'game_id' => $game->id,
-                'group_id' => $i,
+            // Prüfe Spielstatus
+            if ($game->status === 'finished') {
+                return response()->json(['error' => 'Spiel ist bereits beendet'], 400);
+            }
+
+            // Finde die Karte
+            $card = $game->cards()->where('card_id', $validated['card_id'])->first();
+            
+            if (!$card) {
+                return response()->json(['error' => 'Karte nicht gefunden'], 404);
+            }
+
+            if ($card->is_flipped) {
+                return response()->json(['error' => 'Karte ist bereits aufgedeckt'], 400);
+            }
+
+            // Zähle bereits aufgedeckte Karten
+            $flippedCards = $game->cards()
+                ->where('is_flipped', true)
+                ->where('is_matched', false)
+                ->get();
+
+            if ($flippedCards->count() >= 2) {
+                return response()->json(['error' => 'Es sind bereits zwei Karten aufgedeckt'], 400);
+            }
+
+            // Karte aufdecken
+            $card->update(['is_flipped' => true]);
+
+            // Wenn es die zweite aufgedeckte Karte ist, prüfe auf Paar
+            if ($flippedCards->count() === 1) {
+                $firstCard = $flippedCards->first();
+                
+                if ($firstCard->group_id === $card->group_id) {
+                    // Paar gefunden
+                    $firstCard->update(['is_matched' => true]);
+                    $card->update(['is_matched' => true]);
+                }
+            }
+
+            return response()->json([
+                'card' => $card->fresh(),
+                'is_pair' => $card->is_matched
             ]);
+
+        } catch (\Exception $e) {
+            Log::error('Fehler beim Aufdecken der Karte:', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Fehler beim Aufdecken der Karte'], 500);
         }
-
-        // Spiel und Karten zurückgeben
-        return response()->json($game->load('cards'));
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Card $card)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Card $card)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Card $card)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Card $card)
-    {
-        //
     }
 }

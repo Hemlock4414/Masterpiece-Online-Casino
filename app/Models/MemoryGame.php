@@ -9,30 +9,64 @@ class MemoryGame extends Model
 {
     use HasFactory;
 
-    // Tabelle, die dieses Modell repräsentiert
     protected $table = 'memory_games';
-
-    // Primärschlüssel
     protected $primaryKey = 'game_id';
 
-    // Felder, die für Massenbearbeitung erlaubt sind
     protected $fillable = [
         'status',
-        'player_turn', // Für Mehrspieler: aktueller Spieler am Zug
-        'stopped_at',  // Zeitpunkt des Spielendes
+        'player_turn',
+        'stopped_at',
     ];
 
-    // Beziehung: Ein Spiel hat viele Karten
+    protected $casts = [
+        'stopped_at' => 'datetime',
+    ];
+
+    // Status-Konstanten
+    const STATUS_ACTIVE = 'active';
+    const STATUS_FINISHED = 'finished';
+
     public function cards()
     {
         return $this->hasMany(MemoryCard::class, 'game_id');
     }
 
-    // Beziehung: Ein Spiel hat Spieler (Mehrspieler-Unterstützung)
     public function players()
     {
         return $this->belongsToMany(MemoryPlayer::class, 'memory_game_player', 'game_id', 'player_id')
                     ->using(MemoryGamePlayer::class)
-                    ->withPivot('player_score');
+                    ->withPivot(['player_score'])
+                    ->withTimestamps();
+    }
+
+    // Helper Methoden
+    public function isFinished(): bool
+    {
+        return $this->status === self::STATUS_FINISHED;
+    }
+
+    public function getActivePlayer()
+    {
+        return $this->players()->where('player_id', $this->player_turn)->first();
+    }
+
+    public function getFlippedCards()
+    {
+        return $this->cards()
+            ->where('is_flipped', true)
+            ->where('is_matched', false)
+            ->get();
+    }
+
+    public function checkGameCompletion()
+    {
+        $allMatched = $this->cards()->where('is_matched', false)->count() === 0;
+        if ($allMatched) {
+            $this->update([
+                'status' => self::STATUS_FINISHED,
+                'stopped_at' => now()
+            ]);
+        }
+        return $allMatched;
     }
 }

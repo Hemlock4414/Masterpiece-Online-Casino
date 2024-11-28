@@ -5,68 +5,77 @@ namespace App\Http\Controllers;
 use App\Models\MemoryGame;
 use App\Models\MemoryPlayer;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class MemoryPlayerController extends Controller
 {
-    // Spieler eines Spiels abrufen
     public function index(MemoryGame $game)
     {
-        return response()->json($game->players); // Gibt alle Spieler des Spiels zurück
+        try {
+            return response()->json([
+                'players' => $game->players()->with('user')->get()
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Fehler beim Abrufen der Spieler:', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Fehler beim Abrufen der Spieler'], 500);
+        }
     }
 
-    // Spieler zum Spiel hinzufügen
     public function store(Request $request, MemoryGame $game)
     {
-        $playerId = $request->input('player_id');
+        try {
+            $validated = $request->validate([
+                'player_id' => 'required|integer|exists:users,id'
+            ]);
 
-        // Spieler hinzufügen, falls nicht bereits hinzugefügt
-        if (!$game->players()->where('player_id', $playerId)->exists()) {
-            $game->players()->attach($playerId, ['player_score' => 0]);
-            return response()->json(['message' => 'Player added successfully']);
+            if ($game->status === 'finished') {
+                return response()->json(['error' => 'Spiel ist bereits beendet'], 400);
+            }
+
+            if ($game->players()->where('player_id', $validated['player_id'])->exists()) {
+                return response()->json(['error' => 'Spieler ist bereits im Spiel'], 400);
+            }
+
+            $game->players()->attach($validated['player_id'], ['score' => 0]);
+
+            return response()->json([
+                'message' => 'Spieler erfolgreich hinzugefügt',
+                'player' => $game->players()->where('player_id', $validated['player_id'])->first()
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Fehler beim Hinzufügen des Spielers:', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Fehler beim Hinzufügen des Spielers'], 500);
         }
-
-        return response()->json(['message' => 'Player already exists'], 400);
     }
 
-    // Punktestand eines Spielers aktualisieren
-    public function update(Request $request, MemoryGame $game, MemoryPlayer $player)
+    public function update(Request $request, MemoryGame $game, $playerId)
     {
-        $newScore = $request->input('player_score');
+        try {
+            $validated = $request->validate([
+                'score' => 'required|integer|min:0'
+            ]);
 
-        $game->players()->updateExistingPivot($player->id, ['player_score' => $newScore]);
+            if ($game->status === 'finished') {
+                return response()->json(['error' => 'Spiel ist bereits beendet'], 400);
+            }
 
-        return response()->json(['message' => 'Player score updated successfully']);
-    }
+            if (!$game->players()->where('player_id', $playerId)->exists()) {
+                return response()->json(['error' => 'Spieler nicht im Spiel'], 404);
+            }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
+            $game->players()->updateExistingPivot($playerId, [
+                'score' => $validated['score']
+            ]);
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(MemoryPlayer $memoryPlayer)
-    {
-        //
-    }
+            return response()->json([
+                'message' => 'Punktzahl erfolgreich aktualisiert',
+                'player' => $game->players()->where('player_id', $playerId)->first()
+            ]);
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(MemoryPlayer $memoryPlayer)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(MemoryPlayer $memoryPlayer)
-    {
-        //
+        } catch (\Exception $e) {
+            Log::error('Fehler beim Aktualisieren der Punktzahl:', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Fehler beim Aktualisieren der Punktzahl'], 500);
+        }
     }
 }
