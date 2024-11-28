@@ -142,7 +142,7 @@ onMounted(() => {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 50px;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
     margin-top: 30px;
 }
 
