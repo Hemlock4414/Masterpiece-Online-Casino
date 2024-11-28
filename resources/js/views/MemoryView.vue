@@ -39,6 +39,8 @@ const endGame = async () => {
 onMounted(() => {
   startNewGame();
 });
+
+console.log('MemoryView loaded!');
 </script>
 
 <template>
