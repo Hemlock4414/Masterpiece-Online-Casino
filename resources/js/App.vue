@@ -122,16 +122,16 @@ const navigateToProfile = () => {
 
             <!-- User Menu (nur anzeigen wenn eingeloggt) -->
             <div v-else class="user-menu">
-            <div class="balance-display">
-              Guthaben: {{ authUser.balance || '0' }}CHF
+              <div class="balance-display">
+                Guthaben: {{ authUser.balance || '0' }} Credits
+              </div>
+              <button class="profile-btn" @click="navigateToProfile">
+                Mein Profil
+              </button>
+              <button class="logout-btn" @click="handleLogout">
+                Ausloggen
+              </button>
             </div>
-            <button class="profile-btn" @click="navigateToProfile">
-              Mein Profil
-            </button>
-            <button class="logout-btn" @click="handleLogout">
-              Ausloggen
-            </button>
-          </div>
 
         </nav>
     </header>
@@ -165,7 +165,6 @@ header {
   border-bottom: solid 1px #F1F1F1;
   color: #222222;
   flex-wrap: wrap;
-  align-items: stretch;
 }
 
 .headline { 
@@ -179,38 +178,6 @@ header {
 .link-div {
   text-decoration: none;
   color: inherit;
-}
-
-.special-link {
-  background-color: #1D9BF0;
-  padding: 10px 15px;
-  border-radius: 50px;
-  width: fit-content;
-  color: #FFFFFF !important;
-  font-size: 16px !important;
-  line-height: 19.36px !important;
-}
-
-.special-link:hover {
-  background-color: #0056b3;;
-}
-
-.logout-btn {
-  width: fit-content;
-  height: fit-content;
-  padding: 10px 15px;
-  font-size: 16px;
-  font-weight: 900;
-  border-radius: 8px;
-  background-color: #222222;
-  color: #FFFFFF;
-  text-align: center;
-  cursor: pointer;
-  margin-left: 50px;
-}
-
-.logout-btn:hover {
-  background-color: #888888;
 }
 
 /* Login Container */
@@ -335,7 +302,7 @@ header {
 /* User Menu Container */
 .user-menu {
   display: flex;
-  align-items: center;
+  flex-direction: row;
   gap: 1rem;
 }
 
@@ -352,6 +319,7 @@ header {
   border: none;
   cursor: pointer;
   transition: background-color 0.2s;
+  font-weight: 700;
 }
 
 .profile-btn {
@@ -364,6 +332,7 @@ header {
   color: white;
 }
 
+/* Footer */
 .legal-pages {
   display: flex;
   flex-direction: row;
@@ -423,6 +392,13 @@ header {
   }
   .login-btn, .register-btn {
     width: 100%;
+  }
+  .user-menu {
+    gap: 0.5rem;
+    margin: 0 10px;
+  }
+  .profile-btn, .logout-btn {
+    font-size: 18px;
   }
 }
 
