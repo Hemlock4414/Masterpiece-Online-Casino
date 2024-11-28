@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 
 import HomeView from "../views/HomeView.vue";
+import MemoryView from "../views/MemoryView.vue";
 
 import { storeToRefs } from "pinia";
 import { useAuthStore } from "@/store/AuthStore";

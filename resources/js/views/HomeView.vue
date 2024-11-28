@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { RouterLink } from "vue-router";
 
 import { storeToRefs } from "pinia";
 import { useAuthStore, authClient } from "@/store/AuthStore";
@@ -69,14 +70,14 @@ onMounted(() => {
                     </div>
                 </a>
                 
-                <a href="/memory/play" style="text-decoration: none;">
+                <RouterLink to="/memory/play" style="text-decoration: none;">
                     <div class="card-container">
                         <div class="card">
                             <img src="/public/img/casino-placeholder.jpg" alt="Bild 2" class="card-image">
                         </div>
                         <button class="button">Play Memory</button>
                     </div>
-                </a>
+                </RouterLink>
                 
                 <div class="card-container">
                     <div class="card">
@@ -106,8 +107,7 @@ onMounted(() => {
                     <button class="button">Play Roulette</button>
                 </div>
             </div>
-
-
+            
         </div>
     </main> 
 </template>
