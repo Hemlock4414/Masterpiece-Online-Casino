@@ -68,35 +68,17 @@ class MemoryGameController extends Controller
     public function start(Request $request, $gameId)
     {
         try {
-            // Lade das Model frisch aus der Datenbank
-            $game = MemoryGame::findOrFail($game->game_id);
-            
-            Log::info('Starting game:', [
-                'game_id' => $game->game_id,
-                'status' => $game->status,
-                'exists' => $game ? 'yes' : 'no'
-            ]);
+            $game = MemoryGame::findOrFail($gameId);
 
-            if ($game->status !== 'waiting') {
-                Log::warning('Cannot start game:', [
-                    'game_id' => $game->game_id,
-                    'status' => $game->status
-                ]);
+            if (!$game->isWaiting()) {
                 return response()->json([
                     'error' => 'Spiel kann nicht gestartet werden',
                     'reason' => "Status ist '{$game->status}', sollte 'waiting' sein"
                 ], 400);
             }
 
-            $game->status = 'in_progress';
-            $game->save();
-
+            $game->start();
             $game->load('cards', 'players');
-
-            Log::info('Game started successfully', [
-                'game_id' => $game->game_id,
-                'new_status' => $game->status
-            ]);
 
             return response()->json([
                 'message' => 'Spiel erfolgreich gestartet',
@@ -106,9 +88,13 @@ class MemoryGameController extends Controller
         } catch (\Exception $e) {
             Log::error('Error starting game:', [
                 'error' => $e->getMessage(),
-                'game_id' => isset($game) ? $game->game_id : 'unknown'
+                'game_id' => $gameId
             ]);
-            return response()->json(['error' => 'Fehler beim Starten des Spiels'], 500);
+            
+            return response()->json([
+                'error' => 'Fehler beim Starten des Spiels',
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 
