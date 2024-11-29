@@ -19,6 +19,7 @@ class MemoryGame extends Model
     ];
 
     protected $casts = [
+        'game_id' => 'integer',
         'stopped_at' => 'datetime',
     ];
 

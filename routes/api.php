@@ -34,19 +34,20 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     
     Route::get('/user', [UserController::class, 'show']);    
     
-    Route::post('/user/update/name', [UserController::class, 'updateUsername']);
     Route::post('/user/update/password', [UserController::class, 'updatePassword']);
     Route::post('/user/update/email', [UserController::class, 'updateEmail']);
     Route::post('/user/update/pic', [UserController::class, 'updateProfilePic']);
     Route::delete('/user/delete', [UserController::class, 'deleteAccount']);
-    Route::get('/user', [UserController::class, 'getUser']);
 
 });
 
 // Memory Game
 
-    //Neues Spiel starten
+    //Neues Spiel erstellen
     Route::post('/memory-games/create', [MemoryGameController::class, 'create']);
+
+    // Spiel starten
+    Route::post('/memory-games/{gameId}/start', [MemoryGameController::class, 'start']);
 
     // Spiel beenden
     Route::post('/memory-games/{game}/stop', [MemoryGameController::class, 'stop']);
@@ -59,6 +60,9 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
     // Spieler hinzufügen
     Route::post('/memory-games/{game}/players', [MemoryPlayerController::class, 'store']); 
+
+    // Zurücksetzen nicht gematchter Karten
+    Route::post('/memory-games/{game}/cards/reset', [MemoryCardController::class, 'resetUnmatchedCards']);
 
     // den Status einer Karte aktualisieren
     Route::post('/memory-games/{game}/cards/flip', [MemoryCardController::class, 'flip']);

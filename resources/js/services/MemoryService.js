@@ -12,6 +12,16 @@ export const createGame = async (pairs) => {
   return response.data;
 };
 
+export const startGame = async (gameId) => {
+  try {
+    const response = await apiClient.post(`/memory-games/${gameId}/start`);
+    return response.data;
+  } catch (error) {
+    console.error('Start Game Error:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
 // Spiel laden
 export const getGame = async (gameId) => {
   const response = await apiClient.get(`/memory-games/${gameId}`);
