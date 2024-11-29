@@ -25,18 +25,41 @@ class MemoryPlayerController extends Controller
     {
         try {
             $game = MemoryGame::findOrFail($gameId);
-
-            $player = new MemoryPlayer();
-            $player->name = auth()->check() ? auth()->user()->name : 'Gast ' . rand(1000, 9999);
-            $player->user_id = auth()->id();
+            
+            // Prüfe ob noch ein Platz frei ist
+            if ($game->players()->count() >= 2) {
+                return response()->json([
+                    'error' => 'Spiel ist bereits voll'
+                ], 400);
+            }
+    
+            if (!$game->isWaiting()) {
+                return response()->json([
+                    'error' => 'Spiel wurde bereits gestartet'
+                ], 400);
+            }
+    
+            $player = new MemoryPlayer([
+                'name' => auth()->check() ? auth()->user()->name : 'Gast ' . rand(1000, 9999),
+                'user_id' => auth()->id()
+            ]);
             $player->save();
-
+    
+            if (!$player->canJoinGame($game)) {
+                return response()->json([
+                    'error' => 'Spieler kann diesem Spiel nicht beitreten'
+                ], 400);
+            }
+    
             $game->players()->attach($player->player_id, ['player_score' => 0]);
-
-            return response()->json(['message' => 'Spieler erfolgreich hinzugefügt']);
+    
+            return response()->json([
+                'message' => 'Spieler erfolgreich hinzugefügt',
+                'player' => $player
+            ]);
         } catch (\Exception $e) {
             Log::error('Fehler beim Hinzufügen des Spielers:', ['error' => $e->getMessage()]);
-            return response()->json(['error' => 'Fehler beim Hinzufügen des Spielers'], 500);
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 

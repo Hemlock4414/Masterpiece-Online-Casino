@@ -48,7 +48,7 @@ const emit = defineEmits(['flipCard']);
 }
 
 /* Für kleine Bildschirme */
-@media (max-width: 480px) {
+@media (max-width: 580px) {
   .grid {
     grid-template-columns: repeat(4, minmax(80px, 1fr));
     gap: 10px;
