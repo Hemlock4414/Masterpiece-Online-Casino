@@ -61,7 +61,13 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     // Spieler hinzufügen
     Route::post('/memory-games/{gameId}/players', [MemoryPlayerController::class, 'store']); 
 
-    // Zurücksetzen nicht gematchter Karten
+    // Spielerwechsel
+    Route::post('/memory-games/{gameId}/next-turn', [MemoryGameController::class, 'nextTurn']);
+
+    // Zurücksetzen einzelner nicht gematchter Karten
+    Route::post('/memory-games/{gameId}/cards/{cardId}/reset', [MemoryCardController::class, 'resetCard']);
+
+    // Zurücksetzen aller nicht gematchten Karten
     Route::post('/memory-games/{gameId}/cards/reset', [MemoryCardController::class, 'resetUnmatchedCards']);
 
     // den Status einer Karte aktualisieren

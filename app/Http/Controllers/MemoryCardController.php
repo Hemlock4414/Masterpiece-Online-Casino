@@ -24,50 +24,57 @@ class MemoryCardController extends Controller
     public function flip($gameId, Request $request)
     {
         try {
+            Log::info('Card flip attempt:', [
+                'game_id' => $gameId,
+                'request_data' => $request->all()
+            ]);
+    
             $game = MemoryGame::findOrFail($gameId);
             
             $validated = $request->validate([
-                'card_id' => 'required|integer'
+                'card_id' => 'required|integer',
+                'player_id' => 'required|integer'
             ]);
-
+    
             $card = $game->cards()
                 ->where('card_id', $validated['card_id'])
                 ->first();
-
+    
             if (!$card) {
                 return response()->json([
                     'error' => 'Karte nicht gefunden'
                 ], 404);
             }
-
+    
             if ($card->is_flipped) {
                 return response()->json([
-                    'error' => 'Karte ist bereits aufgedeckt',
-                    'card' => $card
+                    'error' => 'Karte ist bereits aufgedeckt'
                 ], 400);
             }
-
+    
             if ($card->is_matched) {
                 return response()->json([
-                    'error' => 'Karte wurde bereits gematcht',
-                    'card' => $card
+                    'error' => 'Karte wurde bereits gematcht'
                 ], 400);
             }
-
+    
             $card->update(['is_flipped' => true]);
             $card = $card->fresh();
-
+    
             return response()->json([
                 'message' => 'Karte erfolgreich aufgedeckt',
-                'card' => $card
+                'card' => $card,
+                'game_status' => $game->status
             ]);
-
+    
         } catch (\Exception $e) {
-            Log::error('Fehler beim Aufdecken der Karte:', ['error' => $e->getMessage()]);
-            return response()->json(['error' => 'Fehler beim Aufdecken der Karte'], 500);
+            Log::error('Fehler beim Aufdecken der Karte:', [
+                'error' => $e->getMessage()]);
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
+    // Resettet alle Karten
     public function resetUnmatchedCards($gameId)
     {
         try {
@@ -77,6 +84,38 @@ class MemoryCardController extends Controller
         } catch (\Exception $e) {
             Log::error('Fehler beim Zurücksetzen der Karten:', ['error' => $e->getMessage()]);
             return response()->json(['error' => 'Fehler beim Zurücksetzen der Karten'], 500);
+        }
+    }
+
+    // Resettet eine einzelne Karte
+    public function resetCard($gameId, Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'card_id' => 'required|integer'
+            ]);
+
+            $card = MemoryCard::where('game_id', $gameId)
+                ->where('card_id', $validated['card_id'])
+                ->where('is_matched', false)  // Nur ungematchte Karten
+                ->first();
+
+            if (!$card) {
+                return response()->json([
+                    'error' => 'Karte nicht gefunden'
+                ], 404);
+            }
+
+            $card->update(['is_flipped' => false]);
+
+            return response()->json([
+                'message' => 'Karte zurückgesetzt',
+                'card' => $card
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Fehler beim Zurücksetzen der Karte:', ['error' => $e->getMessage()]);
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 }

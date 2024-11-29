@@ -18,21 +18,15 @@ class MemoryGameController extends Controller
         try {
             DB::beginTransaction();
             
-            // Validierung der Eingabe
             $validated = $request->validate([
-                'pairs' => 'integer|min:2|max:32',
-                'theme' => 'required|string'
+                'pairs' => 'integer|min:2|max:32'
             ]);
     
-            // Neues Spiel erstellen
             $game = new MemoryGame([
                 'status' => 'waiting',
             ]);
             $game->save();
     
-            Log::info('Spiel erstellt:', ['game_id' => $game->game_id]);
-    
-            // Spieler erstellen/finden basierend auf Auth-Status
             if (auth()->check()) {
                 $player = MemoryPlayer::firstOrCreate(
                     ['user_id' => auth()->id()],
@@ -45,34 +39,38 @@ class MemoryGameController extends Controller
                 $player->save();
             }
     
-            Log::info('Spieler erstellt:', ['player_id' => $player->player_id]);
-    
-            // Verknüpfe Spieler mit Spiel
             $game->players()->attach($player->player_id, [
                 'player_score' => 0
             ]);
     
-            // Karten erstellen
+            // Erstelle alle Karten zuerst in einem Array
             $pairs = $validated['pairs'] ?? 8;
+            $cards = [];
             
             for ($i = 1; $i <= $pairs; $i++) {
                 for ($j = 0; $j < 2; $j++) {
-                    MemoryCard::create([
+                    $cards[] = [
                         'game_id' => $game->game_id,
                         'group_id' => $i,
                         'is_flipped' => false,
                         'is_matched' => false,
-                        'card_image' => 'default.jpg'  // Standardwert für card_image
-                    ]);
+                        'card_image' => 'default.jpg',
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ];
                 }
             }
+            
+            // Mische die Karten
+            shuffle($cards);
+            
+            // Füge alle Karten auf einmal ein
+            MemoryCard::insert($cards);
     
             DB::commit();
     
-            // Lade das Spiel mit gemischten Karten
-            $game->load(['cards' => function($query) {
-                $query->inRandomOrder();
-            }, 'players']);
+            // Lade das Spiel mit den bereits gemischten Karten
+            $game->load(['cards', 'players']);
     
             return response()->json([
                 'game_id' => $game->game_id,
@@ -96,26 +94,44 @@ class MemoryGameController extends Controller
     {
         try {
             $game = MemoryGame::findOrFail($gameId);
-
+    
             if ($game->status !== 'waiting') {
                 return response()->json([
                     'error' => 'Spiel kann nicht gestartet werden',
                     'reason' => "Status ist '{$game->status}', sollte 'waiting' sein"
                 ], 400);
             }
-
-            $game->status = 'in_progress';
-            $game->save();
-
-            $game->load('cards');
-
+    
+            // Hole den ersten verfügbaren Spieler
+            $firstPlayer = $game->players()->first();
+            
+            if (!$firstPlayer) {
+                return response()->json([
+                    'error' => 'Keine Spieler verfügbar',
+                ], 400);
+            }
+    
+            // Aktualisiere das Spiel mit dem ersten Spieler als player_turn
+            $game->update([
+                'status' => 'in_progress',
+                'player_turn' => $firstPlayer->player_id
+            ]);
+    
+            // Lade die aktualisierten Beziehungen
+            $game->load(['cards', 'players']);
+    
             return response()->json([
                 'message' => 'Spiel erfolgreich gestartet',
-                'game' => $game
+                'game' => $game,
+                'active_player' => $firstPlayer
             ]);
         } catch (\Exception $e) {
-            Log::error('Error starting game:', ['error' => $e->getMessage(), 'game_id' => $gameId]);
-            return response()->json(['error' => 'Fehler beim Starten des Spiels'], 500);
+            Log::error('Error starting game:', [
+                'error' => $e->getMessage(), 
+                'trace' => $e->getTraceAsString(),
+                'game_id' => $gameId
+            ]);
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
@@ -178,6 +194,31 @@ class MemoryGameController extends Controller
                 'message' => 'Fehler beim Aktualisieren der Punktzahl',
                 'error' => $e->getMessage()
             ], 500);
+        }
+    }
+
+    // Spielerwechsel
+    public function nextTurn($gameId)
+    {
+        try {
+            $game = MemoryGame::findOrFail($gameId);
+            
+            if (!$game->isInProgress()) {
+                return response()->json([
+                    'error' => 'Spielerwechsel nur bei aktivem Spiel möglich'
+                ], 400);
+            }
+
+            $game->nextTurn();
+            
+            return response()->json([
+                'message' => 'Spielerwechsel erfolgreich',
+                'active_player' => $game->getActivePlayer()
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Fehler beim Spielerwechsel:', ['error' => $e->getMessage()]);
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 }

@@ -8,14 +8,18 @@ const gameStatus = ref(null);
 const players = ref([]);
 const cards = ref([]);
 const flippedCards = ref([]);
+const currentPlayer = ref(null);
+const isProcessingMove = ref(false);
 
-const startGameWithConfig = async (config) => {
+const createNewGame = async () => {
   try {
-    // Spiel mit Konfiguration erstellen
-    const game = await createGame(config.pairs, config.theme);
+    // Standardkonfiguration: 8 Paare
+    const game = await createGame(8);
     gameId.value = game.game_id;
     gameStatus.value = game.status;
-    showConfig.value = false; // Konfiguration ausblenden
+    cards.value = game.cards;
+    players.value = game.players;
+    currentPlayer.value = players.value[0];
     console.log('New game created:', game);
   } catch (error) {
     console.error('Fehler beim Erstellen des Spiels:', error);
@@ -24,23 +28,19 @@ const startGameWithConfig = async (config) => {
 
 const handleGameStart = async () => {
   try {
-    if (!gameId.value) {
-      console.error('Keine Game ID vorhanden');
-      return;
-    }
+    if (!gameId.value) return;
 
     console.log('Starting game with ID:', gameId.value);
     const response = await startGameAPI(gameId.value);
-    console.log('Start game response:', response);
     
     if (response.game) {
       cards.value = response.game.cards;
       players.value = response.game.players;
       gameStatus.value = response.game.status;
+      currentPlayer.value = players.value[0];
     }
   } catch (error) {
     console.error('Fehler beim Starten des Spiels:', error);
-    console.error('Server Antwort:', error.response?.data);
     alert(error.response?.data?.error || 'Fehler beim Starten des Spiels');
   }
 };
@@ -50,82 +50,244 @@ const endGame = async () => {
     if (gameId.value) {
       const response = await stopGame(gameId.value);
       gameStatus.value = response.status || 'finished';
-      console.log('Spiel wurde beendet.');
+      
+      // Optional: Zeige stattdessen eine Statusmeldung im UI
+      if (players.value.length > 0) {
+        const winner = players.value.reduce((prev, curr) => 
+          (prev.pivot?.player_score || 0) > (curr.pivot?.player_score || 0) ? prev : curr
+        );
+        // Hier könnte man eine UI-Komponente für das Spielende anzeigen
+      }
     }
   } catch (error) {
     console.error('Fehler beim Beenden des Spiels:', error);
   }
 };
 
-const handleCardFlip = async (card) => {
+const switchPlayer = () => {
+  const currentIndex = players.value.findIndex(p => p.player_id === currentPlayer.value.player_id);
+  currentPlayer.value = players.value[(currentIndex + 1) % players.value.length];
+};
+
+const updateGameState = async () => {
   try {
-    if (gameStatus.value !== 'in_progress') return;
-    
-    // Prüfe lokalen Status der Karte
+    const gameData = await getGame(gameId.value);
+    cards.value = gameData.cards;
+    players.value = gameData.players;
+  } catch (error) {
+    console.error('Fehler beim Aktualisieren des Spielstatus:', error);
+  }
+};
+
+const handleCardFlip = async (card) => {
+  if (isProcessingMove.value || gameStatus.value !== 'in_progress') {
+    return;
+  }
+
+  try {
     const currentCard = cards.value.find(c => c.card_id === card.card_id);
-    if (!currentCard || currentCard.is_flipped || currentCard.is_matched) {
-      return;
-    }
     
-    // Prüfe ob bereits zwei Karten aufgedeckt sind
-    const currentlyFlipped = cards.value.filter(c => c.is_flipped && !c.is_matched);
-    if (currentlyFlipped.length >= 2) {
+    if (currentCard.is_matched) {
       return;
     }
 
-    console.log('Attempting to flip card:', { 
-      gameId: gameId.value, 
-      cardId: card.card_id,
-      card: currentCard 
-    });
+    // Wenn die Karte bereits aufgedeckt ist
+    if (currentCard.is_flipped) {
+      // Drehe sie direkt im Frontend zurück
+      currentCard.is_flipped = false;
+      return;
+    }
+
+    // Prüfe ob bereits zwei ungepaarte Karten aufgedeckt sind
+    const flippedUnmatched = cards.value.filter(c => 
+      c.is_flipped && !c.is_matched
+    );
+
+    if (flippedUnmatched.length >= 2) {
+      // Drehe alle ungepaarten Karten zurück
+      await resetUnmatchedCards(gameId.value);
+      cards.value = cards.value.map(c => {
+        if (!c.is_matched) {
+          return { ...c, is_flipped: false };
+        }
+        return c;
+      });
+      flippedCards.value = [];
+      return;
+    }
+
+    isProcessingMove.value = true;
+
+    // Optimistisches UI-Update
+    currentCard.is_flipped = true;
 
     try {
-      const updatedCard = await flipCard(gameId.value, card.card_id);
-      
-      // Aktualisiere die Karte im lokalen State
-      cards.value = cards.value.map((c) =>
-        c.card_id === updatedCard.card.card_id ? updatedCard.card : c
+      const response = await flipCard(
+        gameId.value, 
+        card.card_id,
+        currentPlayer.value.player_id
       );
 
-      // Füge die Karte zu flippedCards hinzu
-      flippedCards.value.push(updatedCard.card);
-
-      // Prüfe auf Paar wenn zwei Karten aufgedeckt sind
-      if (flippedCards.value.length === 2) {
-        const [first, second] = flippedCards.value;
-
-        if (first.group_id === second.group_id) {
-          // Paar gefunden
-          cards.value = cards.value.map((c) =>
-            c.card_id === first.card_id || c.card_id === second.card_id
-              ? { ...c, is_matched: true }
-              : c
-          );
-        } else {
-          // Kein Paar - Karten zurückdrehen
-          setTimeout(() => {
-            cards.value = cards.value.map((c) =>
-              c.card_id === first.card_id || c.card_id === second.card_id
-                ? { ...c, is_flipped: false }
-                : c
-            );
-          }, 1000);
-        }
-
-        // Zurücksetzen für nächsten Versuch
-        setTimeout(() => {
-          flippedCards.value = [];
-        }, 1000);
+      // Rest der Logik für Matching usw.
+      if (flippedCards.value.length < 2) {
+        flippedCards.value.push(currentCard);
       }
+
+      if (flippedCards.value.length === 2) {
+        await checkMatch();
+      }
+
     } catch (error) {
+      // Bei Fehler den optimistischen Update rückgängig machen
+      currentCard.is_flipped = false;
       console.error('Fehler beim Kartenflip:', error);
-      // Bei einem Fehler Karte im lokalen State zurücksetzen
-      cards.value = cards.value.map((c) =>
-        c.card_id === card.card_id ? { ...c, is_flipped: false } : c
-      );
+    }
+
+  } finally {
+    isProcessingMove.value = false;
+  }
+};
+
+/* const handleCardFlip = async (card) => {
+  
+  if (
+    isProcessingMove.value || 
+    gameStatus.value !== 'in_progress' ||
+    card.is_flipped ||  // Prüfe vor API-Aufruf
+    card.is_matched
+  ) {
+    return;
+  }
+
+  if (isProcessingMove.value || gameStatus.value !== 'in_progress') {
+    return;
+  }
+
+  try {
+    const currentCard = cards.value.find(c => c.card_id === card.card_id);
+    
+    // Prüfe ob die Karte bereits gematcht ist
+    if (currentCard.is_matched) {
+      return;
+    }
+
+    // Prüfe ob bereits zwei ungepaarte Karten aufgedeckt sind
+    const flippedUnmatched = cards.value.filter(c => 
+      c.is_flipped && !c.is_matched
+    );
+
+    if (flippedUnmatched.length >= 2) {
+      // Drehe alle ungepaarten Karten zurück
+      await resetUnmatchedCards(gameId.value);
+      cards.value = cards.value.map(c => {
+        if (!c.is_matched) {
+          return { ...c, is_flipped: false };
+        }
+        return c;
+      });
+      flippedCards.value = [];
+      // Wichtig: Hier return, damit der aktuelle Klick nach dem Zurücksetzen
+      // als neue Aktion behandelt wird
+      return;
+    }
+
+    // Prüfe ob die aktuelle Karte bereits aufgedeckt ist
+    if (currentCard.is_flipped) {
+      return;
+    }
+
+    isProcessingMove.value = true;
+
+    const response = await flipCard(
+      gameId.value, 
+      card.card_id,
+      currentPlayer.value.player_id
+    );
+
+    // Aktualisiere die Karte im State
+    cards.value = cards.value.map(c => 
+      c.card_id === response.card.card_id ? response.card : c
+    );
+
+    // Füge die neue Karte zu den aufgedeckten Karten hinzu
+    flippedCards.value.push(response.card);
+
+    // Wenn zwei Karten aufgedeckt sind, prüfe auf ein Paar
+    if (flippedCards.value.length === 2) {
+      const [first, second] = flippedCards.value;
+      
+      // Warte kurz, damit der Spieler die Karten sehen kann
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      if (first.group_id === second.group_id) {
+        // Paar gefunden - markiere Karten als gematcht
+        cards.value = cards.value.map(c => {
+          if (c.card_id === first.card_id || c.card_id === second.card_id) {
+            return { ...c, is_matched: true };
+          }
+          return c;
+        });
+
+        // Prüfe auf Spielende
+        if (cards.value.every(c => c.is_matched)) {
+          await endGame();
+        }
+      } else {
+        // Kein Paar - drehe Karten zurück
+        await new Promise(resolve => setTimeout(resolve, 500));
+        await resetUnmatchedCards(gameId.value);
+        cards.value = cards.value.map(c => {
+          if (c.card_id === first.card_id || c.card_id === second.card_id) {
+            return { ...c, is_flipped: false };
+          }
+          return c;
+        });
+        switchPlayer();
+      }
+      
+      // Leere das Array der aufgedeckten Karten
+      flippedCards.value = [];
+    }
+
+  } catch (error) {
+    if (error.response?.data?.error === 'Karte ist bereits aufgedeckt') {
+      console.log('Karte bereits aufgedeckt');
+    } else {
+      console.error('Fehler beim Kartenflip:', error);
+    }
+  } finally {
+    isProcessingMove.value = false;
+  }
+}; */
+
+const resetUnmatchedCards = async () => {
+  try {
+    const flippedUnmatched = cards.value.filter(c => c.is_flipped && !c.is_matched);
+    if (flippedUnmatched.length > 0) {
+      await Promise.all(flippedUnmatched.map(card => {
+        card.is_flipped = false;
+      }));
+      flippedCards.value = [];
     }
   } catch (error) {
-    console.error('Fehler in handleCardFlip:', error);
+    console.error('Fehler beim Zurücksetzen der Karten:', error);
+  }
+};
+
+const checkMatch = async () => {
+  const [first, second] = flippedCards.value;
+  
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  
+  if (first.group_id === second.group_id) {
+    // Paar gefunden
+    await updateGameState();
+    if (cards.value.every(c => c.is_matched)) {
+      await endGame();
+    }
+  } else {
+    await resetUnmatchedCards();
+    switchPlayer();
   }
 };
 
@@ -136,60 +298,60 @@ onMounted(async () => {
 
 <template>
   <div class="memory-game">
-    <h1>Memory Game</h1>
+    <h1>Memory</h1>
 
-    
-      <div class="game-status">
-        <p>Spielstatus: {{ gameStatus }}</p>
-        
-        <!-- Buttons basierend auf Spielstatus -->
-        <div class="game-controls">
-          <!-- Zeige Start-Button nur im waiting Status -->
-          <button 
-            v-if="gameStatus === 'waiting'" 
-            @click="handleGameStart"
-            class="btn-primary"
-          >
-            Spiel Starten
-          </button>
-
-          <!-- Zeige Ende-Button nur während des Spiels -->
-          <button 
-            v-if="gameStatus === 'in_progress'" 
-            @click="endGame"
-            class="btn-secondary"
-          >
-            Spiel Beenden
-          </button>
-
-          <!-- Zeige Neustart-Button nur wenn Spiel beendet -->
-          <button 
-            v-if="gameStatus === 'finished'" 
-            @click="createNewGame"
-            class="btn-primary"
-          >
-            Neues Spiel
-          </button>
-        </div>
+    <div class="game-status">
+      <p>Status: {{ gameStatus }}</p>
+      
+      <div class="player-info" v-if="currentPlayer">
+        <p>Am Zug: {{ currentPlayer.name }}</p>
       </div>
+      
+      <div class="game-controls">
+        <button 
+          v-if="gameStatus === 'waiting'" 
+          @click="handleGameStart"
+          class="btn-primary"
+        >
+          Spiel Starten
+        </button>
 
-      <!-- Zeige Spielfeld nur wenn Spiel läuft -->
-      <MemoryGrid 
-        v-if="gameStatus === 'in_progress' && cards.length" 
-        :cards="cards" 
-        @flipCard="handleCardFlip" 
-      />
+        <button 
+          v-if="gameStatus === 'in_progress'" 
+          @click="endGame"
+          class="btn-secondary"
+        >
+          Spiel Beenden
+        </button>
 
-        <!-- Spielerliste -->
-        <div v-if="players && players.length" class="player-list">
-            <h2>Spieler</h2>
-            <ul>
-                <li v-for="player in players" :key="player.player_id">
-                    {{ player.name }}: {{ player.pivot?.player_score ?? 0 }} Punkte
-                </li>
-            </ul>
-        </div>
+        <button 
+          v-if="gameStatus === 'finished'" 
+          @click="createNewGame"
+          class="btn-primary"
+        >
+          Neues Spiel
+        </button>
+      </div>
+    </div>
 
+    <MemoryGrid 
+      v-if="gameStatus === 'in_progress' && cards.length" 
+      :cards="cards" 
+      @flipCard="handleCardFlip" 
+    />
+
+    <div v-if="players.length" class="player-list">
+      <h2>Spieler</h2>
+      <ul>
+        <li 
+          v-for="player in players" 
+          :key="player.player_id"
+          :class="{ 'active-player': currentPlayer?.player_id === player.player_id }"
+        >
+          {{ player.name }}: {{ player.pivot?.player_score ?? 0 }} Punkte
+        </li>
+      </ul>
+    </div>
   </div>
 </template>
 
@@ -203,6 +365,11 @@ onMounted(async () => {
 .game-status {
   margin: 20px 0;
   text-align: center;
+}
+
+.player-info {
+  margin: 10px 0;
+  font-weight: bold;
 }
 
 .game-controls {
@@ -238,6 +405,16 @@ button:hover {
   margin-top: 20px;
 }
 
+.player-list ul {
+  list-style: none;
+  padding: 0;
+}
+
+.active-player {
+  color: #4CAF50;
+  font-weight: bold;
+}
+
 h1, h2 {
   text-align: center;
   font-family: Arial, sans-serif;
@@ -245,8 +422,13 @@ h1, h2 {
 
 @media (max-width: 605px) {
   .memory-game {
+    padding: 10px;
+  }
+}
+
+@media (max-width: 400px) {
+  .memory-game {
     padding: 0px;
-    margin-bottom: 20px;
   }
 }
 </style>

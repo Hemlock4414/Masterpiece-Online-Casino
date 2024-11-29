@@ -9,8 +9,8 @@ const props = defineProps({
 const emit = defineEmits(['flip']);
 
 const handleClick = () => {
-  // Verhindere Klick wenn Karte bereits aufgedeckt oder gematcht ist
-  if (!props.card.is_flipped && !props.card.is_matched) {
+  // Nur gematchte Karten blockieren
+  if (!props.card.is_matched) {
     emit('flip', props.card);
   }
 };
@@ -20,15 +20,15 @@ const handleClick = () => {
   <div 
     class="card" 
     :class="{ 
-      flipped: props.card.is_flipped,
-      matched: props.card.is_matched,
-      disabled: props.card.is_flipped || props.card.is_matched 
+      flipped: card.is_flipped,
+      matched: card.is_matched,
+      disabled: card.is_matched // Nur gematchte Karten deaktivieren
     }" 
     @click="handleClick"
   >
     <div class="card-inner">
       <div class="card-front">?</div>
-      <div class="card-back">{{ props.card.group_id }}</div>
+      <div class="card-back">{{ card.group_id }}</div>
     </div>
   </div>
 </template>
