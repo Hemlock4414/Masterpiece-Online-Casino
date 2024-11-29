@@ -20,13 +20,16 @@ class MemoryGame extends Model
 
     protected $casts = [
         'game_id' => 'integer',
+        'player_turn' => 'integer',
         'stopped_at' => 'datetime',
     ];
 
     // Status-Konstanten
-    const STATUS_ACTIVE = 'active';
+    const STATUS_WAITING = 'waiting';
+    const STATUS_IN_PROGRESS = 'in_progress';
     const STATUS_FINISHED = 'finished';
 
+    // Rest der Beziehungen
     public function cards()
     {
         return $this->hasMany(MemoryCard::class, 'game_id');
@@ -41,6 +44,16 @@ class MemoryGame extends Model
     }
 
     // Helper Methoden
+    public function isWaiting(): bool
+    {
+        return $this->status === self::STATUS_WAITING;
+    }
+
+    public function isInProgress(): bool
+    {
+        return $this->status === self::STATUS_IN_PROGRESS;
+    }
+
     public function isFinished(): bool
     {
         return $this->status === self::STATUS_FINISHED;
@@ -69,5 +82,18 @@ class MemoryGame extends Model
             ]);
         }
         return $allMatched;
+    }
+
+    // Neue Methode für Status-Änderung
+    public function start()
+    {
+        if ($this->status !== self::STATUS_WAITING) {
+            throw new \Exception('Spiel kann nicht gestartet werden');
+        }
+        
+        $this->status = self::STATUS_IN_PROGRESS;
+        $this->save();
+        
+        return $this;
     }
 }
