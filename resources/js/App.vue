@@ -334,6 +334,10 @@ header {
 }
 
 /* Footer */
+footer {
+  margin-top: auto;
+}
+
 .legal-pages {
   display: flex;
   flex-direction: row;

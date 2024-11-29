@@ -28,7 +28,7 @@ return new class extends Migration
     
             // Index für häufige Abfragen
             $table->index(['game_id', 'is_matched']);
-            $table->index(['game_id', 'group_id']);  // Hilft beim schnellen Finden von Kartenpaaren
+            $table->index(['game_id', 'group_id']);
         });
     }
 

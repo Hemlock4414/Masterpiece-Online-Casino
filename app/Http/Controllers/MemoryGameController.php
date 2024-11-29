@@ -21,67 +21,59 @@ class MemoryGameController extends Controller
             // Validierung der Eingabe
             $validated = $request->validate([
                 'pairs' => 'integer|min:2|max:32',
+                'theme' => 'required|string'
             ]);
-
+    
             // Neues Spiel erstellen
             $game = new MemoryGame([
                 'status' => 'waiting',
             ]);
             $game->save();
-
-            // Erstelle oder finde einen Spieler
-            $player = null;
-            
-            // Prüfe ob ein User eingeloggt ist
+    
+            Log::info('Spiel erstellt:', ['game_id' => $game->game_id]);
+    
+            // Spieler erstellen/finden basierend auf Auth-Status
             if (auth()->check()) {
-                // Für eingeloggte User
                 $player = MemoryPlayer::firstOrCreate(
                     ['user_id' => auth()->id()],
                     ['name' => auth()->user()->name]
                 );
             } else {
-                // Für Gäste
                 $player = new MemoryPlayer([
                     'name' => 'Gast ' . rand(1000, 9999)
                 ]);
                 $player->save();
             }
-
+    
+            Log::info('Spieler erstellt:', ['player_id' => $player->player_id]);
+    
             // Verknüpfe Spieler mit Spiel
             $game->players()->attach($player->player_id, [
                 'player_score' => 0
             ]);
-
-            // Karten erstellen und in Array sammeln
-            $cards = [];
+    
+            // Karten erstellen
+            $pairs = $validated['pairs'] ?? 8;
+            
             for ($i = 1; $i <= $pairs; $i++) {
                 for ($j = 0; $j < 2; $j++) {
-                    $cards[] = [
+                    MemoryCard::create([
                         'game_id' => $game->game_id,
                         'group_id' => $i,
                         'is_flipped' => false,
-                        'created_at' => now(),
-                        'updated_at' => now()
-                    ];
+                        'is_matched' => false,
+                        'card_image' => 'default.jpg'  // Standardwert für card_image
+                    ]);
                 }
             }
-
-            // Karten mischen
-            shuffle($cards);
-
-            // Gemischte Karten in die Datenbank einfügen
-            MemoryCard::insert($cards);
-
+    
             DB::commit();
-
-            // Lade das Spiel mit Karten und Spielern
+    
+            // Lade das Spiel mit gemischten Karten
             $game->load(['cards' => function($query) {
                 $query->inRandomOrder();
-            }, 'players' => function($query) {
-                // Stelle sicher, dass alle Player-Eigenschaften geladen werden
-                $query->select('memory_players.*');
-            }]);
-
+            }, 'players']);
+    
             return response()->json([
                 'game_id' => $game->game_id,
                 'status' => $game->status,
@@ -89,10 +81,13 @@ class MemoryGameController extends Controller
                 'players' => $game->players,
                 'message' => 'Spiel erfolgreich erstellt'
             ], 201);
-
+    
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Fehler beim Erstellen des Spiels:', ['error' => $e->getMessage()]);
+            Log::error('Fehler beim Erstellen des Spiels:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return response()->json(['error' => 'Fehler beim Erstellen des Spiels'], 500);
         }
     }

@@ -9,15 +9,14 @@ const players = ref([]);
 const cards = ref([]);
 const flippedCards = ref([]);
 
-const createNewGame = async () => {
+const startGameWithConfig = async (config) => {
   try {
-    // Nur erstellen wenn noch kein Spiel existiert
-    if (!gameId.value) {
-      const game = await createGame(8);
-      gameId.value = game.game_id;
-      gameStatus.value = game.status;
-      console.log('New game created:', game);
-    }
+    // Spiel mit Konfiguration erstellen
+    const game = await createGame(config.pairs, config.theme);
+    gameId.value = game.game_id;
+    gameStatus.value = game.status;
+    showConfig.value = false; // Konfiguration ausblenden
+    console.log('New game created:', game);
   } catch (error) {
     console.error('Fehler beim Erstellen des Spiels:', error);
   }
@@ -138,57 +137,59 @@ onMounted(async () => {
 <template>
   <div class="memory-game">
     <h1>Memory Game</h1>
+
     
-    <div class="game-status">
-      <p>Spielstatus: {{ gameStatus }}</p>
-      
-      <!-- Buttons basierend auf Spielstatus -->
-      <div class="game-controls">
-        <!-- Zeige Start-Button nur im waiting Status -->
-        <button 
-          v-if="gameStatus === 'waiting'" 
-          @click="handleGameStart"
-          class="btn-primary"
-        >
-          Spiel Starten
-        </button>
+      <div class="game-status">
+        <p>Spielstatus: {{ gameStatus }}</p>
+        
+        <!-- Buttons basierend auf Spielstatus -->
+        <div class="game-controls">
+          <!-- Zeige Start-Button nur im waiting Status -->
+          <button 
+            v-if="gameStatus === 'waiting'" 
+            @click="handleGameStart"
+            class="btn-primary"
+          >
+            Spiel Starten
+          </button>
 
-        <!-- Zeige Ende-Button nur während des Spiels -->
-        <button 
-          v-if="gameStatus === 'in_progress'" 
-          @click="endGame"
-          class="btn-secondary"
-        >
-          Spiel Beenden
-        </button>
+          <!-- Zeige Ende-Button nur während des Spiels -->
+          <button 
+            v-if="gameStatus === 'in_progress'" 
+            @click="endGame"
+            class="btn-secondary"
+          >
+            Spiel Beenden
+          </button>
 
-        <!-- Zeige Neustart-Button nur wenn Spiel beendet -->
-        <button 
-          v-if="gameStatus === 'finished'" 
-          @click="createNewGame"
-          class="btn-primary"
-        >
-          Neues Spiel
-        </button>
+          <!-- Zeige Neustart-Button nur wenn Spiel beendet -->
+          <button 
+            v-if="gameStatus === 'finished'" 
+            @click="createNewGame"
+            class="btn-primary"
+          >
+            Neues Spiel
+          </button>
+        </div>
       </div>
-    </div>
 
-    <!-- Zeige Spielfeld nur wenn Spiel läuft -->
-    <MemoryGrid 
-      v-if="gameStatus === 'in_progress' && cards.length" 
-      :cards="cards" 
-      @flipCard="handleCardFlip" 
-    />
+      <!-- Zeige Spielfeld nur wenn Spiel läuft -->
+      <MemoryGrid 
+        v-if="gameStatus === 'in_progress' && cards.length" 
+        :cards="cards" 
+        @flipCard="handleCardFlip" 
+      />
 
-    <!-- Spielerliste -->
-    <div v-if="players && players.length" class="player-list">
-        <h2>Spieler</h2>
-        <ul>
-            <li v-for="player in players" :key="player.player_id">
-                {{ player.name }}: {{ player.pivot?.player_score ?? 0 }} Punkte
-            </li>
-        </ul>
-    </div>
+        <!-- Spielerliste -->
+        <div v-if="players && players.length" class="player-list">
+            <h2>Spieler</h2>
+            <ul>
+                <li v-for="player in players" :key="player.player_id">
+                    {{ player.name }}: {{ player.pivot?.player_score ?? 0 }} Punkte
+                </li>
+            </ul>
+        </div>
+
   </div>
 </template>
 
@@ -240,5 +241,12 @@ button:hover {
 h1, h2 {
   text-align: center;
   font-family: Arial, sans-serif;
+}
+
+@media (max-width: 605px) {
+  .memory-game {
+    padding: 0px;
+    margin-bottom: 20px;
+  }
 }
 </style>

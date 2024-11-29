@@ -40,6 +40,10 @@ class MemoryCard extends Model
     // Helper Methoden
     public function flip()
     {
+        if ($this->is_matched) {
+            throw new \Exception('Bereits gematchte Karte kann nicht geflippt werden');
+        }
+        
         $this->update(['is_flipped' => !$this->is_flipped]);
         return $this;
     }
@@ -61,5 +65,22 @@ class MemoryCard extends Model
             'matched_by' => null
         ]);
         return $this;
+    }
+
+    public function canBeFlippedBy(MemoryPlayer $player): bool
+    {
+        return !$this->is_matched && 
+            $this->game->isInProgress() && 
+            $this->game->player_turn === $player->player_id;
+    }
+
+    public function hasMatchingCardFlipped(): bool
+    {
+        return $this->game->cards()
+            ->where('group_id', $this->group_id)
+            ->where('card_id', '!=', $this->card_id)
+            ->where('is_flipped', true)
+            ->where('is_matched', false)
+            ->exists();
     }
 }
