@@ -22,7 +22,7 @@ class MemoryGameController extends Controller
 
             // Neues Spiel erstellen
             $game = new MemoryGame([
-                'status' => 'waiting', // Änderung von 'active' zu 'waiting'
+                'status' => 'waiting',
             ]);
             $game->save();
 
@@ -50,6 +50,7 @@ class MemoryGameController extends Controller
                 $query->inRandomOrder(); // Mische die Karten
             }]);
 
+            // Nur ein return statement am Ende
             return response()->json([
                 'game_id' => $game->game_id,
                 'status' => $game->status,
@@ -60,19 +61,71 @@ class MemoryGameController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Fehler beim Erstellen des Spiels:', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Fehler beim Erstellen des Spiels'], 500);
+        }
+    }
+
+    public function start(Request $request, $gameId)
+    {
+        try {
+            // Lade das Model frisch aus der Datenbank
+            $game = MemoryGame::findOrFail($game->game_id);
             
+            Log::info('Starting game:', [
+                'game_id' => $game->game_id,
+                'status' => $game->status,
+                'exists' => $game ? 'yes' : 'no'
+            ]);
+
+            if ($game->status !== 'waiting') {
+                Log::warning('Cannot start game:', [
+                    'game_id' => $game->game_id,
+                    'status' => $game->status
+                ]);
+                return response()->json([
+                    'error' => 'Spiel kann nicht gestartet werden',
+                    'reason' => "Status ist '{$game->status}', sollte 'waiting' sein"
+                ], 400);
+            }
+
+            $game->status = 'in_progress';
+            $game->save();
+
+            $game->load('cards', 'players');
+
+            Log::info('Game started successfully', [
+                'game_id' => $game->game_id,
+                'new_status' => $game->status
+            ]);
+
             return response()->json([
-                'message' => 'Fehler beim Erstellen des Spiels',
-                'error' => $e->getMessage()
-            ], 500);
+                'message' => 'Spiel erfolgreich gestartet',
+                'game' => $game
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error starting game:', [
+                'error' => $e->getMessage(),
+                'game_id' => isset($game) ? $game->game_id : 'unknown'
+            ]);
+            return response()->json(['error' => 'Fehler beim Starten des Spiels'], 500);
         }
     }
 
     public function show(MemoryGame $game)
     {
         try {
+            // Lade das Spiel mit Karten und Spielern
             $game->load(['cards', 'players']);
 
+            // Prüfe ob alle Karten gematcht sind
+            $unmatchedCards = $game->cards()->where('is_matched', false)->count();
+            if ($unmatchedCards === 0 && $game->status === 'in_progress') {
+                $game->update([
+                    'status' => 'finished',
+                    'stopped_at' => now()
+                ]);
+            }
             return response()->json([
                 'game_id' => $game->game_id,
                 'status' => $game->status,
@@ -93,6 +146,10 @@ class MemoryGameController extends Controller
     public function stop(MemoryGame $game)
     {
         try {
+            if ($game->status === 'finished') {
+                return response()->json(['message' => 'Spiel wurde bereits beendet', 'status' => 'finished']);
+            }
+
             $game->update([
                 'status' => 'finished',
                 'stopped_at' => now(),
@@ -105,11 +162,7 @@ class MemoryGameController extends Controller
 
         } catch (\Exception $e) {
             Log::error('Fehler beim Beenden des Spiels:', ['error' => $e->getMessage()]);
-            
-            return response()->json([
-                'message' => 'Fehler beim Beenden des Spiels',
-                'error' => $e->getMessage()
-            ], 500);
+            return response()->json(['error' => 'Fehler beim Beenden des Spiels'], 500);
         }
     }
 

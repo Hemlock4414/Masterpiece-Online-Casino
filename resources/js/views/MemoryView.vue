@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import MemoryGrid from '../components/MemoryGrid.vue';
-import { createGame, getGame, stopGame, flipCard } from '../services/MemoryService';
+import { createGame, getGame, stopGame, flipCard, startGame as startGameAPI } from '../services/MemoryService';
 
 const gameId = ref(null);
 const gameStatus = ref(null);
@@ -9,17 +9,40 @@ const players = ref([]);
 const cards = ref([]);
 const flippedCards = ref([]);
 
-const startNewGame = async () => {
+const createNewGame = async () => {
   try {
-    const game = await createGame(8);
-    gameId.value = game.game_id;
-    gameStatus.value = game.status;
+    // Nur erstellen wenn noch kein Spiel existiert
+    if (!gameId.value) {
+      const game = await createGame(8);
+      gameId.value = game.game_id;
+      gameStatus.value = game.status;
+      console.log('New game created:', game);
+    }
+  } catch (error) {
+    console.error('Fehler beim Erstellen des Spiels:', error);
+  }
+};
 
-    const loadedGame = await getGame(game.game_id);
-    cards.value = loadedGame.cards;
-    players.value = loadedGame.players;
+const handleGameStart = async () => {
+  try {
+    if (!gameId.value) {
+      console.error('Keine Game ID vorhanden');
+      return;
+    }
+
+    console.log('Starting game with ID:', gameId.value);
+    const response = await startGameAPI(gameId.value);
+    console.log('Start game response:', response);
+    
+    if (response.game) {
+      cards.value = response.game.cards;
+      players.value = response.game.players;
+      gameStatus.value = response.game.status;
+    }
   } catch (error) {
     console.error('Fehler beim Starten des Spiels:', error);
+    console.error('Server Antwort:', error.response?.data);
+    alert(error.response?.data?.error || 'Fehler beim Starten des Spiels');
   }
 };
 
@@ -37,15 +60,12 @@ const endGame = async () => {
 
 const handleCardFlip = async (card) => {
   try {
-    // Prüfen ob die Karte bereits aufgedeckt ist
-    if (card.is_flipped) return;
+    if (gameStatus.value !== 'in_progress') return;
     
-    // Prüfen ob bereits zwei Karten aufgedeckt sind
-    if (flippedCards.value.length >= 2) return;
+    if (card.is_flipped || flippedCards.value.length >= 2) return;
 
     const updatedCard = await flipCard(gameId.value, card.card_id);
 
-    // Lokale Karten aktualisieren
     cards.value = cards.value.map((c) =>
       c.card_id === updatedCard.card_id ? updatedCard : c
     );
@@ -57,7 +77,6 @@ const handleCardFlip = async (card) => {
 
       if (first.group_id === second.group_id) {
         console.log('Paar gefunden!');
-        // Hier könnte man die Punkte aktualisieren
       } else {
         console.log('Kein Paar.');
         setTimeout(() => {
@@ -78,26 +97,57 @@ const handleCardFlip = async (card) => {
   }
 };
 
-onMounted(() => {
-  startNewGame();
+onMounted(async () => {
+  await createNewGame();
 });
 </script>
 
 <template>
   <div class="memory-game">
     <h1>Memory Game</h1>
-    <div class="game-controls">
-      <p v-if="gameStatus">Spielstatus: {{ gameStatus }}</p>
-      <button v-if="gameStatus !== 'finished'" @click="endGame">Spiel Beenden</button>
-      <button v-if="gameStatus === 'finished'" @click="startNewGame">Neues Spiel</button>
+    
+    <div class="game-status">
+      <p>Spielstatus: {{ gameStatus }}</p>
+      
+      <!-- Buttons basierend auf Spielstatus -->
+      <div class="game-controls">
+        <!-- Zeige Start-Button nur im waiting Status -->
+        <button 
+          v-if="gameStatus === 'waiting'" 
+          @click="handleGameStart"
+          class="btn-primary"
+        >
+          Spiel Starten
+        </button>
+
+        <!-- Zeige Ende-Button nur während des Spiels -->
+        <button 
+          v-if="gameStatus === 'in_progress'" 
+          @click="endGame"
+          class="btn-secondary"
+        >
+          Spiel Beenden
+        </button>
+
+        <!-- Zeige Neustart-Button nur wenn Spiel beendet -->
+        <button 
+          v-if="gameStatus === 'finished'" 
+          @click="createNewGame"
+          class="btn-primary"
+        >
+          Neues Spiel
+        </button>
+      </div>
     </div>
 
+    <!-- Zeige Spielfeld nur wenn Spiel läuft -->
     <MemoryGrid 
-      v-if="cards.length" 
+      v-if="gameStatus === 'in_progress' && cards.length" 
       :cards="cards" 
       @flipCard="handleCardFlip" 
     />
 
+    <!-- Spielerliste -->
     <div v-if="players.length" class="player-list">
       <h2>Spieler</h2>
       <ul>
@@ -116,22 +166,38 @@ onMounted(() => {
   padding: 20px;
 }
 
-.game-controls {
+.game-status {
   margin: 20px 0;
+  text-align: center;
 }
 
-button {
-  margin: 10px;
-  padding: 10px 20px;
-  background-color: #007bff;
+.game-controls {
+  margin: 20px 0;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.btn-primary {
+  background-color: #4CAF50;
   color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.btn-secondary {
+  background-color: #f44336;
+  color: white;
+  padding: 10px 20px;
   border: none;
   border-radius: 5px;
   cursor: pointer;
 }
 
 button:hover {
-  background-color: #0056b3;
+  opacity: 0.9;
 }
 
 .player-list {
@@ -139,6 +205,7 @@ button:hover {
 }
 
 h1, h2 {
+  text-align: center;
   font-family: Arial, sans-serif;
 }
 </style>
