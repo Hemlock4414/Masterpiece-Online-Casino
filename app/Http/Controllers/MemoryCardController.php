@@ -9,9 +9,10 @@ use Illuminate\Support\Facades\Log;
 
 class MemoryCardController extends Controller
 {
-    public function index(MemoryGame $game)
+    public function index($gameId)
     {
         try {
+            $game = MemoryGame::findOrFail($gameId);
             $cards = $game->cards()->inRandomOrder()->get();
             return response()->json($cards);
         } catch (\Exception $e) {
@@ -20,45 +21,62 @@ class MemoryCardController extends Controller
         }
     }
 
-    public function flip(Request $request, MemoryGame $game)
+    public function flip($gameId, Request $request)
     {
         try {
-            if ($game->status === 'finished') {
-                return response()->json(['error' => 'Spiel ist bereits beendet'], 400);
+            $game = MemoryGame::findOrFail($gameId);
+            
+            $validated = $request->validate([
+                'card_id' => 'required|integer'
+            ]);
+
+            $card = $game->cards()
+                ->where('card_id', $validated['card_id'])
+                ->first();
+
+            if (!$card) {
+                return response()->json([
+                    'error' => 'Karte nicht gefunden'
+                ], 404);
             }
 
-            $cardId = $request->input('card_id');
-            $card = $game->cards()->where('card_id', $cardId)->first();
-        
-            if (!$card) {
-                return response()->json(['error' => 'Karte nicht gefunden'], 404);
-            }
-        
             if ($card->is_flipped) {
-                return response()->json(['error' => 'Karte ist bereits aufgedeckt'], 400);
+                return response()->json([
+                    'error' => 'Karte ist bereits aufgedeckt',
+                    'card' => $card
+                ], 400);
             }
-        
-            // Karte aufdecken
+
+            if ($card->is_matched) {
+                return response()->json([
+                    'error' => 'Karte wurde bereits gematcht',
+                    'card' => $card
+                ], 400);
+            }
+
             $card->update(['is_flipped' => true]);
-        
-            // Prüfe ob alle Karten gematcht sind
-            $unmatchedCards = $game->cards()->where('is_matched', false)->count();
-            if ($unmatchedCards === 0) {
-                $game->update([
-                    'status' => 'finished',
-                    'stopped_at' => now()
-                ]);
-            }
-        
+            $card = $card->fresh();
+
             return response()->json([
                 'message' => 'Karte erfolgreich aufgedeckt',
-                'card' => $card,
-                'game_status' => $game->status
+                'card' => $card
             ]);
 
         } catch (\Exception $e) {
             Log::error('Fehler beim Aufdecken der Karte:', ['error' => $e->getMessage()]);
             return response()->json(['error' => 'Fehler beim Aufdecken der Karte'], 500);
+        }
+    }
+
+    public function resetUnmatchedCards($gameId)
+    {
+        try {
+            $game = MemoryGame::findOrFail($gameId);
+            $game->cards()->where('is_matched', false)->update(['is_flipped' => false]);
+            return response()->json(['message' => 'Karten zurückgesetzt']);
+        } catch (\Exception $e) {
+            Log::error('Fehler beim Zurücksetzen der Karten:', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Fehler beim Zurücksetzen der Karten'], 500);
         }
     }
 }

@@ -13,8 +13,9 @@ return new class extends Migration
     {
         Schema::create('memory_players', function (Blueprint $table) {
             $table->id('player_id');
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade'); // Verknüpfung mit der Users-Tabelle
-            $table->timestamps();   // Erstellt created_at und updated_at
+            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null');
+            $table->string('name')->default('Gast'); // Fügen wir einen Namen hinzu
+            $table->timestamps();
         });
     }
 

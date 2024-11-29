@@ -9,70 +9,51 @@ use Illuminate\Support\Facades\Log;
 
 class MemoryPlayerController extends Controller
 {
-    public function index(MemoryGame $game)
+    public function index($gameId)
     {
         try {
-            return response()->json([
-                'players' => $game->players()->with('user')->get()
-            ]);
+            $game = MemoryGame::findOrFail($gameId);
+            return response()->json($game->players);
         } catch (\Exception $e) {
             Log::error('Fehler beim Abrufen der Spieler:', ['error' => $e->getMessage()]);
             return response()->json(['error' => 'Fehler beim Abrufen der Spieler'], 500);
         }
     }
 
-    public function store(Request $request, MemoryGame $game)
+
+    public function store($gameId, Request $request)
     {
         try {
-            $validated = $request->validate([
-                'player_id' => 'required|integer|exists:users,id'
-            ]);
+            $game = MemoryGame::findOrFail($gameId);
 
-            if ($game->status === 'finished') {
-                return response()->json(['error' => 'Spiel ist bereits beendet'], 400);
-            }
+            $player = new MemoryPlayer();
+            $player->name = auth()->check() ? auth()->user()->name : 'Gast ' . rand(1000, 9999);
+            $player->user_id = auth()->id();
+            $player->save();
 
-            if ($game->players()->where('player_id', $validated['player_id'])->exists()) {
-                return response()->json(['error' => 'Spieler ist bereits im Spiel'], 400);
-            }
+            $game->players()->attach($player->player_id, ['player_score' => 0]);
 
-            $game->players()->attach($validated['player_id'], ['score' => 0]);
-
-            return response()->json([
-                'message' => 'Spieler erfolgreich hinzugefügt',
-                'player' => $game->players()->where('player_id', $validated['player_id'])->first()
-            ]);
-
+            return response()->json(['message' => 'Spieler erfolgreich hinzugefügt']);
         } catch (\Exception $e) {
             Log::error('Fehler beim Hinzufügen des Spielers:', ['error' => $e->getMessage()]);
             return response()->json(['error' => 'Fehler beim Hinzufügen des Spielers'], 500);
         }
     }
 
-    public function update(Request $request, MemoryGame $game, $playerId)
+    public function update($gameId, $playerId, Request $request)
     {
         try {
+            $game = MemoryGame::findOrFail($gameId);
+            
             $validated = $request->validate([
-                'score' => 'required|integer|min:0'
+                'player_score' => 'required|integer|min:0'
             ]);
-
-            if ($game->status === 'finished') {
-                return response()->json(['error' => 'Spiel ist bereits beendet'], 400);
-            }
-
-            if (!$game->players()->where('player_id', $playerId)->exists()) {
-                return response()->json(['error' => 'Spieler nicht im Spiel'], 404);
-            }
 
             $game->players()->updateExistingPivot($playerId, [
-                'score' => $validated['score']
+                'player_score' => $validated['player_score']
             ]);
 
-            return response()->json([
-                'message' => 'Punktzahl erfolgreich aktualisiert',
-                'player' => $game->players()->where('player_id', $playerId)->first()
-            ]);
-
+            return response()->json(['message' => 'Punktzahl aktualisiert']);
         } catch (\Exception $e) {
             Log::error('Fehler beim Aktualisieren der Punktzahl:', ['error' => $e->getMessage()]);
             return response()->json(['error' => 'Fehler beim Aktualisieren der Punktzahl'], 500);

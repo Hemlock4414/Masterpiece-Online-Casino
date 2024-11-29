@@ -9,7 +9,8 @@ const props = defineProps({
 const emit = defineEmits(['flip']);
 
 const handleClick = () => {
-  if (!props.card.is_flipped) {
+  // Verhindere Klick wenn Karte bereits aufgedeckt oder gematcht ist
+  if (!props.card.is_flipped && !props.card.is_matched) {
     emit('flip', props.card);
   }
 };
@@ -18,7 +19,11 @@ const handleClick = () => {
 <template>
   <div 
     class="card" 
-    :class="{ flipped: props.card.is_flipped }" 
+    :class="{ 
+      flipped: props.card.is_flipped,
+      matched: props.card.is_matched,
+      disabled: props.card.is_flipped || props.card.is_matched 
+    }" 
     @click="handleClick"
   >
     <div class="card-inner">
@@ -70,5 +75,9 @@ const handleClick = () => {
 .card-back {
   background-color: white;
   transform: rotateY(180deg);
+}
+
+.card.disabled {
+  cursor: default;  /* Ändere den Cursor für deaktivierte Karten */
 }
 </style>

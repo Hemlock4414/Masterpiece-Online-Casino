@@ -62,38 +62,71 @@ const handleCardFlip = async (card) => {
   try {
     if (gameStatus.value !== 'in_progress') return;
     
-    if (card.is_flipped || flippedCards.value.length >= 2) return;
+    // Prüfe lokalen Status der Karte
+    const currentCard = cards.value.find(c => c.card_id === card.card_id);
+    if (!currentCard || currentCard.is_flipped || currentCard.is_matched) {
+      return;
+    }
+    
+    // Prüfe ob bereits zwei Karten aufgedeckt sind
+    const currentlyFlipped = cards.value.filter(c => c.is_flipped && !c.is_matched);
+    if (currentlyFlipped.length >= 2) {
+      return;
+    }
 
-    const updatedCard = await flipCard(gameId.value, card.card_id);
+    console.log('Attempting to flip card:', { 
+      gameId: gameId.value, 
+      cardId: card.card_id,
+      card: currentCard 
+    });
 
-    cards.value = cards.value.map((c) =>
-      c.card_id === updatedCard.card_id ? updatedCard : c
-    );
+    try {
+      const updatedCard = await flipCard(gameId.value, card.card_id);
+      
+      // Aktualisiere die Karte im lokalen State
+      cards.value = cards.value.map((c) =>
+        c.card_id === updatedCard.card.card_id ? updatedCard.card : c
+      );
 
-    flippedCards.value.push(updatedCard);
+      // Füge die Karte zu flippedCards hinzu
+      flippedCards.value.push(updatedCard.card);
 
-    if (flippedCards.value.length === 2) {
-      const [first, second] = flippedCards.value;
+      // Prüfe auf Paar wenn zwei Karten aufgedeckt sind
+      if (flippedCards.value.length === 2) {
+        const [first, second] = flippedCards.value;
 
-      if (first.group_id === second.group_id) {
-        console.log('Paar gefunden!');
-      } else {
-        console.log('Kein Paar.');
-        setTimeout(() => {
+        if (first.group_id === second.group_id) {
+          // Paar gefunden
           cards.value = cards.value.map((c) =>
             c.card_id === first.card_id || c.card_id === second.card_id
-              ? { ...c, is_flipped: false }
+              ? { ...c, is_matched: true }
               : c
           );
+        } else {
+          // Kein Paar - Karten zurückdrehen
+          setTimeout(() => {
+            cards.value = cards.value.map((c) =>
+              c.card_id === first.card_id || c.card_id === second.card_id
+                ? { ...c, is_flipped: false }
+                : c
+            );
+          }, 1000);
+        }
+
+        // Zurücksetzen für nächsten Versuch
+        setTimeout(() => {
+          flippedCards.value = [];
         }, 1000);
       }
-
-      setTimeout(() => {
-        flippedCards.value = [];
-      }, 1000);
+    } catch (error) {
+      console.error('Fehler beim Kartenflip:', error);
+      // Bei einem Fehler Karte im lokalen State zurücksetzen
+      cards.value = cards.value.map((c) =>
+        c.card_id === card.card_id ? { ...c, is_flipped: false } : c
+      );
     }
   } catch (error) {
-    console.error('Fehler beim Kartenflip:', error);
+    console.error('Fehler in handleCardFlip:', error);
   }
 };
 
@@ -148,13 +181,13 @@ onMounted(async () => {
     />
 
     <!-- Spielerliste -->
-    <div v-if="players.length" class="player-list">
-      <h2>Spieler</h2>
-      <ul>
-        <li v-for="player in players" :key="player.id">
-          Spieler {{ player.id }}: {{ player.score }} Punkte
-        </li>
-      </ul>
+    <div v-if="players && players.length" class="player-list">
+        <h2>Spieler</h2>
+        <ul>
+            <li v-for="player in players" :key="player.player_id">
+                {{ player.name }}: {{ player.pivot?.player_score ?? 0 }} Punkte
+            </li>
+        </ul>
     </div>
   </div>
 </template>

@@ -42,7 +42,10 @@ export const getCards = async () => {
 
 // Karte aufdecken
 export const flipCard = async (gameId, cardId) => {
-  const response = await apiClient.post(`/memory-games/${gameId}/cards/flip`, { card_id: cardId });
+  console.log('Flipping card:', { gameId, cardId }); // Debug
+  const response = await apiClient.post(`/memory-games/${gameId}/cards/flip`, { 
+    card_id: cardId 
+  });
   return response.data;
 };
 

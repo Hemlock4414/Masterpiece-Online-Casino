@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\MemoryGame;
 use App\Models\MemoryCard;
+use App\Models\MemoryPlayer;
+use App\Models\User; 
+use App\Models\MemoryGamePlayer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
@@ -26,35 +29,64 @@ class MemoryGameController extends Controller
             ]);
             $game->save();
 
-            Log::info('Neues Spiel erstellt:', ['game_id' => $game->game_id]);
+            // Erstelle oder finde einen Spieler
+            $player = null;
+            
+            // Prüfe ob ein User eingeloggt ist
+            if (auth()->check()) {
+                // Für eingeloggte User
+                $player = MemoryPlayer::firstOrCreate(
+                    ['user_id' => auth()->id()],
+                    ['name' => auth()->user()->name]
+                );
+            } else {
+                // Für Gäste
+                $player = new MemoryPlayer([
+                    'name' => 'Gast ' . rand(1000, 9999)
+                ]);
+                $player->save();
+            }
 
-            // Anzahl Paare (Standard: 8)
-            $pairs = $validated['pairs'] ?? 8;
+            // Verknüpfe Spieler mit Spiel
+            $game->players()->attach($player->player_id, [
+                'player_score' => 0
+            ]);
 
-            // Karten erstellen
+            // Karten erstellen und in Array sammeln
+            $cards = [];
             for ($i = 1; $i <= $pairs; $i++) {
-                // Zwei Karten pro Paar
                 for ($j = 0; $j < 2; $j++) {
-                    MemoryCard::factory()->create([
+                    $cards[] = [
                         'game_id' => $game->game_id,
                         'group_id' => $i,
                         'is_flipped' => false,
-                    ]);
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ];
                 }
             }
 
+            // Karten mischen
+            shuffle($cards);
+
+            // Gemischte Karten in die Datenbank einfügen
+            MemoryCard::insert($cards);
+
             DB::commit();
 
-            // Lade das Spiel mit Karten und gebe es zurück
+            // Lade das Spiel mit Karten und Spielern
             $game->load(['cards' => function($query) {
-                $query->inRandomOrder(); // Mische die Karten
+                $query->inRandomOrder();
+            }, 'players' => function($query) {
+                // Stelle sicher, dass alle Player-Eigenschaften geladen werden
+                $query->select('memory_players.*');
             }]);
 
-            // Nur ein return statement am Ende
             return response()->json([
                 'game_id' => $game->game_id,
                 'status' => $game->status,
                 'cards' => $game->cards,
+                'players' => $game->players,
                 'message' => 'Spiel erfolgreich erstellt'
             ], 201);
 
@@ -65,87 +97,64 @@ class MemoryGameController extends Controller
         }
     }
 
-    public function start(Request $request, $gameId)
+    public function start($gameId, Request $request)
     {
         try {
             $game = MemoryGame::findOrFail($gameId);
 
-            if (!$game->isWaiting()) {
+            if ($game->status !== 'waiting') {
                 return response()->json([
                     'error' => 'Spiel kann nicht gestartet werden',
                     'reason' => "Status ist '{$game->status}', sollte 'waiting' sein"
                 ], 400);
             }
 
-            $game->start();
-            $game->load('cards', 'players');
+            $game->status = 'in_progress';
+            $game->save();
+
+            $game->load('cards');
 
             return response()->json([
                 'message' => 'Spiel erfolgreich gestartet',
                 'game' => $game
             ]);
-
         } catch (\Exception $e) {
-            Log::error('Error starting game:', [
-                'error' => $e->getMessage(),
-                'game_id' => $gameId
-            ]);
-            
-            return response()->json([
-                'error' => 'Fehler beim Starten des Spiels',
-                'message' => $e->getMessage()
-            ], 500);
+            Log::error('Error starting game:', ['error' => $e->getMessage(), 'game_id' => $gameId]);
+            return response()->json(['error' => 'Fehler beim Starten des Spiels'], 500);
         }
     }
 
-    public function show(MemoryGame $game)
+    public function show($gameId)
     {
         try {
-            // Lade das Spiel mit Karten und Spielern
+            $game = MemoryGame::findOrFail($gameId);
             $game->load(['cards', 'players']);
-
-            // Prüfe ob alle Karten gematcht sind
-            $unmatchedCards = $game->cards()->where('is_matched', false)->count();
-            if ($unmatchedCards === 0 && $game->status === 'in_progress') {
-                $game->update([
-                    'status' => 'finished',
-                    'stopped_at' => now()
-                ]);
-            }
+            
             return response()->json([
                 'game_id' => $game->game_id,
                 'status' => $game->status,
                 'cards' => $game->cards,
                 'players' => $game->players,
             ]);
-
         } catch (\Exception $e) {
             Log::error('Fehler beim Laden des Spiels:', ['error' => $e->getMessage()]);
-            
-            return response()->json([
-                'message' => 'Fehler beim Laden des Spiels',
-                'error' => $e->getMessage()
-            ], 500);
+            return response()->json(['error' => 'Fehler beim Laden des Spiels'], 500);
         }
     }
 
-    public function stop(MemoryGame $game)
+    public function stop($gameId)
     {
         try {
-            if ($game->status === 'finished') {
-                return response()->json(['message' => 'Spiel wurde bereits beendet', 'status' => 'finished']);
-            }
-
+            $game = MemoryGame::findOrFail($gameId);
             $game->update([
                 'status' => 'finished',
-                'stopped_at' => now(),
+                'stopped_at' => now()
             ]);
 
             return response()->json([
-                'message' => 'Spiel erfolgreich beendet',
+                'message' => 'Spiel beendet',
                 'status' => 'finished'
             ]);
-
         } catch (\Exception $e) {
             Log::error('Fehler beim Beenden des Spiels:', ['error' => $e->getMessage()]);
             return response()->json(['error' => 'Fehler beim Beenden des Spiels'], 500);
