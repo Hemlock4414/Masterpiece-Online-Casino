@@ -29,6 +29,15 @@ class MemoryGame extends Model
     const STATUS_IN_PROGRESS = 'in_progress';
     const STATUS_FINISHED = 'finished';
 
+    protected static function booted()
+{
+    static::saving(function ($game) {
+        if ($game->status === self::STATUS_IN_PROGRESS && !$game->player_turn) {
+            throw new \Exception('Ein laufendes Spiel muss einen aktiven Spieler haben');
+        }
+    });
+}
+
     // Rest der Beziehungen
     public function cards()
     {
@@ -64,6 +73,11 @@ class MemoryGame extends Model
         return $this->players()->where('player_id', $this->player_turn)->first();
     }
 
+    public function canPlayerMove(MemoryPlayer $player): bool
+    {
+        return $this->isInProgress() && $this->player_turn === $player->player_id;
+    }
+
     public function getFlippedCards()
     {
         return $this->cards()
@@ -87,13 +101,39 @@ class MemoryGame extends Model
     // Neue Methode für Status-Änderung
     public function start()
     {
-        if ($this->status !== self::STATUS_WAITING) {
+        if (!$this->isWaiting()) {
             throw new \Exception('Spiel kann nicht gestartet werden');
         }
+    
+        $firstPlayer = $this->players()->inRandomOrder()->first();
+        if (!$firstPlayer) {
+            throw new \Exception('Keine Spieler verfügbar');
+        }
         
-        $this->status = self::STATUS_IN_PROGRESS;
-        $this->save();
+        $this->update([
+            'status' => self::STATUS_IN_PROGRESS,
+            'player_turn' => $firstPlayer->player_id
+        ]);
         
         return $this;
     }
+
+    public function nextTurn()
+    {
+        if (!$this->isInProgress()) {
+            throw new \Exception('Spielzug nur bei laufendem Spiel möglich');
+        }
+        
+        $nextPlayer = $this->players()
+            ->where('player_id', '!=', $this->player_turn)
+            ->first();
+            
+        if (!$nextPlayer) {
+            throw new \Exception('Kein nächster Spieler verfügbar');
+        }
+        
+        $this->update(['player_turn' => $nextPlayer->player_id]);
+        return $this;
+    }
+
 }

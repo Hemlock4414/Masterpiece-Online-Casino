@@ -50,4 +50,23 @@ class MemoryPlayer extends Model
     {
         return $this->games()->where('game_id', $game->game_id)->first()->pivot->player_score ?? 0;
     }
+
+    public function canJoinGame(MemoryGame $game): bool
+    {
+        $currentPlayers = $game->players()->count();
+        return $currentPlayers < 2 && $game->isWaiting();
+    }
+
+    public function isActiveIn(MemoryGame $game): bool
+    {
+        return $game->player_turn === $this->player_id;
+    }
+
+    public function hasMatchedPair(MemoryGame $game): bool
+    {
+        return $this->matchedCards()
+            ->where('game_id', $game->game_id)
+            ->where('is_matched', true)
+            ->exists();
+    }
 }
