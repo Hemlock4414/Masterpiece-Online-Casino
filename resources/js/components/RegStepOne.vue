@@ -80,7 +80,7 @@ const closeCancelModal = () => {
       <div class="button-group">
         <button type="submit" class="btn-primary">Weiter</button>
       </div>
-      <small class="hint">* Erforderlich</small>
+      <small class="hint">* erforderlich</small>
     </form>
 
     <CancelRegModal 

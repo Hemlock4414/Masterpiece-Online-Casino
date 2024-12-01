@@ -369,7 +369,7 @@ const handleSubmit = () => {
         </button>
         <button type="submit" class="btn-primary">Abschliessen</button>
       </div>
-      <small class="hint">* Erforderlich</small>
+      <small class="hint">* erforderlich</small>
     </form>
 
     <CancelRegModal 

@@ -41,7 +41,8 @@ class MemoryGame extends Model
     // Rest der Beziehungen
     public function cards()
     {
-        return $this->hasMany(MemoryCard::class, 'game_id');
+        return $this->hasMany(MemoryCard::class, 'game_id')
+                    ->inRandomOrder();  // Direkt in der Relationship definiert
     }
 
     public function players()

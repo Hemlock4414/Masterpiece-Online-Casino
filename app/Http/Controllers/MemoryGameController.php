@@ -45,30 +45,29 @@ class MemoryGameController extends Controller
 
             // Erstelle und mische die Karten
             $pairs = $validated['pairs'] ?? 8;
-            $cards = collect(range(1, $pairs))->flatMap(function($i) use ($game) {
-                return [
-                    [
+            $cards = [];
+            for ($i = 1; $i <= $pairs; $i++) {
+                for ($j = 0; $j < 2; $j++) {
+                    $cards[] = [
                         'game_id' => $game->game_id,
                         'group_id' => $i,
                         'card_image' => 'default.jpg',
                         'created_at' => now(),
                         'updated_at' => now()
-                    ],
-                    [
-                        'game_id' => $game->game_id,
-                        'group_id' => $i,
-                        'card_image' => 'default.jpg',
-                        'created_at' => now(),
-                        'updated_at' => now()
-                    ]
-                ];
-            })->shuffle();
-
-            MemoryCard::insert($cards->all());
+                    ];
+                }
+            }
+            shuffle($cards);
+            Log::info('Shuffled cards:', ['cards' => $cards]); // Debug-Log
+            
+            MemoryCard::insert($cards);
 
             DB::commit();
 
-            $game->load(['cards', 'players']);
+            // Nach dem DB::commit();
+            $game->load(['cards' => function($query) {
+                $query->inRandomOrder();  // Dies zwingt Laravel, die Karten in zufälliger Reihenfolge zu laden
+            }, 'players']);
 
             return response()->json([
                 'game_id' => $game->game_id,

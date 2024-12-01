@@ -64,6 +64,9 @@ Route::post('/memory-games/{gameId}/players', [MemoryPlayerController::class, 's
 // Spielerwechsel
 Route::post('/memory-games/{gameId}/next-turn', [MemoryGameController::class, 'nextTurn']);
 
+// Matched Cards aktualisieren
+Route::post('/memory-games/{gameId}/cards/match', [MemoryCardController::class, 'updateMatched']);
+
 // alle Karten eines Memory-Spiels abrufen
 Route::get('/memory-games/{gameId}/cards', [MemoryCardController::class, 'index']);
 
