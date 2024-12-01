@@ -93,17 +93,21 @@ const handleCardFlip = async (card) => {
 
       if (first.group_id === second.group_id) {
         console.log('Match gefunden!');
-        // Paar gefunden - markiere Karten als gematcht
+        // Paar gefunden - markiere Karten als gematcht und aktualisiere Score
         cards.value = cards.value.map(c => {
           if (c.card_id === first.card_id || c.card_id === second.card_id) {
             return { 
               ...c, 
-              is_matched: true,  // Wichtig: is_matched statt isFlipped
-              isFlipped: true    // Behalte auch den aufgedeckten Status
+              is_matched: true,
+              matched_by: currentPlayer.value.player_id
             };
           }
           return c;
         });
+
+        if (currentPlayer.value) {
+            currentPlayer.value.pivot.player_score = (currentPlayer.value.pivot.player_score || 0) + 1;
+          }
 
         // Prüfe auf Spielende
         if (cards.value.every(c => c.is_matched)) {
@@ -140,7 +144,7 @@ onMounted(async () => {
 
 <template>
   <div class="memory-game">
-    <h1>Memory Game</h1>
+    <h1>Memory</h1>
 
     <div class="game-status">
       <p>Spielstatus: {{ gameStatus }}</p>

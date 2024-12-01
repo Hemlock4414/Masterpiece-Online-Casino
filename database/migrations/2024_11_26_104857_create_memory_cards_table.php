@@ -20,13 +20,11 @@ return new class extends Migration
                 ->nullable()
                 ->constrained('memory_players', 'player_id')
                 ->onDelete('set null');
-            $table->boolean('is_matched')->default(false);
             $table->string('card_image');
             $table->unsignedInteger('group_id')->index();
             $table->timestamps();
     
             // Index für häufige Abfragen
-            $table->index(['game_id', 'is_matched']);
             $table->index(['game_id', 'group_id']);
         });
     }
