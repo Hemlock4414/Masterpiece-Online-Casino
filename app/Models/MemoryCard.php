@@ -15,13 +15,8 @@ class MemoryCard extends Model
     protected $fillable = [
         'game_id',
         'matched_by',
-        'is_matched',
         'card_image',
         'group_id',
-    ];
-
-    protected $casts = [
-        'is_matched' => 'boolean',
     ];
 
     // Relationships

@@ -13,7 +13,7 @@ class MemoryCardFactory extends Factory
     {
         return [
             'game_id' => null, // Das Spiel wird dynamisch zugewiesen
-            'is_matched' => false,
+            'matched_by' => null,
             'card_image' => $this->faker->imageUrl(100, 100, 'abstract'), // Zufälliges Bild
             'group_id' => $this->faker->numberBetween(1, 8), // null, // Wird später dynamisch gesetzt
             

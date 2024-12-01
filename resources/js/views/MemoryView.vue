@@ -68,32 +68,34 @@ const handleCardFlip = async (card) => {
   try {
     const currentCard = cards.value.find(c => c.card_id === card.card_id);
     
-    // Prüfe ob die Karte bereits gematcht ist
     if (currentCard.is_matched) {
       return;
     }
 
-    // Prüfe ob die Karte bereits aufgedeckt ist
     if (flippedCards.value.find(c => c.card_id === currentCard.card_id)) {
       return;
     }
 
-    // Füge die Karte zu den aufgedeckten Karten hinzu
     flippedCards.value.push(currentCard);
-    console.log('Karte aufgedeckt:', currentCard.group_id); // Debug
+    console.log('Karte aufgedeckt:', currentCard.group_id);
 
-    // Wenn zwei Karten aufgedeckt sind, prüfe auf ein Paar
     if (flippedCards.value.length === 2) {
       const [first, second] = flippedCards.value;
       
-      console.log('Prüfe Match:', first.group_id, second.group_id); // Debug
+      console.log('Prüfe Match:', first.group_id, second.group_id);
 
-      // Warte kurz, damit der Spieler die Karten sehen kann
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       if (first.group_id === second.group_id) {
         console.log('Match gefunden!');
-        // Paar gefunden - markiere Karten als gematcht und aktualisiere Score
+        // Aktualisiere matched_by im Backend
+        await updateMatchedCards(
+          gameId.value,
+          [first.card_id, second.card_id],
+          currentPlayer.value.player_id
+        );
+
+        // Update Frontend-Status
         cards.value = cards.value.map(c => {
           if (c.card_id === first.card_id || c.card_id === second.card_id) {
             return { 
@@ -105,19 +107,17 @@ const handleCardFlip = async (card) => {
           return c;
         });
 
+        // Aktualisiere den Score des Spielers
         if (currentPlayer.value) {
-            currentPlayer.value.pivot.player_score = (currentPlayer.value.pivot.player_score || 0) + 1;
-          }
+          currentPlayer.value.pivot.player_score = (currentPlayer.value.pivot.player_score || 0) + 1;
+        }
 
-        // Prüfe auf Spielende
         if (cards.value.every(c => c.is_matched)) {
           console.log('Spiel beendet!');
           await endGame();
         }
-
       } else {
-        console.log('Kein Match - drehe Karten zurück'); // Debug
-        // Kein Paar - drehe Karten zurück
+        console.log('Kein Match - drehe Karten zurück');
         await new Promise(resolve => setTimeout(resolve, 1000));
         cards.value = cards.value.map(c => {
           if (c.card_id === first.card_id || c.card_id === second.card_id) {
@@ -128,7 +128,6 @@ const handleCardFlip = async (card) => {
         switchPlayer();
       }
 
-      // Leere das Array der aufgedeckten Karten
       flippedCards.value = [];
     }
 

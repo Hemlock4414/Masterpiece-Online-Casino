@@ -50,3 +50,17 @@ export const updatePlayerScore = async (gameId, playerId, score) => {
     throw error;
   }
 };
+
+// Matched Cards aktualisieren
+export const updateMatchedCards = async (gameId, cardIds, playerId) => {
+  try {
+    const response = await apiClient.post(`/memory-games/${gameId}/cards/match`, {
+      card_ids: cardIds,
+      player_id: playerId
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Update Matched Cards Error:', error.response?.data || error);
+    throw error;
+  }
+};
