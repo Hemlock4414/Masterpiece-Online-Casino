@@ -71,4 +71,34 @@ class MemoryCardController extends Controller
             return response()->json(['error' => 'Fehler beim Zurücksetzen der Karten'], 500);
         }
     }
+
+    public function updateMatched($gameId, Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'card_ids' => 'required|array',
+                'card_ids.*' => 'required|integer',
+                'player_id' => 'required|integer'
+            ]);
+
+            $game = MemoryGame::findOrFail($gameId);
+
+            // Aktualisiere die gematchten Karten
+            MemoryCard::where('game_id', $gameId)
+                ->whereIn('card_id', $validated['card_ids'])
+                ->update([
+                    'matched_by' => $validated['player_id']
+                ]);
+
+            return response()->json([
+                'message' => 'Matched cards updated successfully',
+                'updated_cards' => $validated['card_ids']
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Fehler beim Aktualisieren der gematchten Karten'
+            ], 500);
+        }
+    }
 }

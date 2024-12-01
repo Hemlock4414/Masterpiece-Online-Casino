@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import MemoryGrid from '../components/MemoryGrid.vue';
-import { createGame, stopGame, startGame as startGameAPI } from '../services/MemoryService';
+import { createGame, stopGame, updateMatchedCards, startGame as startGameAPI } from '../services/MemoryService';
 
 const gameId = ref(null);
 const gameStatus = ref(null);
@@ -179,13 +179,6 @@ onMounted(async () => {
       </div>
     </div>
 
-    <MemoryGrid 
-      v-if="gameStatus === 'in_progress' && cards.length" 
-      :cards="cards"
-      :flippedCards="flippedCards"
-      @flipCard="handleCardFlip" 
-    />
-
     <div v-if="players.length" class="player-list">
       <h2>Spieler</h2>
       <ul>
@@ -198,6 +191,13 @@ onMounted(async () => {
         </li>
       </ul>
     </div>
+
+    <MemoryGrid 
+      v-if="gameStatus === 'in_progress' && cards.length" 
+      :cards="cards"
+      :flippedCards="flippedCards"
+      @flipCard="handleCardFlip" 
+    />
 
   </div>
 </template>
