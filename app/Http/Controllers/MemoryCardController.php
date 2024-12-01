@@ -46,12 +46,6 @@ class MemoryCardController extends Controller
                 ], 404);
             }
 
-            if ($card->is_matched) {
-                return response()->json([
-                    'error' => 'Karte wurde bereits gematcht'
-                ], 400);
-            }
-
             return response()->json([
                 'message' => 'Karte erfolgreich geflippt',
                 'card' => $card,

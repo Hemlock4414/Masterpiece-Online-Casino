@@ -21,12 +21,12 @@ class MemoryGameController extends Controller
             $validated = $request->validate([
                 'pairs' => 'integer|min:2|max:32'
             ]);
-    
+
             $game = new MemoryGame([
                 'status' => 'waiting',
             ]);
             $game->save();
-    
+
             if (auth()->check()) {
                 $player = MemoryPlayer::firstOrCreate(
                     ['user_id' => auth()->id()],
@@ -38,11 +38,11 @@ class MemoryGameController extends Controller
                 ]);
                 $player->save();
             }
-    
+
             $game->players()->attach($player->player_id, [
                 'player_score' => 0
             ]);
-    
+
             // Erstelle und mische die Karten
             $pairs = $validated['pairs'] ?? 8;
             $cards = collect(range(1, $pairs))->flatMap(function($i) use ($game) {
@@ -50,7 +50,6 @@ class MemoryGameController extends Controller
                     [
                         'game_id' => $game->game_id,
                         'group_id' => $i,
-                        'is_matched' => false,
                         'card_image' => 'default.jpg',
                         'created_at' => now(),
                         'updated_at' => now()
@@ -58,21 +57,19 @@ class MemoryGameController extends Controller
                     [
                         'game_id' => $game->game_id,
                         'group_id' => $i,
-                        'is_matched' => false,
                         'card_image' => 'default.jpg',
                         'created_at' => now(),
                         'updated_at' => now()
                     ]
                 ];
             })->shuffle();
-    
-            // Füge die gemischten Karten in die Datenbank ein
+
             MemoryCard::insert($cards->all());
-    
+
             DB::commit();
-    
+
             $game->load(['cards', 'players']);
-    
+
             return response()->json([
                 'game_id' => $game->game_id,
                 'status' => $game->status,
@@ -80,7 +77,7 @@ class MemoryGameController extends Controller
                 'players' => $game->players,
                 'message' => 'Spiel erfolgreich erstellt'
             ], 201);
-    
+
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json(['error' => 'Fehler beim Erstellen des Spiels'], 500);
