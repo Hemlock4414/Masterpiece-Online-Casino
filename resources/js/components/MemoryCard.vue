@@ -3,13 +3,16 @@ const props = defineProps({
   card: {
     type: Object,
     required: true
+  },
+  isFlipped: {
+    type: Boolean,
+    default: false
   }
 });
 
 const emit = defineEmits(['flip']);
 
 const handleClick = () => {
-  // Nur gematchte Karten blockieren
   if (!props.card.is_matched) {
     emit('flip', props.card);
   }
@@ -20,9 +23,9 @@ const handleClick = () => {
   <div 
     class="card" 
     :class="{ 
-      flipped: card.is_flipped,
-      matched: card.is_matched,
-      disabled: card.is_matched // Nur gematchte Karten deaktivieren
+      'flipped': isFlipped || card.is_matched,
+      'matched': card.is_matched,
+      'disabled': card.is_matched 
     }" 
     @click="handleClick"
   >
@@ -77,7 +80,11 @@ const handleClick = () => {
   transform: rotateY(180deg);
 }
 
+.card.matched {
+  cursor: default;
+}
+
 .card.disabled {
-  cursor: default;  /* Ändere den Cursor für deaktivierte Karten */
+  cursor: default;
 }
 </style>

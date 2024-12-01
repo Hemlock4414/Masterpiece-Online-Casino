@@ -30,7 +30,7 @@ class MemoryGameController extends Controller
             if (auth()->check()) {
                 $player = MemoryPlayer::firstOrCreate(
                     ['user_id' => auth()->id()],
-                    ['name' => auth()->user()->name]
+                    ['name' => auth()->user()->username]
                 );
             } else {
                 $player = new MemoryPlayer([
@@ -43,33 +43,34 @@ class MemoryGameController extends Controller
                 'player_score' => 0
             ]);
     
-            // Erstelle alle Karten zuerst in einem Array
+            // Erstelle und mische die Karten
             $pairs = $validated['pairs'] ?? 8;
-            $cards = [];
-            
-            for ($i = 1; $i <= $pairs; $i++) {
-                for ($j = 0; $j < 2; $j++) {
-                    $cards[] = [
+            $cards = collect(range(1, $pairs))->flatMap(function($i) use ($game) {
+                return [
+                    [
                         'game_id' => $game->game_id,
                         'group_id' => $i,
-                        'is_flipped' => false,
                         'is_matched' => false,
                         'card_image' => 'default.jpg',
                         'created_at' => now(),
                         'updated_at' => now()
-                    ];
-                }
-            }
-            
-            // Mische die Karten
-            shuffle($cards);
-            
-            // Füge alle Karten auf einmal ein
-            MemoryCard::insert($cards);
+                    ],
+                    [
+                        'game_id' => $game->game_id,
+                        'group_id' => $i,
+                        'is_matched' => false,
+                        'card_image' => 'default.jpg',
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ]
+                ];
+            })->shuffle();
+    
+            // Füge die gemischten Karten in die Datenbank ein
+            MemoryCard::insert($cards->all());
     
             DB::commit();
     
-            // Lade das Spiel mit den bereits gemischten Karten
             $game->load(['cards', 'players']);
     
             return response()->json([
@@ -82,10 +83,6 @@ class MemoryGameController extends Controller
     
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Fehler beim Erstellen des Spiels:', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
             return response()->json(['error' => 'Fehler beim Erstellen des Spiels'], 500);
         }
     }

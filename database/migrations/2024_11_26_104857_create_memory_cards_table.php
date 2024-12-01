@@ -21,7 +21,6 @@ return new class extends Migration
                 ->constrained('memory_players', 'player_id')
                 ->onDelete('set null');
             $table->boolean('is_matched')->default(false);
-            $table->boolean('is_flipped')->default(false);
             $table->string('card_image');
             $table->unsignedInteger('group_id')->index();
             $table->timestamps();

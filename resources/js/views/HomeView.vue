@@ -25,7 +25,7 @@ const handleLogout = () => {
         
             <div class="upper-container">
                 <div class="hero-container">
-                    <img src="/public/img/Hero-Header-2.jpg" alt="">
+                    <img src="/public/img/hero-header.jpg" alt="">
              
                 </div>
             </div>    

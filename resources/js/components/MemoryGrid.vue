@@ -5,10 +5,18 @@ const props = defineProps({
   cards: {
     type: Array,
     required: true
+  },
+  flippedCards: {
+    type: Array,
+    default: () => []
   }
 });
 
 const emit = defineEmits(['flipCard']);
+
+const isCardFlipped = (card) => {
+  return props.flippedCards.some(fc => fc.card_id === card.card_id) || card.is_matched;
+};
 </script>
 
 <template>
@@ -17,6 +25,7 @@ const emit = defineEmits(['flipCard']);
       v-for="card in cards"
       :key="card.card_id"
       :card="card"
+      :isFlipped="isCardFlipped(card)"
       @flip="emit('flipCard', card)"
     />
   </div>
@@ -32,18 +41,18 @@ const emit = defineEmits(['flipCard']);
   padding: 20px;
 }
 
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(4, minmax(180px, 1fr));
+    gap: 25px;
+  }
+}
+
 /* Responsive Breakpoints */
 @media (min-width: 768px) {
   .grid {
     grid-template-columns: repeat(4, minmax(150px, 1fr));
     gap: 20px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .grid {
-    grid-template-columns: repeat(4, minmax(180px, 1fr));
-    gap: 25px;
   }
 }
 

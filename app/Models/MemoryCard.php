@@ -16,14 +16,12 @@ class MemoryCard extends Model
         'game_id',
         'matched_by',
         'is_matched',
-        'is_flipped',
         'card_image',
         'group_id',
     ];
 
     protected $casts = [
         'is_matched' => 'boolean',
-        'is_flipped' => 'boolean',
     ];
 
     // Relationships
