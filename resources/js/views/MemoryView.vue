@@ -64,7 +64,6 @@ const handleGameStart = async () => {
   }
 };
 
-
 const startTimer = () => {
   if (timerInterval) return; // Timer läuft bereits
   timer.value = 0; // Timer zurücksetzen
@@ -86,10 +85,8 @@ const endGame = async () => {
       const response = await stopGame(gameId.value);
       gameStatus.value = response.status || 'finished';
 
-      // Timer stoppen
       stopTimer();
 
-      // Zeige das Modal nur, wenn das Spiel tatsächlich beendet wurde
       if (gameStatus.value === 'finished') {
         showModal.value = true;
         gameResult.value = {
@@ -104,10 +101,59 @@ const endGame = async () => {
   }
 };
 
+const abortGame = async () => {
+  try {
+    if (!gameId.value) return;
+    
+    // Zuerst den Timer stoppen
+    stopTimer();
+    
+    // Status aktualisieren
+    gameStatus.value = 'aborted';
+    
+    // Optional: API-Aufruf um Backend zu informieren
+    await stopGame(gameId.value);
+    
+    // Spielzustand zurücksetzen
+    gameId.value = null;
+    cards.value = [];
+    players.value = [];
+    currentPlayer.value = null;
+    resetGameState();
+    
+    console.log('Spiel wurde erfolgreich abgebrochen');
+  } catch (error) {
+    console.error('Fehler beim Abbrechen des Spiels:', error);
+  }
+};
+
+// Basis-Funktion zum Zurücksetzen des Spielstatus
+const resetGameState = () => {
+  flippedCards.value = [];
+  roundCount.value = 0;
+  timer.value = 0;
+  showModal.value = false;
+};
 
 const switchPlayer = () => {
   const currentIndex = players.value.findIndex(p => p.player_id === currentPlayer.value.player_id);
   currentPlayer.value = players.value[(currentIndex + 1) % players.value.length];
+};
+
+const updatePlayerScore = async (playerId, score) => {
+  try {
+    await updatePlayerScore(gameId.value, playerId, score);
+    // Aktualisiere den lokalen State erst nach erfolgreicher API-Antwort
+    currentPlayer.value = {
+      ...currentPlayer.value,
+      pivot: {
+        ...currentPlayer.value.pivot,
+        player_score: score
+      }
+    };
+  } catch (error) {
+    handleError(error, 'Fehler beim Aktualisieren der Punkte');
+  }
 };
 
 const handleCardFlip = async (card) => {
@@ -249,7 +295,7 @@ onUnmounted(() => {
 
         <button 
           v-if="gameStatus === 'in_progress'" 
-          @click="endGame"
+          @click="abortGame"
           class="btn-secondary"
         >
           Spiel abbrechen
