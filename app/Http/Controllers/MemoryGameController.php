@@ -162,18 +162,22 @@ class MemoryGameController extends Controller
         }
     }
 
-    public function stop($gameId)
+    public function stop($gameId, Request $request)
     {
         try {
+            $validated = $request->validate([
+                'status' => 'required|in:finished,aborted'
+            ]);
+    
             $game = MemoryGame::findOrFail($gameId);
             $game->update([
-                'status' => 'finished',
+                'status' => $validated['status'],
                 'stopped_at' => now()
             ]);
-
+    
             return response()->json([
-                'message' => 'Spiel beendet',
-                'status' => 'finished'
+                'message' => $validated['status'] === 'aborted' ? 'Spiel abgebrochen' : 'Spiel beendet',
+                'status' => $validated['status']
             ]);
         } catch (\Exception $e) {
             Log::error('Fehler beim Beenden des Spiels:', ['error' => $e->getMessage()]);

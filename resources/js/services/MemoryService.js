@@ -24,17 +24,7 @@ export const createGame = async (pairs = 8, guestId = null) => {
     throw error;
   }
 };
-/* 
-export const createGame = async (pairs = 8) => {
-  try {
-    const response = await apiClient.post('/memory-games/create', { pairs });
-    return response.data;
-  } catch (error) {
-    console.error('Create Game Error:', error.response?.data || error);
-    throw error;
-  }
-};
- */
+
 // Spiel starten
 export const startGame = async (gameId) => {
   try {
@@ -47,9 +37,9 @@ export const startGame = async (gameId) => {
 };
 
 // Spiel beenden
-export const stopGame = async (gameId) => {
+export const stopGame = async (gameId, status = 'finished') => {
   try {
-    const response = await apiClient.post(`/memory-games/${gameId}/stop`);
+    const response = await apiClient.post(`/memory-games/${gameId}/stop`, { status });
     return response.data;
   } catch (error) {
     console.error('Stop Game Error:', error.response?.data || error);
