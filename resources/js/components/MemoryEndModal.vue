@@ -37,8 +37,8 @@ defineProps({
           Verstrichene Zeit: {{ Math.floor(time / 60) }}:{{ String(time % 60).padStart(2, '0') }}
         </p>
         <div class="modal-actions">
-          <button class="btn-primary" @click="onNewGame">Neues Spiel</button>
-          <button class="btn-secondary" @click="onGoToHome">Hauptseite</button>
+          <button class="btn-primary" @click="onNewGame">Neues Spiel erstellen</button>
+          <button class="btn-secondary" @click="onGoToHome">Zurück zur Hauptseite</button>
         </div>
       </div>
     </div>
