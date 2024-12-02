@@ -328,7 +328,7 @@ onUnmounted(() => {
       </div>
 
       <MemoryGrid 
-        v-if="gameStatus === 'in_progress' && cards.length" 
+        v-if="(gameStatus === 'in_progress' || gameStatus === 'finished') && cards.length" 
         :cards="cards"
         :flippedCards="flippedCards"
         @flipCard="handleCardFlip" 
