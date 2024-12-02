@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import MemoryGrid from '../components/MemoryGrid.vue';
 import { createGame, stopGame, updateMatchedCards, startGame as startGameAPI } from '../services/MemoryService';
 
@@ -10,6 +10,10 @@ const cards = ref([]);
 const flippedCards = ref([]);
 const currentPlayer = ref(null);
 const isProcessingMove = ref(false);
+const roundCount = ref(0);
+const timer = ref(0); 
+
+let timerInterval = null;
 
 const createNewGame = async () => {
   try {
@@ -38,9 +42,26 @@ const handleGameStart = async () => {
       players.value = response.game.players;
       gameStatus.value = response.game.status;
       currentPlayer.value = players.value[0];
+
+      startTimer(); // Timer starten
     }
   } catch (error) {
     console.error('Fehler beim Starten des Spiels:', error);
+  }
+};
+
+const startTimer = () => {
+  if (timerInterval) return; // Timer läuft bereits
+  timer.value = 0; // Timer zurücksetzen
+  timerInterval = setInterval(() => {
+    timer.value += 1;
+  }, 1000);
+};
+
+const stopTimer = () => {
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
   }
 };
 
@@ -49,6 +70,8 @@ const endGame = async () => {
     if (gameId.value) {
       const response = await stopGame(gameId.value);
       gameStatus.value = response.status || 'finished';
+
+      stopTimer(); // Timer stoppen
     }
   } catch (error) {
     console.error('Fehler beim Beenden des Spiels:', error);
@@ -80,22 +103,23 @@ const handleCardFlip = async (card) => {
     console.log('Karte aufgedeckt:', currentCard.group_id);
 
     if (flippedCards.value.length === 2) {
+      // Erhöhe den Rundenzähler
+      roundCount.value += 1;
+
       const [first, second] = flippedCards.value;
-      
+
       console.log('Prüfe Match:', first.group_id, second.group_id);
 
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 700));
 
       if (first.group_id === second.group_id) {
         console.log('Match gefunden!');
-        // Aktualisiere matched_by im Backend
         await updateMatchedCards(
           gameId.value,
           [first.card_id, second.card_id],
           currentPlayer.value.player_id
         );
 
-        // Update Frontend-Status
         cards.value = cards.value.map(c => {
           if (c.card_id === first.card_id || c.card_id === second.card_id) {
             return { 
@@ -107,7 +131,6 @@ const handleCardFlip = async (card) => {
           return c;
         });
 
-        // Aktualisiere den Score des Spielers
         if (currentPlayer.value) {
           currentPlayer.value.pivot.player_score = (currentPlayer.value.pivot.player_score || 0) + 1;
         }
@@ -118,7 +141,7 @@ const handleCardFlip = async (card) => {
         }
       } else {
         console.log('Kein Match - drehe Karten zurück');
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 500));
         cards.value = cards.value.map(c => {
           if (c.card_id === first.card_id || c.card_id === second.card_id) {
             return { ...c, isFlipped: false };
@@ -139,57 +162,76 @@ const handleCardFlip = async (card) => {
 onMounted(async () => {
   await createNewGame();
 });
+
+// Timer stoppen, wenn die Komponente zerstört wird
+onUnmounted(() => {
+  stopTimer();
+});
 </script>
 
 <template>
   <div class="memory-game">
-    <h1>Memory</h1>
+
+    <div class="header">
+      <h1>Memory</h1>
+      <div class="timer">
+        <h2>Timer</h2>
+        <p>{{ Math.floor(timer / 60) }}:{{ String(timer % 60).padStart(2, '0') }}</p>
+      </div>
+    </div>
 
     <div class="game-status">
       <p>Spielstatus: {{ gameStatus }}</p>
-      
+    </div>
+
+    <div class="game-layout">
+      <div class="player-list">
+        <h2>Spieler</h2>
+        <ul>
+          <li 
+            v-for="player in players" 
+            :key="player.player_id"
+            :class="{ 'active-player': currentPlayer?.player_id === player.player_id }"
+          >
+            {{ player.name }}: {{ player.pivot?.player_score ?? 0 }} Punkte
+          </li>
+        </ul>
+      </div>
+
       <div class="player-info" v-if="currentPlayer">
         <p>Am Zug: {{ currentPlayer.name }}</p>
       </div>
 
-      <div class="game-controls">
-        <button 
-          v-if="gameStatus === 'waiting'" 
-          @click="handleGameStart"
-          class="btn-primary"
-        >
-          Spiel Starten
-        </button>
-
-        <button 
-          v-if="gameStatus === 'in_progress'" 
-          @click="endGame"
-          class="btn-secondary"
-        >
-          Spiel Beenden
-        </button>
-
-        <button 
-          v-if="gameStatus === 'finished'" 
-          @click="createNewGame"
-          class="btn-primary"
-        >
-          Neues Spiel
-        </button>
+      <div class="round-info">
+        <h2>Runden</h2>
+        <p>{{ roundCount }}</p>
       </div>
     </div>
 
-    <div v-if="players.length" class="player-list">
-      <h2>Spieler</h2>
-      <ul>
-        <li 
-          v-for="player in players" 
-          :key="player.player_id"
-          :class="{ 'active-player': currentPlayer?.player_id === player.player_id }"
-        >
-          {{ player.name }}: {{ player.pivot?.player_score ?? 0 }} Punkte
-        </li>
-      </ul>
+    <div class="game-controls">
+      <button 
+        v-if="gameStatus === 'waiting'" 
+        @click="handleGameStart"
+        class="btn-primary"
+      >
+        Spiel Starten
+      </button>
+
+      <button 
+        v-if="gameStatus === 'in_progress'" 
+        @click="endGame"
+        class="btn-secondary"
+      >
+        Spiel abbrechen
+      </button>
+
+      <button 
+        v-if="gameStatus === 'finished'" 
+        @click="createNewGame"
+        class="btn-primary"
+      >
+        Neues Spiel
+      </button>
     </div>
 
     <MemoryGrid 
@@ -198,7 +240,6 @@ onMounted(async () => {
       :flippedCards="flippedCards"
       @flipCard="handleCardFlip" 
     />
-
   </div>
 </template>
 
@@ -209,14 +250,71 @@ onMounted(async () => {
   padding: 20px;
 }
 
+.header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  text-align: center;
+  position: relative;
+}
+
+.header h1 {
+  flex-grow: 1; /* Erweitert den Platz des h1 für die Zentrierung */
+}
+
+.timer {
+  position: absolute;
+  right: 0; /* Positioniert den Timer ganz rechts */
+  top: 50%; /* Vertikal zentriert den Timer */
+  transform: translateY(-50%); /* Korrigiert die vertikale Position */
+  text-align: right;
+}
+
+.timer h2 {
+  margin: 0;
+  font-size: 1.2em;
+}
+
+.timer p {
+  margin: 0;
+  font-size: 1.5em;
+  font-weight: bold;
+}
+
+.game-layout {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin: 20px 0;
+}
+
 .game-status {
   margin: 20px 0;
   text-align: center;
 }
 
-.player-info {
-  margin: 10px 0;
+.player-list, .player-info, .round-info {
+  width: 30%;
+}
+
+.player-list ul {
+  list-style: none;
+  padding: 0;
+}
+
+.active-player {
+  color: #4CAF50;
   font-weight: bold;
+}
+
+.round-info {
+  text-align: center;
+}
+
+h1, h2 {
+  text-align: center;
+  font-family: Arial, sans-serif;
 }
 
 .game-controls {
@@ -248,28 +346,30 @@ button:hover {
   opacity: 0.9;
 }
 
-.player-list {
-  margin-top: 20px;
-}
-
-.player-list ul {
-  list-style: none;
-  padding: 0;
-}
-
-.active-player {
-  color: #4CAF50;
-  font-weight: bold;
-}
-
-h1, h2 {
-  text-align: center;
-  font-family: Arial, sans-serif;
-}
-
 @media (max-width: 605px) {
   .memory-game {
     padding: 10px;
+    margin-top: 20px;
+  }
+  .header {
+    flex-direction: column;
+    align-items: center;
+  }
+  .timer {
+    margin-top: 30px;
+    position: static; /* Entfernt absolute Positionierung */
+    transform: none; /* Entfernt die vertikale Korrektur */
+    margin-top: 10px; /* Abstand zwischen h1 und Timer */
+    text-align: center;
+  }
+  .game-layout {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .player-list, .player-info, .round-info {
+    width: 100%;
+    margin-bottom: 20px;
   }
 }
 
