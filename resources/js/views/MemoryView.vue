@@ -170,84 +170,93 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="memory-game">
 
-    <div class="header">
-      <h1>Memory</h1>
-      <div class="timer">
-        <h2>Timer</h2>
-        <p>{{ Math.floor(timer / 60) }}:{{ String(timer % 60).padStart(2, '0') }}</p>
-      </div>
-    </div>
+  <div class="memory-container">
 
-    <div class="game-status">
-      <p>Spielstatus: {{ gameStatus }}</p>
-    </div>
+    <div class="memory-game">
 
-    <div class="game-layout">
-      <div class="player-list">
-        <h2>Spieler</h2>
-        <ul>
-          <li 
-            v-for="player in players" 
-            :key="player.player_id"
-            :class="{ 'active-player': currentPlayer?.player_id === player.player_id }"
-          >
-            {{ player.name }}: {{ player.pivot?.player_score ?? 0 }} Punkte
-          </li>
-        </ul>
+      <div class="header">
+        <h1>Memory</h1>
+        <div class="timer">
+          <h2>Timer</h2>
+          <p>{{ Math.floor(timer / 60) }}:{{ String(timer % 60).padStart(2, '0') }}</p>
+        </div>
       </div>
 
-      <div class="player-info" v-if="currentPlayer">
-        <p>Am Zug: {{ currentPlayer.name }}</p>
+      <div class="game-status">
+        <p>Spielstatus: {{ gameStatus }}</p>
       </div>
 
-      <div class="round-info">
-        <h2>Runden</h2>
-        <p>{{ roundCount }}</p>
+      <div class="game-layout">
+        <div class="player-list">
+          <h2>Spieler</h2>
+          <ul>
+            <li 
+              v-for="player in players" 
+              :key="player.player_id"
+              :class="{ 'active-player': currentPlayer?.player_id === player.player_id }"
+            >
+              {{ player.name }}: {{ player.pivot?.player_score ?? 0 }} Punkte
+            </li>
+          </ul>
+        </div>
+
+        <div class="player-info" v-if="currentPlayer">
+          <p>Am Zug: {{ currentPlayer.name }}</p>
+        </div>
+
+        <div class="round-info">
+          <h2>Runden</h2>
+          <p>{{ roundCount }}</p>
+        </div>
       </div>
+
+      <div class="game-controls">
+        <button 
+          v-if="gameStatus === 'waiting'" 
+          @click="handleGameStart"
+          class="btn-primary"
+        >
+          Spiel Starten
+        </button>
+
+        <button 
+          v-if="gameStatus === 'in_progress'" 
+          @click="endGame"
+          class="btn-secondary"
+        >
+          Spiel abbrechen
+        </button>
+
+        <button 
+          v-if="gameStatus === 'finished'" 
+          @click="createNewGame"
+          class="btn-primary"
+        >
+          Neues Spiel
+        </button>
+      </div>
+
+      <MemoryGrid 
+        v-if="gameStatus === 'in_progress' && cards.length" 
+        :cards="cards"
+        :flippedCards="flippedCards"
+        @flipCard="handleCardFlip" 
+      />
     </div>
-
-    <div class="game-controls">
-      <button 
-        v-if="gameStatus === 'waiting'" 
-        @click="handleGameStart"
-        class="btn-primary"
-      >
-        Spiel Starten
-      </button>
-
-      <button 
-        v-if="gameStatus === 'in_progress'" 
-        @click="endGame"
-        class="btn-secondary"
-      >
-        Spiel abbrechen
-      </button>
-
-      <button 
-        v-if="gameStatus === 'finished'" 
-        @click="createNewGame"
-        class="btn-primary"
-      >
-        Neues Spiel
-      </button>
-    </div>
-
-    <MemoryGrid 
-      v-if="gameStatus === 'in_progress' && cards.length" 
-      :cards="cards"
-      :flippedCards="flippedCards"
-      @flipCard="handleCardFlip" 
-    />
   </div>
+
 </template>
 
 <style scoped>
-.memory-game {
+.memory-container {
   max-width: 800px;
   margin: 0 auto;
   padding: 20px;
+}
+
+.memory-game {
+  max-width: 100%;
 }
 
 .header {
@@ -286,6 +295,7 @@ onUnmounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  text-align: center;
   margin: 20px 0;
 }
 
@@ -347,19 +357,20 @@ button:hover {
 }
 
 @media (max-width: 605px) {
-  .memory-game {
+  .memory-container {
     padding: 10px;
     margin-top: 20px;
   }
   .header {
     flex-direction: column;
     align-items: center;
+    margin-top: 20px;
   }
   .timer {
     margin-top: 30px;
     position: static; /* Entfernt absolute Positionierung */
     transform: none; /* Entfernt die vertikale Korrektur */
-    margin-top: 10px; /* Abstand zwischen h1 und Timer */
+    margin-top: 20px; /* Abstand zwischen h1 und Timer */
     text-align: center;
   }
   .game-layout {
@@ -374,7 +385,7 @@ button:hover {
 }
 
 @media (max-width: 400px) {
-  .memory-game {
+  .memory-container {
     padding: 0px;
   }
 }
