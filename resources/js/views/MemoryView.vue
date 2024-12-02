@@ -129,12 +129,9 @@ const abortGame = async () => {
     
     // Zuerst den Timer stoppen
     stopTimer();
-    
-    // Status aktualisieren
-    gameStatus.value = 'aborted';
-    
+       
     // API-Aufruf
-    await stopGame(gameId.value);
+    await stopGame(gameId.value, 'aborted');
     
     // Spielzustand komplett zurücksetzen
     const currentGuestId = players.value.find(p => p.name.includes('Gast'))?.player_id;
