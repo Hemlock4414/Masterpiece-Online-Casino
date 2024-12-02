@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('memory_games', function (Blueprint $table) {
             $table->id('game_id');
-            $table->enum('status', ['waiting', 'in_progress', 'finished']);
+            $table->enum('status', ['waiting', 'in_progress', 'finished', 'aborted']);
             $table->foreignId('player_turn')
                 ->nullable()
                 ->constrained('memory_players', 'player_id')
