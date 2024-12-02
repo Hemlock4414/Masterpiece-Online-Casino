@@ -7,7 +7,7 @@ const gameId = ref(null);
 const gameStatus = ref(null);
 const players = ref([]);
 const cards = ref([]);
-const flippedCards = ref([]); // Verwaltet jetzt den Frontend-Flip-Status
+const flippedCards = ref([]);
 const currentPlayer = ref(null);
 const isProcessingMove = ref(false);
 
