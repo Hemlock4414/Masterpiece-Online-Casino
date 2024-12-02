@@ -19,26 +19,46 @@ class MemoryGameController extends Controller
             DB::beginTransaction();
             
             $validated = $request->validate([
-                'pairs' => 'integer|min:2|max:32'
+                'pairs' => 'integer|min:2|max:32',
+                'guest_id' => 'nullable|integer'
             ]);
-
+    
             $game = new MemoryGame([
                 'status' => 'waiting',
             ]);
             $game->save();
-
+    
+            // Spieler erstellen/finden
             if (auth()->check()) {
+                // Eingeloggter User
                 $player = MemoryPlayer::firstOrCreate(
                     ['user_id' => auth()->id()],
                     ['name' => auth()->user()->username]
                 );
             } else {
-                $player = new MemoryPlayer([
-                    'name' => 'Gast ' . rand(1000, 9999)
-                ]);
-                $player->save();
+                // Gast-Spieler
+                if ($request->guest_id) {
+                    Log::info('Suche existierenden Gast:', ['guest_id' => $request->guest_id]);
+                    $player = MemoryPlayer::where('player_id', $request->guest_id)
+                                        ->where('name', 'LIKE', 'Gast%')
+                                        ->first();
+                    
+                    if ($player) {
+                        Log::info('Existierender Gast gefunden:', ['player' => $player]);
+                    } else {
+                        Log::info('Gast nicht gefunden, erstelle neuen');
+                    }
+                }
+                
+                // Nur wenn kein Gast gefunden wurde, einen neuen erstellen
+                if (!isset($player) || !$player) {
+                    $player = new MemoryPlayer([
+                        'name' => 'Gast ' . rand(1000, 9999)
+                    ]);
+                    $player->save();
+                }
             }
-
+    
             $game->players()->attach($player->player_id, [
                 'player_score' => 0
             ]);
@@ -64,11 +84,6 @@ class MemoryGameController extends Controller
 
             DB::commit();
 
-            // Nach dem DB::commit();
-            $game->load(['cards' => function($query) {
-                $query->inRandomOrder();  // Dies zwingt Laravel, die Karten in zufälliger Reihenfolge zu laden
-            }, 'players']);
-
             return response()->json([
                 'game_id' => $game->game_id,
                 'status' => $game->status,
@@ -76,9 +91,10 @@ class MemoryGameController extends Controller
                 'players' => $game->players,
                 'message' => 'Spiel erfolgreich erstellt'
             ], 201);
-
+    
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Fehler beim Erstellen des Spiels:', ['error' => $e->getMessage()]);
             return response()->json(['error' => 'Fehler beim Erstellen des Spiels'], 500);
         }
     }

@@ -6,6 +6,25 @@ const apiClient = axios.create({
 });
 
 // Neues Spiel erstellen
+
+export const createGame = async (pairs = 8, guestId = null) => {
+  try {
+    const requestData = {
+      pairs: pairs
+    };
+    if (guestId) {
+      requestData.guest_id = parseInt(guestId); // Sicherstellen dass es eine Zahl ist
+    }
+    
+    const response = await apiClient.post('/memory-games/create', requestData);
+    console.log('Request Data:', requestData); // Debug
+    return response.data;
+  } catch (error) {
+    console.error('Create Game Error:', error.response?.data || error);
+    throw error;
+  }
+};
+/* 
 export const createGame = async (pairs = 8) => {
   try {
     const response = await apiClient.post('/memory-games/create', { pairs });
@@ -15,7 +34,7 @@ export const createGame = async (pairs = 8) => {
     throw error;
   }
 };
-
+ */
 // Spiel starten
 export const startGame = async (gameId) => {
   try {
@@ -61,6 +80,16 @@ export const updateMatchedCards = async (gameId, cardIds, playerId) => {
     return response.data;
   } catch (error) {
     console.error('Update Matched Cards Error:', error.response?.data || error);
+    throw error;
+  }
+};
+
+export const nextTurn = async (gameId) => {
+  try {
+    const response = await apiClient.post(`/memory-games/${gameId}/next-turn`);
+    return response.data;
+  } catch (error) {
+    console.error('Next Turn Error:', error.response?.data || error);
     throw error;
   }
 };
