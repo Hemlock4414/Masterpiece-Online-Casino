@@ -23,22 +23,44 @@ const gameResult = ref({
 
 let timerInterval = null;
 
+// Helper-Funktionen für sessionStorage
+const getStoredGuestId = () => {
+  return sessionStorage.getItem('memoryGuestId');
+};
+
+const setStoredGuestId = (id) => {
+  sessionStorage.setItem('memoryGuestId', id);
+};
+
 const createNewGame = async () => {
   try {
-    console.log('Erstelle neues Spiel...'); // Debug
-    const game = await createGame(8);
-    console.log('Spiel erfolgreich erstellt:', game); // Debug
+    console.log('Erstelle neues Spiel...'); 
+    
+    const storedGuestId = getStoredGuestId();
+    console.log('Gespeicherte Gast-ID gefunden:', storedGuestId); // Debug
+
+    const game = await createGame(8, storedGuestId);
+    console.log('Server-Antwort:', game); // Debug
+    
+    console.log('Spiel erfolgreich erstellt:', game);
     gameId.value = game.game_id;
-    gameStatus.value = 'waiting'; // Setze den Status auf "waiting", bis "Spiel Starten" geklickt wird
+    gameStatus.value = 'waiting';
     cards.value = game.cards;
     players.value = game.players;
+    
+    // Speichere die Gast-ID wenn es ein neuer Gast ist
+    const guestPlayer = players.value.find(p => p.name.includes('Gast'));
+    if (guestPlayer && !storedGuestId) {
+      setStoredGuestId(guestPlayer.player_id);
+      console.log('Gast-ID gespeichert:', guestPlayer.player_id); // Debug
+    }
+
     currentPlayer.value = players.value[0];
     flippedCards.value = [];
     roundCount.value = 0;
     timer.value = 0;
-
-    // Modal schließen
     showModal.value = false;
+
   } catch (error) {
     console.error('Fehler beim Erstellen des Spiels:', error);
   }
@@ -111,17 +133,24 @@ const abortGame = async () => {
     // Status aktualisieren
     gameStatus.value = 'aborted';
     
-    // Optional: API-Aufruf um Backend zu informieren
+    // API-Aufruf
     await stopGame(gameId.value);
     
-    // Spielzustand zurücksetzen
+    // Spielzustand komplett zurücksetzen
+    const currentGuestId = players.value.find(p => p.name.includes('Gast'))?.player_id;
+    
+    // Spielzustand zurücksetzen aber Gast-ID behalten
     gameId.value = null;
     cards.value = [];
-    players.value = [];
-    currentPlayer.value = null;
-    resetGameState();
+    flippedCards.value = [];
+    roundCount.value = 0;
+    timer.value = 0;
+    showModal.value = false;
+    gameStatus.value = 'waiting';
     
-    console.log('Spiel wurde erfolgreich abgebrochen');
+    // Sofort ein neues Spiel mit demselben Gast erstellen
+    await createNewGame(currentGuestId);
+    
   } catch (error) {
     console.error('Fehler beim Abbrechen des Spiels:', error);
   }
@@ -157,78 +186,69 @@ const updatePlayerScore = async (playerId, score) => {
 };
 
 const handleCardFlip = async (card) => {
-  if (isProcessingMove.value || gameStatus.value !== 'in_progress') {
+  if (
+    isProcessingMove.value || 
+    gameStatus.value !== 'in_progress' ||
+    card.is_matched ||
+    flippedCards.value.find(c => c.card_id === card.card_id)
+  ) {
     return;
   }
 
   try {
+    // Karte zum flippedCards Array hinzufügen
     const currentCard = cards.value.find(c => c.card_id === card.card_id);
-    
-    if (currentCard.is_matched) {
-      return;
-    }
-
-    if (flippedCards.value.find(c => c.card_id === currentCard.card_id)) {
-      return;
-    }
-
     flippedCards.value.push(currentCard);
-    console.log('Karte aufgedeckt:', currentCard.group_id);
-
+    
+    // Wenn zwei Karten aufgedeckt sind
     if (flippedCards.value.length === 2) {
-      // Erhöhe den Rundenzähler
-      roundCount.value += 1;
-
+      isProcessingMove.value = true;
+      roundCount.value++;
+      
       const [first, second] = flippedCards.value;
-
-      console.log('Prüfe Match:', first.group_id, second.group_id);
-
+      
+      // Kurze Pause damit Spieler die Karten sehen kann
       await new Promise(resolve => setTimeout(resolve, 700));
 
       if (first.group_id === second.group_id) {
-        console.log('Match gefunden!');
+        // Match gefunden
         await updateMatchedCards(
           gameId.value,
           [first.card_id, second.card_id],
           currentPlayer.value.player_id
         );
 
-        cards.value = cards.value.map(c => {
-          if (c.card_id === first.card_id || c.card_id === second.card_id) {
-            return { 
-              ...c, 
-              is_matched: true,
-              matched_by: currentPlayer.value.player_id
-            };
-          }
-          return c;
-        });
+        // Update cards state
+        cards.value = cards.value.map(c => 
+          [first.card_id, second.card_id].includes(c.card_id)
+            ? { ...c, is_matched: true, matched_by: currentPlayer.value.player_id }
+            : c
+        );
 
+        // Punktzahl erhöhen
         if (currentPlayer.value) {
-          currentPlayer.value.pivot.player_score = (currentPlayer.value.pivot.player_score || 0) + 1;
+          currentPlayer.value.pivot.player_score = 
+            (currentPlayer.value.pivot.player_score || 0) + 1;
         }
 
+        // Prüfen ob Spiel beendet
         if (cards.value.every(c => c.is_matched)) {
-          console.log('Spiel beendet!');
           await endGame();
         }
       } else {
-        console.log('Kein Match - drehe Karten zurück');
+        // Kein Match - Karten wieder umdrehen
         await new Promise(resolve => setTimeout(resolve, 500));
-        cards.value = cards.value.map(c => {
-          if (c.card_id === first.card_id || c.card_id === second.card_id) {
-            return { ...c, isFlipped: false };
-          }
-          return c;
-        });
         switchPlayer();
       }
 
+      // Aufgedeckte Karten zurücksetzen
       flippedCards.value = [];
+      isProcessingMove.value = false;
     }
 
   } catch (error) {
     console.error('Fehler beim Kartenflip:', error);
+    isProcessingMove.value = false;
   }
 };
 

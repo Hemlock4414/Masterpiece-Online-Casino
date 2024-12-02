@@ -31,15 +31,6 @@ class MemoryCard extends Model
     }
 
     // Helper Methoden
-    public function flip()
-    {
-        if ($this->is_matched) {
-            throw new \Exception('Bereits gematchte Karte kann nicht geflippt werden');
-        }
-        
-        $this->update(['is_flipped' => !$this->is_flipped]);
-        return $this;
-    }
 
     public function match(MemoryPlayer $player)
     {
