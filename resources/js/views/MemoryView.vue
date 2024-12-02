@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
 import MemoryGrid from '../components/MemoryGrid.vue';
+import MemoryEndModal from '../components/MemoryEndModal.vue';
 import { createGame, stopGame, updateMatchedCards, startGame as startGameAPI } from '../services/MemoryService';
 
 const gameId = ref(null);
@@ -13,6 +14,13 @@ const isProcessingMove = ref(false);
 const roundCount = ref(0);
 const timer = ref(0); 
 
+const showModal = ref(false);
+const gameResult = ref({
+  points: 0,
+  rounds: 0,
+  time: 0,
+});
+
 let timerInterval = null;
 
 const createNewGame = async () => {
@@ -21,11 +29,16 @@ const createNewGame = async () => {
     const game = await createGame(8);
     console.log('Spiel erfolgreich erstellt:', game); // Debug
     gameId.value = game.game_id;
-    gameStatus.value = game.status;
+    gameStatus.value = 'waiting'; // Setze den Status auf "waiting", bis "Spiel Starten" geklickt wird
     cards.value = game.cards;
     players.value = game.players;
     currentPlayer.value = players.value[0];
     flippedCards.value = [];
+    roundCount.value = 0;
+    timer.value = 0;
+
+    // Modal schließen
+    showModal.value = false;
   } catch (error) {
     console.error('Fehler beim Erstellen des Spiels:', error);
   }
@@ -36,19 +49,21 @@ const handleGameStart = async () => {
     if (!gameId.value) return;
 
     const response = await startGameAPI(gameId.value);
-    
+
     if (response.game) {
       cards.value = response.game.cards;
       players.value = response.game.players;
       gameStatus.value = response.game.status;
       currentPlayer.value = players.value[0];
 
-      startTimer(); // Timer starten
+      // Timer starten
+      startTimer();
     }
   } catch (error) {
     console.error('Fehler beim Starten des Spiels:', error);
   }
 };
+
 
 const startTimer = () => {
   if (timerInterval) return; // Timer läuft bereits
@@ -71,12 +86,24 @@ const endGame = async () => {
       const response = await stopGame(gameId.value);
       gameStatus.value = response.status || 'finished';
 
-      stopTimer(); // Timer stoppen
+      // Timer stoppen
+      stopTimer();
+
+      // Zeige das Modal nur, wenn das Spiel tatsächlich beendet wurde
+      if (gameStatus.value === 'finished') {
+        showModal.value = true;
+        gameResult.value = {
+          points: players.value.reduce((acc, player) => acc + (player.pivot?.player_score ?? 0), 0),
+          rounds: roundCount.value,
+          time: timer.value,
+        };
+      }
     }
   } catch (error) {
     console.error('Fehler beim Beenden des Spiels:', error);
   }
 };
+
 
 const switchPlayer = () => {
   const currentIndex = players.value.findIndex(p => p.player_id === currentPlayer.value.player_id);
@@ -243,6 +270,17 @@ onUnmounted(() => {
         :flippedCards="flippedCards"
         @flipCard="handleCardFlip" 
       />
+
+      <MemoryEndModal
+      v-if="showModal"
+      :title="'Spiel beendet!'"
+      :points="gameResult.points"
+      :rounds="gameResult.rounds"
+      :time="gameResult.time"
+      :on-new-game="createNewGame"
+      :on-go-to-home="() => $router.push('/')"
+      />
+
     </div>
   </div>
 
@@ -281,12 +319,10 @@ onUnmounted(() => {
 }
 
 .timer h2 {
-  margin: 0;
   font-size: 1.2em;
 }
 
 .timer p {
-  margin: 0;
   font-size: 1.5em;
   font-weight: bold;
 }
