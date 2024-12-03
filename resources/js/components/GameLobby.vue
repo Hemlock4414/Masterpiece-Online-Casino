@@ -2,6 +2,7 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import { XCircle, MenuIcon } from 'lucide-vue-next';
 // npm install lucide-vue-next
+import { LobbyService } from '../services/LobbyService';
 
 const isOpen = ref(true);
 const onlinePlayers = ref([]);
@@ -52,6 +53,20 @@ onMounted(() => {
     .listen('PlayerStatusChanged', (e) => {
       updatePlayerList(e.player);
     });
+});
+
+onMounted(() => {
+  console.log('Versuche Verbindung zur Lobby...');
+  
+  window.Echo.channel('lobby')
+    .listen('PlayerStatusChanged', (e) => {
+      console.log('Spieler Status geändert:', e);
+    });
+
+  // Test-Event senden
+  LobbyService.updateStatus('available')
+    .then(() => console.log('Status erfolgreich aktualisiert'))
+    .catch(err => console.error('Fehler:', err));
 });
 
 onUnmounted(() => {
