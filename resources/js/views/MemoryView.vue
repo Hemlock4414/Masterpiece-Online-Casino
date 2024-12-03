@@ -2,6 +2,7 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import MemoryGrid from '../components/MemoryGrid.vue';
 import MemoryEndModal from '../components/MemoryEndModal.vue';
+import GameLobby from '../components/GameLobby.vue';
 import { createGame, stopGame, updateMatchedCards, startGame as startGameAPI } from '../services/MemoryService';
 
 const gameId = ref(null);
@@ -262,6 +263,8 @@ onUnmounted(() => {
 <template>
 
   <div class="memory-container">
+
+    <GameLobby />
 
     <div class="memory-game">
 

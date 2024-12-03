@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 
 import HomeView from "../views/HomeView.vue";
-import MemoryView from "../views/MemoryView.vue";
 
 import { storeToRefs } from "pinia";
 import { useAuthStore } from "@/store/AuthStore";
@@ -15,7 +14,7 @@ const router = createRouter({
             name: "home",
             component: HomeView,
         },
-        {
+/*         {
             path: "/dashboard",
             name: "dashboard",
             // route level code-splitting
@@ -24,6 +23,11 @@ const router = createRouter({
             component: () => import("../views/DashboardView.vue"),
             // die Meta-Informationen verwenden wir um den Zugriff zu schützen
             meta: { requiresAuth: true },
+        }, */
+        {
+            path: "/profil",
+            name: "profile",
+            component: () => import("../views/ProfileView.vue"),
         },
         {
             // Hier brauchen wir keine Meta-Informationen, da diese Route für nicht authentifizierte User zugänglich sein soll.
@@ -36,16 +40,6 @@ const router = createRouter({
             path: "/registrieren",
             name: "register",
             component: () => import("../views/RegisterView.vue"),
-        },
-        {
-            path: "/post/edit/:id",
-            name: "post-edit",
-            component: () => import("../views/EditView.vue"),
-        },
-        {
-            path: "/post/create",
-            name: "post-create",
-            component: () => import("../views/CreateView.vue"),
         },
         {
             // Hier brauchen wir keine Meta-Informationen, da diese Route für nicht authentifizierte User zugänglich sein soll.
@@ -70,11 +64,6 @@ const router = createRouter({
             path: "/kontakt",
             name: "contact",
             component: () => import("../views/ContactView.vue"),
-        },
-        {
-            path: "/profil",
-            name: "profile",
-            component: () => import("../views/ProfileView.vue"),
         },
         {
             path: "/memory/play",
