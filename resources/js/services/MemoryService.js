@@ -1,12 +1,6 @@
-import axios from 'axios';
-
-const apiClient = axios.create({
-  baseURL: 'http://localhost/api',
-  headers: { 'Content-Type': 'application/json' },
-});
+import apiClient from './apiClient';
 
 // Neues Spiel erstellen
-
 export const createGame = async (pairs = 8, guestId = null) => {
   try {
     const requestData = {

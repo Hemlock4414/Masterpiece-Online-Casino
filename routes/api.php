@@ -73,3 +73,10 @@ Route::get('/memory-games/{gameId}/cards', [MemoryCardController::class, 'index'
 // Spiel anzeigen
 Route::get('/memory-games/{gameId}', [MemoryGameController::class, 'show']);
 
+
+// Spieler-Lobby
+Route::prefix('lobby')->group(function () {
+    Route::get('/players', [LobbyController::class, 'getPlayers']);
+    Route::post('/status', [LobbyController::class, 'updateStatus']);
+    Route::post('/challenge/{playerId}', [LobbyController::class, 'challengePlayer']);
+});
