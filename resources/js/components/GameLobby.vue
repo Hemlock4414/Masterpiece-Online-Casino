@@ -5,9 +5,24 @@ import { XCircle, MenuIcon } from 'lucide-vue-next';
 const isOpen = ref(true);
 const onlinePlayers = ref([]);
 
+const updateLobbyState = (lobby) => {
+  // Lobby-Status in der UI aktualisieren
+  if (lobby.challenger_id === currentPlayer.value.id || 
+      lobby.challenged_id === currentPlayer.value.id) {
+    // UI-Update Logik
+  }
+};
+
 const toggleSidebar = () => {
   isOpen.value = !isOpen.value;
 };
+
+onMounted(() => {
+  window.Echo.channel('lobby')
+    .listen('LobbyStatusUpdated', (e) => {
+      updateLobbyState(e.lobby);
+    });
+});
 </script>
 
 <template>
