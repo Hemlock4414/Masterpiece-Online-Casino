@@ -35,11 +35,10 @@ class LobbyController extends Controller
         $validated = $request->validate([
             'status' => 'required|in:accepted,declined,in_game'
         ]);
-    
+
         $lobby = Lobby::findOrFail($lobbyId);
         $lobby->update(['status' => $validated['status']]);
-        
-        broadcast(new LobbyUpdated($lobby));
+
         return response()->json($lobby);
     }
 
