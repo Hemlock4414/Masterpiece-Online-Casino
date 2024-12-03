@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
 import { XCircle, MenuIcon } from 'lucide-vue-next';
+// npm install lucide-vue-next
 
 const isOpen = ref(true);
 const onlinePlayers = ref([]);
@@ -13,6 +14,24 @@ const updateLobbyState = (lobby) => {
   }
 };
 
+const loadPlayers = async () => {
+  try {
+    const response = await LobbyService.getOnlinePlayers();
+    players.value = response.data;
+  } catch (error) {
+    console.error('Fehler beim Laden der Spieler:', error);
+  }
+};
+
+const challengePlayer = async (player) => {
+  try {
+    await LobbyService.challengePlayer(player.id);
+    // Hier weitere Logik für die Herausforderung
+  } catch (error) {
+    console.error('Fehler beim Herausfordern:', error);
+  }
+};
+
 const toggleSidebar = () => {
   isOpen.value = !isOpen.value;
 };
@@ -22,6 +41,22 @@ onMounted(() => {
     .listen('LobbyStatusUpdated', (e) => {
       updateLobbyState(e.lobby);
     });
+});
+
+onMounted(() => {
+  // Initiales Laden der Spieler
+  loadPlayers();
+
+  // WebSocket-Verbindung
+  window.Echo.channel('lobby')
+    .listen('PlayerStatusChanged', (e) => {
+      updatePlayerList(e.player);
+    });
+});
+
+onUnmounted(() => {
+  // WebSocket-Verbindung aufräumen
+  window.Echo.leave('lobby');
 });
 </script>
 
@@ -85,4 +120,63 @@ onMounted(() => {
   cursor: pointer;
 }
 
+.lobby-content {
+  padding: 20px;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.players-list {
+  margin-top: 20px;
+}
+
+.player-card {
+  padding: 10px;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.player-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.player-name {
+  font-weight: bold;
+}
+
+.player-status {
+  font-size: 0.8em;
+  padding: 2px 6px;
+  border-radius: 10px;
+  margin-top: 4px;
+}
+
+.player-status.available {
+  background: #4CAF50;
+  color: white;
+}
+
+.player-status.in_game {
+  background: #FFC107;
+  color: black;
+}
+
+.challenge-btn {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.challenge-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
 </style>

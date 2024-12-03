@@ -10,13 +10,15 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class LobbyStatusUpdated implements ShouldBroadcast
+class PlayerStatusChanged implements ShouldBroadcast
 {
-    public $lobby;
+    use SerializesModels;
 
-    public function __construct(Lobby $lobby)
+    public $player;
+
+    public function __construct($player)
     {
-        $this->lobby = $lobby;
+        $this->player = $player;
     }
 
     public function broadcastOn()
