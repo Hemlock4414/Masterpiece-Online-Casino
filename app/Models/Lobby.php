@@ -7,34 +7,43 @@ use Illuminate\Database\Eloquent\Model;
 
 class Lobby extends Model
 {
+    use HasFactory;
+    
     protected $table = 'lobbies';
     protected $primaryKey = 'lobby_id';
 
     protected $fillable = [
         'challenger_id',
+        'challenger_type',
+        'challenger_name',
+        'challenger_user_id',
         'challenged_id',
+        'challenged_type',
+        'challenged_name',
+        'challenged_user_id',
         'status',
         'game_type'
     ];
 
+    // Morphe Beziehungen für verschiedene Spielertypen
     public function challenger()
     {
-        return $this->belongsTo(MemoryPlayer::class, 'challenger_id', 'player_id');
+        return $this->morphTo(__FUNCTION__, 'challenger_type', 'challenger_id');
     }
 
     public function challenged()
     {
-        return $this->belongsTo(MemoryPlayer::class, 'challenged_id', 'player_id');
+        return $this->morphTo(__FUNCTION__, 'challenged_type', 'challenged_id');
     }
 
-    // Helper Methoden
-    public function isActive()
+    // User Beziehungen
+    public function challengerUser()
     {
-        return $this->status === 'pending' || $this->status === 'accepted';
+        return $this->belongsTo(User::class, 'challenger_user_id');
     }
 
-    public function canJoin(MemoryPlayer $player)
+    public function challengedUser()
     {
-        return $this->challenged_id === $player->player_id && $this->status === 'pending';
+        return $this->belongsTo(User::class, 'challenged_user_id');
     }
 }
