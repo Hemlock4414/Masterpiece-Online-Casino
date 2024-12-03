@@ -1,16 +1,21 @@
 import { apiClient } from './apiClient';
 
 export const LobbyService = {
-  getOnlinePlayers: async () => {
-    const response = await apiClient.get('/lobby/players');
-    return response.data;
+  createLobby: async (challengedId, challengedType, challengedName, gameType) => {
+      const response = await apiClient.post('/lobby/create', {
+          challenged_id: challengedId,
+          challenged_type: challengedType,
+          challenged_name: challengedName,
+          game_type: gameType
+      });
+      return response.data;
   },
 
-  updateStatus: async (status) => {
-    return apiClient.post('/lobby/status', { status });
+  updateLobbyStatus: async (lobbyId, status) => {
+      return apiClient.put(`/lobby/${lobbyId}/status`, { status });
   },
 
-  challengePlayer: async (playerId) => {
-    return apiClient.post(`/lobby/challenge/${playerId}`);
+  getActiveLobby: async (playerId, playerType) => {
+      return apiClient.get(`/lobby/active/${playerId}/${playerType}`);
   }
 };

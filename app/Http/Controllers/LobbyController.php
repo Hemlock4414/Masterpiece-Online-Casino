@@ -4,81 +4,57 @@ namespace App\Http\Controllers;
 
 use App\Models\Lobby;
 use Illuminate\Http\Request;
-
 class LobbyController extends Controller
 {
-    public function getOnlinePlayers()
+    public function create(Request $request)
     {
-        return MemoryPlayer::where('last_seen_at', '>', now()->subMinutes(5))
-            ->where('user_id', '!=', auth()->id())
-            ->with('user')
-            ->get();
-    }
-
-    public function updateStatus(Request $request)
-    {
-        $player = MemoryPlayer::where('user_id', auth()->id())->first();
-        $player->update([
-            'status' => $request->status,
-            'last_seen_at' => now()
+        $validated = $request->validate([
+            'challenged_id' => 'required',
+            'challenged_type' => 'required|string',
+            'challenged_name' => 'required|string',
+            'game_type' => 'required|string'
         ]);
 
-        return response()->json(['status' => 'success']);
+        $lobby = new Lobby([
+            'challenger_id' => $request->player_id,
+            'challenger_type' => 'memory_player',
+            'challenger_name' => $request->player_name,
+            'challenger_user_id' => auth()->id(),
+            'challenged_id' => $validated['challenged_id'],
+            'challenged_type' => $validated['challenged_type'],
+            'challenged_name' => $validated['challenged_name'],
+            'game_type' => $validated['game_type']
+        ]);
+
+        $lobby->save();
+        return response()->json($lobby);
     }
 
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function updateStatus(Request $request, $lobbyId)
     {
-        //
+        $validated = $request->validate([
+            'status' => 'required|in:accepted,declined,in_game'
+        ]);
+    
+        $lobby = Lobby::findOrFail($lobbyId);
+        $lobby->update(['status' => $validated['status']]);
+        
+        broadcast(new LobbyUpdated($lobby));
+        return response()->json($lobby);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function getActiveLobby($playerId, $playerType)
     {
-        //
+        return Lobby::where(function($query) use ($playerId, $playerType) {
+            $query->where([
+                'challenger_id' => $playerId,
+                'challenger_type' => $playerType
+            ])->orWhere([
+                'challenged_id' => $playerId,
+                'challenged_type' => $playerType
+            ]);
+        })->where('status', '!=', 'declined')
+          ->first();
     }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Lobby $lobby)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Lobby $lobby)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Lobby $lobby)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Lobby $lobby)
-    {
-        //
-    }
+    
 }
