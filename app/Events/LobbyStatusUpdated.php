@@ -23,4 +23,15 @@ class LobbyStatusUpdated implements ShouldBroadcast
     {
         return new Channel('lobby');
     }
+    public function broadcastWith(): array
+    {
+        return [
+            'lobby_id' => $this->lobby->lobby_id,
+            'challenger_id' => $this->lobby->challenger_id,
+            'challenger_name' => $this->lobby->challenger_name,
+            'challenged_id' => $this->lobby->challenged_id,
+            'challenged_name' => $this->lobby->challenged_name,
+            'status' => $this->lobby->status,
+        ];
+    }
 }
