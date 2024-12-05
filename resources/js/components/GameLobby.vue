@@ -7,18 +7,47 @@ import { LobbyService } from '../services/LobbyService';
 const isOpen = ref(true);
 const onlinePlayers = ref([]);
 
-const updateLobbyState = (lobby) => {
-  // Lobby-Status in der UI aktualisieren
-  if (lobby.challenger_id === currentPlayer.value.id || 
-      lobby.challenged_id === currentPlayer.value.id) {
-    // UI-Update Logik
+const isChallengeModalVisible = ref(false);
+const challengeMessage = ref('');
+const currentLobby = ref(null);
+
+const toggleSidebar = () => {
+  isOpen.value = !isOpen.value;
+};
+
+// Spieler herausfordern und Einladungen verwalten
+const showChallengeModal = (lobby) => {
+  isChallengeModalVisible.value = true;
+  challengeMessage.value = `${lobby.challenger_name} hat dich herausgefordert!`;
+  currentLobby.value = lobby;
+};
+
+const acceptChallenge = async () => {
+  try {
+    if (currentLobby.value) {
+      await LobbyService.updateLobbyStatus(currentLobby.value.lobby_id, 'accepted');
+      isChallengeModalVisible.value = false;
+    }
+  } catch (error) {
+    console.error('Fehler beim Akzeptieren der Herausforderung:', error);
+  }
+};
+
+const declineChallenge = async () => {
+  try {
+    if (currentLobby.value) {
+      await LobbyService.updateLobbyStatus(currentLobby.value.lobby_id, 'declined');
+      isChallengeModalVisible.value = false;
+    }
+  } catch (error) {
+    console.error('Fehler beim Ablehnen der Herausforderung:', error);
   }
 };
 
 const loadPlayers = async () => {
   try {
     const response = await LobbyService.getOnlinePlayers();
-    players.value = response.data;
+    onlinePlayers.value = response;
   } catch (error) {
     console.error('Fehler beim Laden der Spieler:', error);
   }
@@ -33,42 +62,60 @@ const challengePlayer = async (player) => {
   }
 };
 
-const toggleSidebar = () => {
-  isOpen.value = !isOpen.value;
+const updatePlayerList = (player) => {
+  const index = onlinePlayers.value.findIndex(p => p.id === player.id);
+
+  if (index !== -1) {
+    // Spieler in der Liste aktualisieren
+    onlinePlayers.value[index] = player;
+  } else {
+    // Neuen Spieler hinzufügen
+    onlinePlayers.value.push(player);
+  }
 };
 
-onMounted(() => {
+// Initialisierung
+onMounted(async () => {
+  console.log('Versuche Verbindung zur Lobby...');
+
+  // Spieler initial laden
+  await loadPlayers();
+
+  // WebSocket-Listener für globale Lobby-Updates
   window.Echo.channel('lobby')
     .listen('LobbyStatusUpdated', (e) => {
-      updateLobbyState(e.lobby);
-    });
-});
-
-onMounted(() => {
-  // Initiales Laden der Spieler
-  loadPlayers();
-
-  // WebSocket-Verbindung
-  window.Echo.channel('lobby')
-    .listen('PlayerStatusChanged', (e) => {
-      updatePlayerList(e.player);
-    });
-});
-
-onMounted(() => {
-  console.log('Versuche Verbindung zur Lobby...');
-  
-  window.Echo.channel('lobby')
+      if (e.lobby.challenged_id === currentPlayer.value.id) {
+        showChallengeModal(e.lobby);
+      }
+    })
     .listen('PlayerStatusChanged', (e) => {
       console.log('Spieler Status geändert:', e);
+      updatePlayerList(e);
     });
 
-  // Test-Event senden
+  // WebSocket-Listener für individuelle Lobby-Updates
+  window.Echo.channel(`lobby.${currentPlayer.value.id}`)
+    .listen('LobbyStatusUpdated', (e) => {
+      if (e.lobby.challenged_id === currentPlayer.value.id) {
+        showChallengeModal(e.lobby);
+      }
+    });
+
+  // Spieler-Status periodisch aktualisieren
+  setInterval(() => {
+    LobbyService.getOnlinePlayers().then(data => {
+      onlinePlayers.value = data;
+    });
+  }, 5000); // Alle 5 Sekunden
+
+  // Spieler-Status auf "verfügbar" setzen
   LobbyService.updateStatus('available')
     .then(() => console.log('Status erfolgreich aktualisiert'))
     .catch(err => console.error('Fehler:', err));
 });
 
+
+// Aufräumen
 onUnmounted(() => {
   // WebSocket-Verbindung aufräumen
   window.Echo.leave('lobby');
@@ -101,6 +148,11 @@ onUnmounted(() => {
             Herausfordern
           </button>
         </div>
+      </div>
+      <div v-if="isChallengeModalVisible" class="challenge-modal">
+        <h3>{{ challengeMessage }}</h3>
+        <button @click="acceptChallenge">Akzeptieren</button>
+        <button @click="declineChallenge">Ablehnen</button>
       </div>
     </div>
   </div>

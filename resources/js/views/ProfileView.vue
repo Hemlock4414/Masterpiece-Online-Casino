@@ -1,143 +1,3 @@
-<template>
-
-  <div class="main-content">
-    <div class="profile-container">
-      <div class="profile-content">
-        <h1>Profil</h1>
-        <div class="purple-line"></div>
-
-        <section>
-          <div class="profile-pic">
-            <h2>Profilbild</h2>
-
-            <div class="profileImage">
-              <div class="image-preview">
-                <img
-                  :src="profileImage"
-                  alt="Profile Picture"
-                  class="profile-picture"
-                />
-              </div>
-
-              <div class="image-upload" @click="triggerFileInput">
-                <input
-                  type="file"
-                  ref="fileInput"
-                  style="display: none"
-                  @change="handleFileUpload"
-                />
-                <i class="fas fa-camera fa-2x"></i>
-                <span>Profilbild ändern</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="balance">
-            <h2>Aktuelles Guthaben</h2>
-
-            <h2>{{ balance }}</h2>
-
-          </div>
-        </section>
-
-        <section>
-          <h2>Kontoinformationen</h2>
-
-          <div>
-            <div>
-              <p>Registriert seit:</p>
-                
-              <p class="info-display">{{ joinedDate }}</p>
-            </div>
-
-            <div>
-              <p>Spielername</p>
-
-              <p class="info-display">{{ authUser.user.username }}</p>
-            </div>
-
-            <div>
-              <p>Vorname</p>
-
-              <p class="info-display">{{ authUser.user.firstname }}</p>
-            </div>
-
-            <div>
-              <p>Nachname</p>
-
-              <p class="info-display">{{ authUser.user.lastname }}</p>
-            </div>
-
-            <div>
-              <p>Geburtsdatum</p>
-
-              <p class="info-display">{{ authUser.user.birthdate }}</p>
-            </div>
-
-            <div>
-              <p>Natonalität</p>
-
-              <p class="info-display">{{ authUser.user.nationality }}</p>
-            </div>
-
-            <div>
-              <p>E-Mail</p>
-
-              <p class="info-display">{{ authUser.user.email }}</p>
-
-              <button @click="openPasswordModal" class="btn-set">
-                Ändern
-              </button>
-            </div>
-
-            <div>
-              <p>Passwort</p>
-
-              <p class="info-display">{{ authUser.user.password }}</p>
-
-              <button @click="openPasswordModal" class="btn-set">
-                Ändern
-              </button>
-            </div>
-          </div>
-        </section>
-
-        <section>
-          <h2>Konto löschen</h2>
-
-          <p>Das löschen des Kontos führt zu:</p>
-          <br />
-          <ol>
-            <li>
-              Permanently delete your profile, along with your authentication
-              associations.
-            </li>
-            <li>
-              Permanently delete all your content, including your posts,
-              bookmarks, comments, etc.
-            </li>
-            <li>Allow your username to become available to anyone.</li>
-          </ol>
-
-          <button
-            @click="openDeleteModal"
-            class="btn-danger"
-            :disabled="isDeletingAccount"
-          >
-            {{ isDeletingAccount ? "Wird gelöscht..." : "Löschen" }}
-          </button>
-        </section>
-      </div>
-    </div>
-  </div>
-
-  <DeleteModal
-    v-model="showDeleteModal"
-    :isLoading="isDeletingAccount"
-    @confirm="deleteUser"
-  />
-</template>
-
 <script setup>
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
@@ -272,23 +132,162 @@ const handleFileUpload = async (event) => {
 }); */
 </script>
 
+<template>
+
+  <div class="main-content">
+    <div class="profile-container">
+      <div class="profile-content">
+        <h1>Profil</h1>
+        <div class="purple-line"></div>
+
+        <section>
+          <div class="profile-pic">
+            <h2>Profilbild</h2>
+
+            <div class="profileImage">
+              <div class="image-preview">
+                <img
+                  :src="profileImage"
+                  alt="Profile Picture"
+                  class="profile-picture"
+                />
+              </div>
+
+              <div class="image-upload" @click="triggerFileInput">
+                <input
+                  type="file"
+                  ref="fileInput"
+                  style="display: none"
+                  @change="handleFileUpload"
+                />
+                <i class="fas fa-camera fa-2x"></i>
+                <span>Profilbild ändern</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="balance">
+            <h2>Aktuelles Guthaben</h2>
+
+            <h2>{{ balance }}</h2>
+
+          </div>
+        </section>
+
+        <section>
+          <h2>Kontoinformationen</h2>
+
+          <div>
+            <div>
+              <p>Registriert seit:</p>
+                
+              <p class="info-display">{{ joinedDate }}</p>
+            </div>
+
+            <div>
+              <p>Spielername</p>
+
+              <p class="info-display">{{ authUser.user.username }}</p>
+            </div>
+
+            <div>
+              <p>Vorname</p>
+
+              <p class="info-display">{{ authUser.user.firstname }}</p>
+            </div>
+
+            <div>
+              <p>Nachname</p>
+
+              <p class="info-display">{{ authUser.user.lastname }}</p>
+            </div>
+
+            <div>
+              <p>Geburtsdatum</p>
+
+              <p class="info-display">{{ authUser.user.birthdate }}</p>
+            </div>
+
+            <div>
+              <p>Natonalität</p>
+
+              <p class="info-display">{{ authUser.user.nationality }}</p>
+            </div>
+
+            <div>
+              <p>E-Mail</p>
+
+              <p class="info-display">{{ authUser.user.email }}</p>
+
+              <button @click="openPasswordModal" class="btn-set">
+                Ändern
+              </button>
+            </div>
+
+            <div>
+              <p>Passwort</p>
+
+              <p class="info-display">{{ authUser.user.password }}</p>
+
+              <button @click="openPasswordModal" class="btn-set">
+                Ändern
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section class="acc-del">
+          <h2>Konto löschen</h2>
+
+          <p>Das löschen des Kontos führt zu:</p>
+          <br />
+          <ol>
+            <li>
+              Permanently delete your profile, along with your authentication
+              associations.
+            </li>
+            <li>
+              Permanently delete all your content, including your posts,
+              bookmarks, comments, etc.
+            </li>
+            <li>Allow your username to become available to anyone.</li>
+          </ol>
+
+          <button
+            @click="openDeleteModal"
+            class="btn-danger"
+            :disabled="isDeletingAccount"
+          >
+            {{ isDeletingAccount ? "Wird gelöscht..." : "Löschen" }}
+          </button>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <DeleteModal
+    v-model="showDeleteModal"
+    :isLoading="isDeletingAccount"
+    @confirm="deleteUser"
+  />
+</template>
+
+
+
 <style scoped>
 .main-content {
   z-index: 1;
   width: 100%;
   transition: all 0.3s ease;
   padding: 20px;
-  color: white;
   display: flex;
   justify-content: center;
   padding-top: 43px;
-  min-height: 100vh;
 }
 
 .profile-container {
   max-width: 680px;
   height: min-content;
-  background-color: #1c1f26;
   border-radius: 8px;
   border: 1px solid #909090;
   display: flex;
@@ -393,6 +392,12 @@ button[type="submit"],
     border: 1px solid #ddd;
     border-radius: 4px;
     min-height: 20px;
+}
+
+.acc-del {
+  border: red 3px solid;
+  padding: 30px;
+  border-radius: 8px;
 }
 
 @media (max-width: 500px) {
