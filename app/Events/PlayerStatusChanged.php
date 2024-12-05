@@ -12,18 +12,22 @@ class PlayerStatusChanged implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
+    public $id;
+    public $name;
+    public $status;
+
     public $player;
 
-    public function __construct($player)
+    public function __construct(array $data)
     {
-        $this->player = $player;
+        $this->id = $data['id'];
+        $this->name = $data['name'];
+        $this->status = $data['status'];
     }
 
-    public function broadcastOn(): array
+    public function broadcastOn(): Channel
     {
-        return [
-            new Channel('lobby')
-        ];
+        return new Channel('lobby');
     }
 
     // Optionale Methode um die Daten zu formatieren
