@@ -63,17 +63,30 @@ class LobbyController extends Controller
     // Methode für aktive Spieler-Liste
     public function getPlayers()
     {
-        $players = Lobby::select('challenger_id', 'challenger_name', 'challenger_type', 'status')
-            ->where('status', '!=', 'declined')
-            ->unionAll(
-                Lobby::select('challenged_id', 'challenged_name', 'challenged_type', 'status')
-                    ->where('status', '!=', 'declined')
-            )
-            ->distinct()
-            ->get();
-        
-        return response()->json($players);
+        try {
+            // Abfrage: Herausforderer und Herausgeforderte in der Lobby
+            $challengers = Lobby::select('challenger_id as player_id', 'challenger_name as name', 'challenger_type as type', 'status')
+                ->where('status', '!=', 'declined')
+                ->get();
+    
+            $challenged = Lobby::select('challenged_id as player_id', 'challenged_name as name', 'challenged_type as type', 'status')
+                ->where('status', '!=', 'declined')
+                ->get();
+    
+            // Beide Listen zusammenfügen
+            $players = $challengers->merge($challenged)->unique('player_id');
+    
+            // Debugging: Log-Ausgabe
+            \Log::info('Spielerabfrage erfolgreich', ['players' => $players]);
+    
+            return response()->json($players);
+        } catch (\Exception $e) {
+            // Fehler loggen und HTTP 500 zurückgeben
+            \Log::error('Fehler bei getPlayers: ' . $e->getMessage());
+            return response()->json(['error' => 'Unable to load players'], 500);
+        }
     }
+    
 
     // für Online-Status-Updates
     public function updatePlayerStatus(Request $request)
@@ -104,21 +117,44 @@ class LobbyController extends Controller
     // Methode mit Verfügbarkeitsprüfung
     public function challengePlayer(Request $request, $playerId)
     {
-        // Prüfe ob Spieler bereits in einer aktiven Lobby ist
-        $existingLobby = $this->getActiveLobby($playerId, $request->player_type);
-        if ($existingLobby) {
-            return response()->json(['message' => 'Player already in a game'], 400);
+        try {
+            // Debugging: Anfrage loggen
+            \Log::info('Herausforderung gestartet', $request->all());
+    
+            // Prüfe, ob Spieler bereits in einer aktiven Lobby ist
+            $existingLobby = $this->getActiveLobby($playerId, $request->player_type);
+            if ($existingLobby) {
+                return response()->json(['message' => 'Player already in a game'], 400);
+            }
+    
+            // Erstelle eine neue Lobby
+            $validated = $request->validate([
+                'challenged_id' => 'required',
+                'challenged_type' => 'required|string',
+                'challenged_name' => 'required|string',
+                'game_type' => 'required|string',
+            ]);
+    
+            $lobby = Lobby::create([
+                'challenger_id' => $request->player_id,
+                'challenger_type' => 'memory_player',
+                'challenger_name' => $request->player_name,
+                'challenged_id' => $validated['challenged_id'],
+                'challenged_type' => $validated['challenged_type'],
+                'challenged_name' => $validated['challenged_name'],
+                'game_type' => $validated['game_type'],
+                'status' => 'pending',
+            ]);
+    
+            broadcast(new PlayerStatusChanged($lobby));
+    
+            return response()->json(['message' => 'Challenge sent', 'lobby' => $lobby]);
+        } catch (\Exception $e) {
+            // Fehler loggen
+            \Log::error('Fehler bei challengePlayer: ' . $e->getMessage());
+            return response()->json(['error' => 'Unable to create challenge'], 500);
         }
-
-        // Erstelle neue Lobby
-        $lobby = $this->create($request);
-
-        broadcast(new PlayerStatusChanged($lobby));
-        
-        return response()->json([
-            'message' => 'Challenge sent', 
-            'lobby' => $lobby
-        ]);
     }
+    
     
 }

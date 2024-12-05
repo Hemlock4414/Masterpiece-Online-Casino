@@ -10,6 +10,7 @@ const onlinePlayers = ref([]);
 const isChallengeModalVisible = ref(false);
 const challengeMessage = ref('');
 const currentLobby = ref(null);
+const currentPlayer = ref(null);
 
 const toggleSidebar = () => {
   isOpen.value = !isOpen.value;
@@ -49,7 +50,7 @@ const loadPlayers = async () => {
     const response = await LobbyService.getOnlinePlayers();
     onlinePlayers.value = response;
   } catch (error) {
-    console.error('Fehler beim Laden der Spieler:', error);
+    console.error('Fehler beim Laden der Spieler:', error.message);
   }
 };
 
@@ -73,6 +74,10 @@ const updatePlayerList = (player) => {
     onlinePlayers.value.push(player);
   }
 };
+
+onMounted(() => {
+    currentPlayer.value = players.value.find(player => player.isCurrent);
+});
 
 // Initialisierung
 onMounted(async () => {
