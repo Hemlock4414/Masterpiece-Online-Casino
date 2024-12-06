@@ -3,6 +3,7 @@
 namespace App\Events;
 
 use Illuminate\Broadcasting\Channel;
+use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Queue\SerializesModels;
 
@@ -20,7 +21,7 @@ class PlayerStatusChanged implements ShouldBroadcast
 
     public function broadcastOn()
     {
-        return new Channel('lobby');
+        return new Channel('lobby');  // Normaler Channel statt Presence
     }
 
     public function broadcastWith()

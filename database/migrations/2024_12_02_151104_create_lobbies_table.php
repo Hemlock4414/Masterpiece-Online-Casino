@@ -25,6 +25,7 @@ return new class extends Migration
             
             $table->enum('status', ['pending', 'accepted', 'declined', 'in_game'])->default('pending');
             $table->string('game_type')->default('memory');
+            $table->timestamp('expires_at')->nullable();
             $table->timestamps();
             
             // Index für bessere Performance

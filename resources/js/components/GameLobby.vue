@@ -1,34 +1,47 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { XCircle, MenuIcon } from 'lucide-vue-next';
-// npm install lucide-vue-next
 import { LobbyService } from '../services/LobbyService';
+import { useAuthStore } from "@/store/AuthStore";
+
+const authStore = useAuthStore();
+const user = computed(() => authStore.user);
 
 const isOpen = ref(true);
 const onlinePlayers = ref([]);
-
 const isChallengeModalVisible = ref(false);
 const challengeMessage = ref('');
 const currentLobby = ref(null);
-const currentPlayer = ref(null);
 
+// Toggle Sidebar
 const toggleSidebar = () => {
   isOpen.value = !isOpen.value;
 };
 
-// Spieler herausfordern und Einladungen verwalten
+// Spieler zur Liste hinzufügen/aktualisieren
+const updatePlayerList = (player) => {
+  const index = onlinePlayers.value.findIndex(p => p.id === player.id);
+  
+  if (index !== -1) {
+    onlinePlayers.value[index] = player;
+  } else {
+    onlinePlayers.value.push(player);
+  }
+};
+
+// Spieler-Herausforderung
 const showChallengeModal = (lobby) => {
+  if (!lobby || lobby.challenged_id !== user.value?.id) return;
+  
   isChallengeModalVisible.value = true;
-  challengeMessage.value = `${lobby.challenger_name} hat dich herausgefordert!`;
+  challengeMessage.value = `${lobby.challenger_name} fordert Sie zu einer Partie Memory heraus!`;
   currentLobby.value = lobby;
 };
 
 const acceptChallenge = async () => {
   try {
-    if (currentLobby.value) {
-      await LobbyService.updateLobbyStatus(currentLobby.value.lobby_id, 'accepted');
-      isChallengeModalVisible.value = false;
-    }
+    await LobbyService.updateLobbyStatus(currentLobby.value.lobby_id, 'accepted');
+    isChallengeModalVisible.value = false;
   } catch (error) {
     console.error('Fehler beim Akzeptieren der Herausforderung:', error);
   }
@@ -36,94 +49,45 @@ const acceptChallenge = async () => {
 
 const declineChallenge = async () => {
   try {
-    if (currentLobby.value) {
-      await LobbyService.updateLobbyStatus(currentLobby.value.lobby_id, 'declined');
-      isChallengeModalVisible.value = false;
-    }
+    await LobbyService.updateLobbyStatus(currentLobby.value.lobby_id, 'declined');
+    isChallengeModalVisible.value = false;
   } catch (error) {
     console.error('Fehler beim Ablehnen der Herausforderung:', error);
   }
 };
 
-const loadPlayers = async () => {
-  try {
-    const response = await LobbyService.getOnlinePlayers();
-    onlinePlayers.value = response;
-  } catch (error) {
-    console.error('Fehler beim Laden der Spieler:', error.message);
-  }
-};
-
 const challengePlayer = async (player) => {
+  if (!user.value?.id && player.id === sessionStorage.getItem('memoryGuestId')) return;
+  
   try {
     await LobbyService.challengePlayer(player.id);
-    // Hier weitere Logik für die Herausforderung
   } catch (error) {
     console.error('Fehler beim Herausfordern:', error);
   }
 };
 
-const updatePlayerList = (player) => {
-  const index = onlinePlayers.value.findIndex(p => p.id === player.id);
-
-  if (index !== -1) {
-    // Spieler in der Liste aktualisieren
-    onlinePlayers.value[index] = player;
-  } else {
-    // Neuen Spieler hinzufügen
-    onlinePlayers.value.push(player);
-  }
-};
-
 onMounted(() => {
-    currentPlayer.value = players.value.find(player => player.isCurrent);
-});
-
-// Initialisierung
-onMounted(async () => {
-  console.log('Versuche Verbindung zur Lobby...');
-
-  // Spieler initial laden
-  await loadPlayers();
-
-  // WebSocket-Listener für globale Lobby-Updates
-  window.Echo.channel('lobby')
-    .listen('LobbyStatusUpdated', (e) => {
-      if (e.lobby.challenged_id === currentPlayer.value.id) {
-        showChallengeModal(e.lobby);
-      }
+  const guestId = sessionStorage.getItem('memoryGuestId');
+  console.log('WebSocket-Verbindung wird aufgebaut für Spieler:', guestId);
+  
+  // Presence Channel für Online-Spieler
+  window.Echo.join('lobby')
+  .listen('PlayerStatusChanged', (e) => {
+      console.log('Status-Update empfangen:', e);
+      updatePlayerList(e.player);
     })
-    .listen('PlayerStatusChanged', (e) => {
-      console.log('Spieler Status geändert:', e);
-      updatePlayerList(e);
-    });
-
-  // WebSocket-Listener für individuelle Lobby-Updates
-  window.Echo.channel(`lobby.${currentPlayer.value.id}`)
     .listen('LobbyStatusUpdated', (e) => {
-      if (e.lobby.challenged_id === currentPlayer.value.id) {
-        showChallengeModal(e.lobby);
-      }
+      console.log('Lobby-Update empfangen:', e);
+      showChallengeModal(e.lobby);
     });
 
-  // Spieler-Status periodisch aktualisieren
-  setInterval(() => {
-    LobbyService.getOnlinePlayers().then(data => {
-      onlinePlayers.value = data;
-    });
-  }, 5000); // Alle 5 Sekunden
+  LobbyService.updatePlayerStatus('available');
 
-  // Spieler-Status auf "verfügbar" setzen
-  LobbyService.updateStatus('available')
-    .then(() => console.log('Status erfolgreich aktualisiert'))
-    .catch(err => console.error('Fehler:', err));
-});
-
-
-// Aufräumen
-onUnmounted(() => {
-  // WebSocket-Verbindung aufräumen
-  window.Echo.leave('lobby');
+  // Cleanup beim Unmount
+  onUnmounted(() => {
+    window.Echo.leave('lobby');
+    LobbyService.updatePlayerStatus('offline');
+  });
 });
 </script>
 
@@ -136,28 +100,40 @@ onUnmounted(() => {
     
     <div class="lobby-content" v-if="isOpen">
       <h2>Spieler-Lobby</h2>
+      
       <div class="players-list">
         <div v-for="player in onlinePlayers" 
              :key="player.id" 
-             class="player-card">
+             class="player-card"
+             :class="{ 'self': player.id === (user?.id || sessionStorage.getItem('memoryGuestId')) }">
           <div class="player-info">
-            <span class="player-name">{{ player.name }}</span>
+            <span class="player-name">
+                {{ player.name }} 
+                {{ player.id === (user?.id || sessionStorage.getItem('memoryGuestId')) ? '(Sie)' : '' }}
+              </span>
             <span class="player-status" :class="player.status">
-              {{ player.status }}
+              {{ player.status || 'verfügbar' }}
             </span>
           </div>
           <button 
+            v-if="onlinePlayers.length < 2 && player.id !== (user?.id || sessionStorage.getItem('memoryGuestId'))"
             class="challenge-btn"
-            :disabled="player.status !== 'available'"
+            :disabled="player.status === 'in_game'"
             @click="challengePlayer(player)">
             Herausfordern
           </button>
         </div>
       </div>
+
+      <!-- Challenge Modal -->
       <div v-if="isChallengeModalVisible" class="challenge-modal">
-        <h3>{{ challengeMessage }}</h3>
-        <button @click="acceptChallenge">Akzeptieren</button>
-        <button @click="declineChallenge">Ablehnen</button>
+        <div class="modal-content">
+          <h3>{{ challengeMessage }}</h3>
+          <div class="modal-buttons">
+            <button class="accept-btn" @click="acceptChallenge">Akzeptieren</button>
+            <button class="decline-btn" @click="declineChallenge">Ablehnen</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -165,15 +141,14 @@ onUnmounted(() => {
 
 <style scoped>
 .lobby-container {
-  position: fixed;
+  position: absolute;
   right: 0;
-  top: 0;
-  height: 100vh;
   width: 300px;
   background: white;
   box-shadow: -2px 0 5px rgba(0,0,0,0.1);
   transition: transform 0.3s ease;
-  z-index: 1000;
+  z-index: 10;
+  height: 50%;
 }
 
 .lobby-container.closed {
@@ -190,16 +165,7 @@ onUnmounted(() => {
   border-radius: 4px 0 0 4px;
   box-shadow: -2px 0 5px rgba(0,0,0,0.1);
   cursor: pointer;
-}
-
-.lobby-content {
-  padding: 20px;
-  height: 100%;
-  overflow-y: auto;
-}
-
-.players-list {
-  margin-top: 20px;
+  z-index: 10;
 }
 
 .player-card {
@@ -210,6 +176,10 @@ onUnmounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.player-card.self {
+  background-color: #f5f5f5;
 }
 
 .player-info {
@@ -238,17 +208,51 @@ onUnmounted(() => {
   color: black;
 }
 
-.challenge-btn {
+.challenge-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  z-index: 1100;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.accept-btn, .challenge-btn {
   background: #4CAF50;
   color: white;
   border: none;
-  padding: 5px 10px;
+  padding: 8px 16px;
   border-radius: 4px;
   cursor: pointer;
 }
 
-.challenge-btn:disabled {
+.decline-btn {
+  background: #f44336;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:disabled {
   background: #ccc;
   cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .lobby-container {
+    width: 100%;
+    max-width: 300px;
+  }
 }
 </style>
