@@ -67,21 +67,38 @@ const challengePlayer = async (player) => {
 };
 
 onMounted(() => {
-  const guestId = sessionStorage.getItem('memoryGuestId');
-  console.log('WebSocket-Verbindung wird aufgebaut für Spieler:', guestId);
+  const playerId = LobbyService.getCurrentPlayerId();
+  console.log('WebSocket-Verbindung wird aufgebaut für Spieler:', playerId);
   
-  // Presence Channel für Online-Spieler
-  window.Echo.join('lobby')
+  // Channel für Online-Spieler
+  window.Echo.channel('lobby')
   .listen('PlayerStatusChanged', (e) => {
-      console.log('Status-Update empfangen:', e);
-      updatePlayerList(e.player);
-    })
-    .listen('LobbyStatusUpdated', (e) => {
-      console.log('Lobby-Update empfangen:', e);
-      showChallengeModal(e.lobby);
-    });
-
-  LobbyService.updatePlayerStatus('available');
+    console.log('Status-Update empfangen:', e);
+    if (e.player) {
+      updatePlayerList({
+        id: e.player.id,
+        name: e.player.name,
+        status: e.player.status,
+        isRegistered: e.player.isRegistered
+      });
+    }
+  })
+  .listen('LobbyStatusUpdated', (e) => {
+    console.log('Lobby-Update empfangen:', e);
+    if (e.lobby) {
+      const lobby = {
+        lobby_id: e.lobby.lobby_id,
+        challenger_id: e.lobby.challenger_id,
+        challenger_name: e.lobby.challenger_name,
+        challenger_registered: e.lobby.challenger_registered,
+        challenged_id: e.lobby.challenged_id,
+        challenged_name: e.lobby.challenged_name,
+        challenged_registered: e.lobby.challenged_registered,
+        status: e.lobby.status
+      };
+      showChallengeModal(lobby);
+    }
+  });
 
   // Cleanup beim Unmount
   onUnmounted(() => {
@@ -106,22 +123,25 @@ onMounted(() => {
              :key="player.id" 
              class="player-card"
              :class="{ 'self': player.id === (user?.id || sessionStorage.getItem('memoryGuestId')) }">
-          <div class="player-info">
-            <span class="player-name">
+             <div class="player-info">
+              <span class="player-name">
                 {{ player.name }} 
                 {{ player.id === (user?.id || sessionStorage.getItem('memoryGuestId')) ? '(Sie)' : '' }}
+                {{ player.isRegistered ? '👤' : '👻' }}
               </span>
-            <span class="player-status" :class="player.status">
-              {{ player.status || 'verfügbar' }}
-            </span>
-          </div>
-          <button 
-            v-if="onlinePlayers.length < 2 && player.id !== (user?.id || sessionStorage.getItem('memoryGuestId'))"
-            class="challenge-btn"
-            :disabled="player.status === 'in_game'"
-            @click="challengePlayer(player)">
-            Herausfordern
-          </button>
+              <span class="player-status" :class="player.status">
+                {{ player.status || 'verfügbar' }}
+              </span>
+            </div>
+            <button 
+              v-if="player.id !== (user?.id || sessionStorage.getItem('memoryGuestId')) && 
+                    onlinePlayers.length < 2 && 
+                    player.status !== 'offline'"
+              class="challenge-btn"
+              :disabled="player.status === 'in_game'"
+              @click="challengePlayer(player)">
+              Herausfordern
+            </button>
         </div>
       </div>
 
@@ -176,6 +196,15 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.player-card.registered {
+  border-left: 3px solid #4CAF50;
+}
+
+.player-name .icon {
+  margin-left: 5px;
+  font-size: 0.8em;
 }
 
 .player-card.self {
