@@ -70,42 +70,42 @@ onMounted(() => {
   const playerId = LobbyService.getCurrentPlayerId();
   console.log('WebSocket-Verbindung wird aufgebaut für Spieler:', playerId);
   
-  // Channel für Online-Spieler
   window.Echo.channel('lobby')
-  .listen('PlayerStatusChanged', (e) => {
-    console.log('Status-Update empfangen:', e);
-    if (e.player) {
-      updatePlayerList({
-        id: e.player.id,
-        name: e.player.name,
-        status: e.player.status,
-        isRegistered: e.player.isRegistered
-      });
-    }
-  })
-  .listen('LobbyStatusUpdated', (e) => {
-    console.log('Lobby-Update empfangen:', e);
-    if (e.lobby) {
-      const lobby = {
-        lobby_id: e.lobby.lobby_id,
-        challenger_id: e.lobby.challenger_id,
-        challenger_name: e.lobby.challenger_name,
-        challenger_registered: e.lobby.challenger_registered,
-        challenged_id: e.lobby.challenged_id,
-        challenged_name: e.lobby.challenged_name,
-        challenged_registered: e.lobby.challenged_registered,
-        status: e.lobby.status
-      };
-      showChallengeModal(lobby);
-    }
-  });
-
-  // Cleanup beim Unmount
-  onUnmounted(() => {
-    window.Echo.leave('lobby');
-    LobbyService.updatePlayerStatus('offline');
-  });
+    .listen('PlayerStatusChanged', (e) => {
+      console.log('Status-Update empfangen:', e);
+      if (e.player) {
+        updatePlayerList({
+          id: e.player.id,
+          name: e.player.name,
+          status: e.player.status,
+          isRegistered: e.player.isRegistered
+        });
+      }
+    })
+    .listen('LobbyStatusUpdated', (e) => {
+      console.log('Lobby-Update empfangen:', e);
+      if (e.lobby) {
+        const lobby = {
+          lobby_id: e.lobby.lobby_id,
+          challenger_id: e.lobby.challenger_id,
+          challenger_name: e.lobby.challenger_name,
+          challenger_registered: e.lobby.challenger_registered,
+          challenged_id: e.lobby.challenged_id,
+          challenged_name: e.lobby.challenged_name,
+          challenged_registered: e.lobby.challenged_registered,
+          status: e.lobby.status
+        };
+        showChallengeModal(lobby);
+      }
+    });
 });
+
+// Cleanup beim Unmount
+onUnmounted(() => {
+  window.Echo.leave('lobby');
+  LobbyService.updatePlayerStatus('offline');
+});
+
 </script>
 
 <template>
@@ -168,7 +168,7 @@ onMounted(() => {
   box-shadow: -2px 0 5px rgba(0,0,0,0.1);
   transition: transform 0.3s ease;
   z-index: 10;
-  height: 50%;
+  height: calc(100vh - 120px);
 }
 
 .lobby-container.closed {
