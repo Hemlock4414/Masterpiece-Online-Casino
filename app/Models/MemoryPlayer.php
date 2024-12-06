@@ -29,14 +29,13 @@ class MemoryPlayer extends Model
     public static function createOrGetGuest($guestId = null)
     {
         if ($guestId) {
-            $player = self::where('player_id', $guestId)
-                         ->where('name', 'LIKE', 'Gast%')
-                         ->first();
+            $player = self::find($guestId);
             if ($player) {
                 return $player;
             }
         }
-
+    
+        // Nur wenn keine ID übergeben wurde oder kein Spieler gefunden wurde
         $player = new self([
             'name' => 'Gast ' . rand(1000, 9999)
         ]);

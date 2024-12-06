@@ -330,7 +330,7 @@ onUnmounted(() => {
       <div class="game-controls">
         <button 
           v-if="gameStatus === 'waiting'" 
-          @click="handleGameStart"
+          @click="startGame"
           class="btn-primary"
         >
           Spiel Starten
