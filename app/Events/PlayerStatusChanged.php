@@ -3,7 +3,6 @@
 namespace App\Events;
 
 use Illuminate\Broadcasting\Channel;
-use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Queue\SerializesModels;
 
@@ -21,15 +20,16 @@ class PlayerStatusChanged implements ShouldBroadcast
 
     public function broadcastOn()
     {
-        return new Channel('lobby');  // Normaler Channel statt Presence
+        return new Channel('lobby');
     }
 
     public function broadcastWith()
     {
         return [
-            'id' => $this->player->challenger_id ?? $this->player->challenged_id,
-            'name' => $this->player->challenger_name ?? $this->player->challenged_name,
-            'status' => $this->player->status,
+            'id' => $this->player['id'],
+            'name' => $this->player['name'],
+            'status' => $this->player['status'],
+            'isRegistered' => $this->player['isRegistered'] ?? false
         ];
     }
 }

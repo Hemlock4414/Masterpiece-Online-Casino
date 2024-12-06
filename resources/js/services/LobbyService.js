@@ -1,28 +1,45 @@
+import { useAuthStore } from "@/store/AuthStore";
 import apiClient from './apiClient';
 
 export const LobbyService = {
-    createLobby: async (challengedId, challengedType, challengedName, gameType) => {
-        const response = await apiClient.post('/lobby/create', {
-            challenged_id: challengedId,
-            challenged_type: challengedType,
-            challenged_name: challengedName,
-            game_type: gameType
-        });
-        return response.data;
+    getCurrentPlayerId: () => {
+        const authStore = useAuthStore();
+        if (authStore.user?.id) {
+            return authStore.user.id;
+        }
+        return sessionStorage.getItem('memoryGuestId');
+    },
+
+    updatePlayerStatus: async (status) => {
+        try {
+            const playerId = LobbyService.getCurrentPlayerId();
+            const response = await apiClient.post('/lobby/player-status', {
+                player_id: playerId,
+                status: status
+            });
+            console.log('Status updated:', response.data);
+            return response.data;
+        } catch (error) {
+            console.error('Error updating status:', error);
+            throw error;
+        }
     },
 
     updateLobbyStatus: async (lobbyId, status) => {
-        return apiClient.put(`/lobby/${lobbyId}/status`, { status });
+        try {
+            const response = await apiClient.post(`/lobby/status/${lobbyId}`, { status });
+            console.log('Lobby status updated:', response.data);
+            return response.data;
+        } catch (error) {
+            console.error('Error updating lobby status:', error);
+            throw error;
+        }
     },
 
-    getActiveLobby: async (playerId, playerType) => {
-        return apiClient.get(`/lobby/active/${playerId}/${playerType}`);
-    },
-
-    // Holt die Liste aller aktiven Spieler
     getOnlinePlayers: async () => {
         try {
             const response = await apiClient.get('/lobby/online-players');
+            console.log('Online players:', response.data);
             return response.data;
         } catch (error) {
             console.error('Error fetching online players:', error);
@@ -30,38 +47,16 @@ export const LobbyService = {
         }
     },
 
-    // Sendet eine Spieleinladung
     challengePlayer: async (playerId) => {
         try {
-            const response = await apiClient.post(`/lobby/challenge/${playerId}`);
+            const challenger = LobbyService.getCurrentPlayerId();
+            const response = await apiClient.post(`/lobby/challenge/${playerId}`, {
+                challenger_id: challenger
+            });
+            console.log('Challenge sent:', response.data);
             return response.data;
         } catch (error) {
             console.error('Error challenging player:', error);
-            throw error;
-        }
-    },
-
-    // Aktualisiert den Online-Status eines Spielers
-    updateStatus: async (status) => {
-        try {
-            const response = await apiClient.post('/lobby/status', { status });
-            return response.data;
-        } catch (error) {
-            console.error('Error updating status:', error);
-            throw error;
-        }
-    },
-    
-    updatePlayerStatus: async (status) => {
-        try {
-            const guestId = sessionStorage.getItem('memoryGuestId');
-            const response = await apiClient.post('/lobby/player-status', {
-                player_id: guestId,
-                status: status
-            });
-            return response.data;
-        } catch (error) {
-            console.error('Error updating player status:', error);
             throw error;
         }
     }

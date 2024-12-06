@@ -77,9 +77,14 @@ Route::get('/memory-games/{gameId}', [MemoryGameController::class, 'show']);
 
 // Spieler-Lobby
 Route::prefix('lobby')->group(function () {
-    Route::get('/players', [LobbyController::class, 'getPlayers']);
-    Route::post('/status', [LobbyController::class, 'updateStatus']);
-    Route::post('/challenge/{playerId}', [LobbyController::class, 'challengePlayer']);
-    Route::post('/player-status', [LobbyController::class, 'updatePlayerStatus']);
+    // Online Spieler
     Route::get('/online-players', [LobbyController::class, 'getOnlinePlayers']);
+    Route::post('/player-status', [LobbyController::class, 'updatePlayerStatus']);
+    
+    // Lobby Management
+    Route::post('/challenge/{playerId}', [LobbyController::class, 'challengePlayer']);
+    Route::post('/status/{lobbyId}', [LobbyController::class, 'updateLobbyStatus']);
+    
+    // Hilfreich für Debug/Wartung
+    Route::get('/check-expired', [LobbyController::class, 'checkExpiredChallenges']);
 });

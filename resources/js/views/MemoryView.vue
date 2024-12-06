@@ -67,7 +67,7 @@ const createNewGame = async () => {
   }
 };
 
-const handleGameStart = async () => {
+const startGame = async () => {
   try {
     if (!gameId.value) return;
 
@@ -79,7 +79,8 @@ const handleGameStart = async () => {
       gameStatus.value = response.game.status;
       currentPlayer.value = players.value[0];
 
-      // Timer starten
+      // Spieler-Status auf 'in_game' setzen
+      await LobbyService.updatePlayerStatus('in_game');
       startTimer();
     }
   } catch (error) {
@@ -109,6 +110,8 @@ const endGame = async () => {
       gameStatus.value = response.status || 'finished';
 
       stopTimer();
+      // Spieler-Status auf 'available' setzen
+      await LobbyService.updatePlayerStatus('available');
 
       if (gameStatus.value === 'finished') {
         showModal.value = true;
@@ -151,6 +154,16 @@ const abortGame = async () => {
     
   } catch (error) {
     console.error('Fehler beim Abbrechen des Spiels:', error);
+  }
+};
+
+const handlePlayerJoin = async (player) => {
+  if (players.value.length < 2 && gameStatus.value === 'waiting') {
+    players.value.push(player);
+    // Optional: Automatischer Spielstart wenn zwei Spieler da sind
+    if (players.value.length === 2) {
+      await startGame();
+    }
   }
 };
 
@@ -252,11 +265,21 @@ const handleCardFlip = async (card) => {
 
 onMounted(async () => {
   await createNewGame();
+
+  // Höre auf Lobby-Events
+  window.Echo.channel('lobby')
+  .listen('LobbyStatusUpdated', (e) => {
+    if (e.lobby.status === 'accepted' && e.lobby.game_id === gameId.value) {
+      handlePlayerJoin(e.challenger);
+    }
+  });
 });
 
 // Timer stoppen, wenn die Komponente zerstört wird
 onUnmounted(() => {
   stopTimer();
+  LobbyService.updatePlayerStatus('available');
+  window.Echo.leave('lobby');
 });
 </script>
 

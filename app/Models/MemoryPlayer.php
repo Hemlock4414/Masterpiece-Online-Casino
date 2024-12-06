@@ -26,6 +26,27 @@ class MemoryPlayer extends Model
                     ->withTimestamps();
     }
 
+    public static function createOrGetGuest($guestId = null)
+    {
+        if ($guestId) {
+            $player = self::where('player_id', $guestId)
+                         ->where('name', 'LIKE', 'Gast%')
+                         ->first();
+            if ($player) {
+                return $player;
+            }
+        }
+
+        $player = new self([
+            'name' => 'Gast ' . rand(1000, 9999)
+        ]);
+        $player->save();
+        
+        session(['memoryGuestId' => $player->player_id]);
+        
+        return $player;
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');

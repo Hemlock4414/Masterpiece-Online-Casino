@@ -14,18 +14,19 @@ class LobbyController extends Controller
     public function getPlayers()
     {
         try {
-            $guestId = session('memoryGuestId');
-            $player = MemoryPlayer::find($guestId);
+            $player = auth()->check() 
+                ? MemoryPlayer::where('user_id', auth()->id())->first()
+                : MemoryPlayer::createOrGetGuest(session('memoryGuestId'));
             
             if (!$player) {
                 return response()->json(['error' => 'Spieler nicht gefunden'], 404);
             }
-
-            // Aktuelle Spieler in der Lobby (über Presence Channel verfügbar)
+    
             return response()->json([
                 'id' => $player->player_id,
                 'name' => $player->name,
-                'status' => 'available'
+                'status' => 'available',
+                'isRegistered' => auth()->check()
             ]);
         } catch (\Exception $e) {
             \Log::error('Fehler bei getPlayers:', ['error' => $e->getMessage()]);
@@ -36,9 +37,12 @@ class LobbyController extends Controller
     public function challengePlayer(Request $request, $playerId)
     {
         try {
-            $challenger = MemoryPlayer::find(session('memoryGuestId'));
+            $challenger = auth()->check() 
+                ? MemoryPlayer::where('user_id', auth()->id())->first()
+                : MemoryPlayer::createOrGetGuest(session('memoryGuestId'));
+                
             $challenged = MemoryPlayer::find($playerId);
-
+    
             if (!$challenger || !$challenged) {
                 return response()->json(['error' => 'Spieler nicht gefunden'], 404);
             }
@@ -123,42 +127,50 @@ class LobbyController extends Controller
     public function updatePlayerStatus(Request $request)
     {
         try {
-            $validated = $request->validate([
-                'player_id' => 'required',
-                'status' => 'required|in:available,in_game,offline'
-            ]);
-
-            $player = MemoryPlayer::find($validated['player_id']);
+            $player = auth()->check() 
+                ? MemoryPlayer::where('user_id', auth()->id())->first()
+                : MemoryPlayer::createOrGetGuest(session('memoryGuestId'));
+    
             if (!$player) {
                 return response()->json(['error' => 'Spieler nicht gefunden'], 404);
             }
-
-            // Event broadcasten
+    
+            // Status aktualisieren
+            $player->touch(); // Aktualisiert updated_at für Online-Status
+    
             broadcast(new PlayerStatusChanged([
                 'id' => $player->player_id,
                 'name' => $player->name,
-                'status' => $validated['status']
+                'status' => $request->status,
+                'isRegistered' => auth()->check()
             ]));
-
+    
             return response()->json(['success' => true]);
         } catch (\Exception $e) {
+            \Log::error('Status Update Error:', ['error' => $e->getMessage()]);
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
     public function getOnlinePlayers()
     {
-        // Aktive Spieler der letzten 5 Minuten
-        $players = MemoryPlayer::where('updated_at', '>', now()->subMinutes(5))
-            ->get()
-            ->map(function($player) {
-                return [
-                    'id' => $player->player_id,
-                    'name' => $player->name,
-                    'status' => 'available' // Default Status
-                ];
-            });
-
-        return response()->json($players);
+        try {
+            // Aktive Spieler der letzten 5 Minuten
+            $players = MemoryPlayer::where('updated_at', '>', now()->subMinutes(5))
+                ->get()
+                ->map(function($player) {
+                    return [
+                        'id' => $player->player_id,
+                        'name' => $player->name,
+                        'status' => 'available',
+                        'isRegistered' => !is_null($player->user_id)
+                    ];
+                });
+    
+            return response()->json($players);
+        } catch (\Exception $e) {
+            \Log::error('Fehler beim Laden der Online-Spieler:', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Fehler beim Laden der Spieler'], 500);
+        }
     }
 }
