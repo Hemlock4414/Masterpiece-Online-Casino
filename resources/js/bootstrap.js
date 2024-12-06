@@ -5,7 +5,7 @@ import Pusher from 'pusher-js';
 
 window.axios = axios;
 
-// Pusher global verfügbar machen (wie von Echo benötigt)
+// Pusher global verfügbar machen (wird von Echo benötigt)
 window.Pusher = Pusher;
 
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';

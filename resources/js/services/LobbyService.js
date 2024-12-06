@@ -22,10 +22,10 @@ export const LobbyService = {
     // Holt die Liste aller aktiven Spieler
     getOnlinePlayers: async () => {
         try {
-            const response = await apiClient.get('/lobby/players');
+            const response = await apiClient.get('/lobby/online-players');
             return response.data;
         } catch (error) {
-            console.error('Error fetching players:', error);
+            console.error('Error fetching online players:', error);
             throw error;
         }
     },
@@ -48,6 +48,20 @@ export const LobbyService = {
             return response.data;
         } catch (error) {
             console.error('Error updating status:', error);
+            throw error;
+        }
+    },
+    
+    updatePlayerStatus: async (status) => {
+        try {
+            const guestId = sessionStorage.getItem('memoryGuestId');
+            const response = await apiClient.post('/lobby/player-status', {
+                player_id: guestId,
+                status: status
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error updating player status:', error);
             throw error;
         }
     }

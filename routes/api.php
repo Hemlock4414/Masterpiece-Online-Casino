@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\LobbyController;
 use App\Http\Controllers\MemoryCardController;
 use App\Http\Controllers\MemoryGameController;
 use App\Http\Controllers\MemoryPlayerController;
@@ -79,4 +80,6 @@ Route::prefix('lobby')->group(function () {
     Route::get('/players', [LobbyController::class, 'getPlayers']);
     Route::post('/status', [LobbyController::class, 'updateStatus']);
     Route::post('/challenge/{playerId}', [LobbyController::class, 'challengePlayer']);
+    Route::post('/player-status', [LobbyController::class, 'updatePlayerStatus']);
+    Route::get('/online-players', [LobbyController::class, 'getOnlinePlayers']);
 });

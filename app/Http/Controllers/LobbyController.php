@@ -3,158 +3,162 @@
 namespace App\Http\Controllers;
 
 use App\Models\Lobby;
+use App\Models\MemoryPlayer;
 use App\Events\PlayerStatusChanged;
 use App\Events\LobbyStatusUpdated;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
+
 class LobbyController extends Controller
 {
-    public function create(Request $request)
-    {
-        $validated = $request->validate([
-            'challenged_id' => 'required',
-            'challenged_type' => 'required|string',
-            'challenged_name' => 'required|string',
-            'game_type' => 'required|string'
-        ]);
-
-        $lobby = new Lobby([
-            'challenger_id' => $request->player_id,
-            'challenger_type' => 'memory_player',
-            'challenger_name' => $request->player_name,
-            'challenger_user_id' => auth()->id(),
-            'challenged_id' => $validated['challenged_id'],
-            'challenged_type' => $validated['challenged_type'],
-            'challenged_name' => $validated['challenged_name'],
-            'game_type' => $validated['game_type']
-        ]);
-
-        $lobby->save();
-        broadcast(new LobbyStatusUpdated($lobby));
-        return response()->json($lobby);
-    }
-
-    public function updateStatus(Request $request, $lobbyId)
-    {
-        $validated = $request->validate([
-            'status' => 'required|in:accepted,declined,in_game'
-        ]);
-    
-        $lobby = Lobby::findOrFail($lobbyId);
-        $lobby->update(['status' => $validated['status']]);
-        
-        broadcast(new LobbyStatusUpdated($lobby));
-        return response()->json($lobby);
-    }
-
-    public function getActiveLobby($playerId, $playerType)
-    {
-        return Lobby::where(function($query) use ($playerId, $playerType) {
-            $query->where([
-                'challenger_id' => $playerId,
-                'challenger_type' => $playerType
-            ])->orWhere([
-                'challenged_id' => $playerId,
-                'challenged_type' => $playerType
-            ]);
-        })->where('status', '!=', 'declined')
-          ->first();
-    }
-
-    // Methode für aktive Spieler-Liste
     public function getPlayers()
     {
         try {
-            // Abfrage: Herausforderer und Herausgeforderte in der Lobby
-            $challengers = Lobby::select('challenger_id as player_id', 'challenger_name as name', 'challenger_type as type', 'status')
-                ->where('status', '!=', 'declined')
-                ->get();
-    
-            $challenged = Lobby::select('challenged_id as player_id', 'challenged_name as name', 'challenged_type as type', 'status')
-                ->where('status', '!=', 'declined')
-                ->get();
-    
-            // Beide Listen zusammenfügen
-            $players = $challengers->merge($challenged)->unique('player_id');
-    
-            // Debugging: Log-Ausgabe
-            \Log::info('Spielerabfrage erfolgreich', ['players' => $players]);
-    
-            return response()->json($players);
-        } catch (\Exception $e) {
-            // Fehler loggen und HTTP 500 zurückgeben
-            \Log::error('Fehler bei getPlayers: ' . $e->getMessage());
-            return response()->json(['error' => 'Unable to load players'], 500);
-        }
-    }
-    
-
-    // für Online-Status-Updates
-    public function updatePlayerStatus(Request $request)
-    {
-        $validated = $request->validate([
-            'status' => 'required|in:available,in_game,offline'
-        ]);
-
-        $lobby = Lobby::where(function($query) use ($request) {
-            $query->where('challenger_id', $request->player_id)
-                  ->orWhere('challenged_id', $request->player_id);
-        })->first();
-
-        if ($lobby) {
-            if ($lobby->challenger_id == $request->player_id) {
-                $lobby->challenger_status = $validated['status'];
-            } else {
-                $lobby->challenged_status = $validated['status'];
+            $guestId = session('memoryGuestId');
+            $player = MemoryPlayer::find($guestId);
+            
+            if (!$player) {
+                return response()->json(['error' => 'Spieler nicht gefunden'], 404);
             }
-            $lobby->save();
 
-            broadcast(new PlayerStatusChanged($lobby));
+            // Aktuelle Spieler in der Lobby (über Presence Channel verfügbar)
+            return response()->json([
+                'id' => $player->player_id,
+                'name' => $player->name,
+                'status' => 'available'
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Fehler bei getPlayers:', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Fehler beim Laden der Spieler'], 500);
         }
-
-        return response()->json(['message' => 'Status updated']);
     }
 
-    // Methode mit Verfügbarkeitsprüfung
     public function challengePlayer(Request $request, $playerId)
     {
         try {
-            // Debugging: Anfrage loggen
-            \Log::info('Herausforderung gestartet', $request->all());
-    
-            // Prüfe, ob Spieler bereits in einer aktiven Lobby ist
-            $existingLobby = $this->getActiveLobby($playerId, $request->player_type);
-            if ($existingLobby) {
-                return response()->json(['message' => 'Player already in a game'], 400);
+            $challenger = MemoryPlayer::find(session('memoryGuestId'));
+            $challenged = MemoryPlayer::find($playerId);
+
+            if (!$challenger || !$challenged) {
+                return response()->json(['error' => 'Spieler nicht gefunden'], 404);
             }
-    
-            // Erstelle eine neue Lobby
-            $validated = $request->validate([
-                'challenged_id' => 'required',
-                'challenged_type' => 'required|string',
-                'challenged_name' => 'required|string',
-                'game_type' => 'required|string',
-            ]);
-    
+
+            // Prüfe ob bereits eine aktive Herausforderung existiert
+            $existingChallenge = Lobby::where('challenged_id', $playerId)
+                ->where('status', 'pending')
+                ->where('created_at', '>', Carbon::now()->subMinutes(1))
+                ->first();
+
+            if ($existingChallenge) {
+                return response()->json([
+                    'error' => 'Spieler hat bereits eine aktive Herausforderung'
+                ], 400);
+            }
+
+            // Erstelle neue Herausforderung
             $lobby = Lobby::create([
-                'challenger_id' => $request->player_id,
+                'challenger_id' => $challenger->player_id,
                 'challenger_type' => 'memory_player',
-                'challenger_name' => $request->player_name,
-                'challenged_id' => $validated['challenged_id'],
-                'challenged_type' => $validated['challenged_type'],
-                'challenged_name' => $validated['challenged_name'],
-                'game_type' => $validated['game_type'],
+                'challenger_name' => $challenger->name,
+                'challenged_id' => $challenged->player_id,
+                'challenged_type' => 'memory_player',
+                'challenged_name' => $challenged->name,
                 'status' => 'pending',
+                'game_type' => 'memory',
+                'expires_at' => Carbon::now()->addMinute()
             ]);
-    
-            broadcast(new PlayerStatusChanged($lobby));
-    
-            return response()->json(['message' => 'Challenge sent', 'lobby' => $lobby]);
+
+            broadcast(new LobbyStatusUpdated($lobby));
+
+            return response()->json($lobby);
         } catch (\Exception $e) {
-            // Fehler loggen
-            \Log::error('Fehler bei challengePlayer: ' . $e->getMessage());
-            return response()->json(['error' => 'Unable to create challenge'], 500);
+            \Log::error('Fehler bei challengePlayer:', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Fehler beim Herausfordern'], 500);
         }
     }
-    
-    
+
+    public function updateLobbyStatus(Request $request, $lobbyId)
+    {
+        try {
+            $validated = $request->validate([
+                'status' => 'required|in:accepted,declined,in_game'
+            ]);
+
+            $lobby = Lobby::findOrFail($lobbyId);
+            $lobby->status = $validated['status'];
+            $lobby->save();
+
+            broadcast(new LobbyStatusUpdated($lobby));
+            
+            if ($validated['status'] === 'accepted') {
+                // Hier könnte später die Spiel-Initialisierung erfolgen
+            }
+
+            return response()->json($lobby);
+        } catch (\Exception $e) {
+            \Log::error('Fehler bei updateLobbyStatus:', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Status konnte nicht aktualisiert werden'], 500);
+        }
+    }
+
+    public function checkExpiredChallenges()
+    {
+        try {
+            $expiredLobbies = Lobby::where('status', 'pending')
+                ->where('expires_at', '<', Carbon::now())
+                ->get();
+
+            foreach ($expiredLobbies as $lobby) {
+                $lobby->update(['status' => 'declined']);
+                broadcast(new LobbyStatusUpdated($lobby));
+            }
+
+            return response()->json(['message' => 'Abgelaufene Herausforderungen bearbeitet']);
+        } catch (\Exception $e) {
+            \Log::error('Fehler bei checkExpiredChallenges:', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Fehler beim Prüfen abgelaufener Herausforderungen'], 500);
+        }
+    }
+
+    public function updatePlayerStatus(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'player_id' => 'required',
+                'status' => 'required|in:available,in_game,offline'
+            ]);
+
+            $player = MemoryPlayer::find($validated['player_id']);
+            if (!$player) {
+                return response()->json(['error' => 'Spieler nicht gefunden'], 404);
+            }
+
+            // Event broadcasten
+            broadcast(new PlayerStatusChanged([
+                'id' => $player->player_id,
+                'name' => $player->name,
+                'status' => $validated['status']
+            ]));
+
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getOnlinePlayers()
+    {
+        // Aktive Spieler der letzten 5 Minuten
+        $players = MemoryPlayer::where('updated_at', '>', now()->subMinutes(5))
+            ->get()
+            ->map(function($player) {
+                return [
+                    'id' => $player->player_id,
+                    'name' => $player->name,
+                    'status' => 'available' // Default Status
+                ];
+            });
+
+        return response()->json($players);
+    }
 }
