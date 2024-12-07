@@ -1,143 +1,3 @@
-<template>
-
-  <div class="main-content">
-    <div class="profile-container">
-      <div class="profile-content">
-        <h1>Profil</h1>
-        <div class="purple-line"></div>
-
-        <section>
-          <div class="profile-pic">
-            <h2>Profilbild</h2>
-
-            <div class="profileImage">
-              <div class="image-preview">
-                <img
-                  :src="profileImage"
-                  alt="Profile Picture"
-                  class="profile-picture"
-                />
-              </div>
-
-              <div class="image-upload" @click="triggerFileInput">
-                <input
-                  type="file"
-                  ref="fileInput"
-                  style="display: none"
-                  @change="handleFileUpload"
-                />
-                <i class="fas fa-camera fa-2x"></i>
-                <span>Profilbild ändern</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="balance">
-            <h2>Aktuelles Guthaben</h2>
-
-            <h2>{{ balance }}</h2>
-
-          </div>
-        </section>
-
-        <section>
-          <h2>Kontoinformationen</h2>
-
-          <div>
-            <div>
-              <p>Registriert seit:</p>
-                
-              <p class="info-display">{{ joinedDate }}</p>
-            </div>
-
-            <div>
-              <p>Spielername</p>
-
-              <p class="info-display">{{ authUser.user.username }}</p>
-            </div>
-
-            <div>
-              <p>Vorname</p>
-
-              <p class="info-display">{{ authUser.user.firstname }}</p>
-            </div>
-
-            <div>
-              <p>Nachname</p>
-
-              <p class="info-display">{{ authUser.user.lastname }}</p>
-            </div>
-
-            <div>
-              <p>Geburtsdatum</p>
-
-              <p class="info-display">{{ authUser.user.birthdate }}</p>
-            </div>
-
-            <div>
-              <p>Natonalität</p>
-
-              <p class="info-display">{{ authUser.user.nationality }}</p>
-            </div>
-
-            <div>
-              <p>E-Mail</p>
-
-              <p class="info-display">{{ authUser.user.email }}</p>
-
-              <button @click="openPasswordModal" class="btn-set">
-                Ändern
-              </button>
-            </div>
-
-            <div>
-              <p>Passwort</p>
-
-              <p class="info-display">{{ authUser.user.password }}</p>
-
-              <button @click="openPasswordModal" class="btn-set">
-                Ändern
-              </button>
-            </div>
-          </div>
-        </section>
-
-        <section>
-          <h2>Konto löschen</h2>
-
-          <p>Das löschen des Kontos führt zu:</p>
-          <br />
-          <ol>
-            <li>
-              Permanently delete your profile, along with your authentication
-              associations.
-            </li>
-            <li>
-              Permanently delete all your content, including your posts,
-              bookmarks, comments, etc.
-            </li>
-            <li>Allow your username to become available to anyone.</li>
-          </ol>
-
-          <button
-            @click="openDeleteModal"
-            class="btn-danger"
-            :disabled="isDeletingAccount"
-          >
-            {{ isDeletingAccount ? "Wird gelöscht..." : "Löschen" }}
-          </button>
-        </section>
-      </div>
-    </div>
-  </div>
-
-  <DeleteModal
-    v-model="showDeleteModal"
-    :isLoading="isDeletingAccount"
-    @confirm="deleteUser"
-  />
-</template>
-
 <script setup>
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
@@ -272,23 +132,166 @@ const handleFileUpload = async (event) => {
 }); */
 </script>
 
+<template>
+
+  <div class="container">
+    <div class="profile-container">
+      <div class="profile-content">
+        <h1>Profil</h1>
+        <div class="purple-line"></div>
+
+        <section>
+          
+          <h2>Profilbild</h2>
+          <div class="profile-info-section">
+            <div>
+              <div class="profileImage">
+                <div class="image-preview">
+                  <img
+                    :src="profileImage"
+                    alt="Profile Picture"
+                    class="profile-picture"
+                  />
+                </div>
+
+                <div class="image-upload" @click="triggerFileInput">
+                  <input
+                    type="file"
+                    ref="fileInput"
+                    style="display: none"
+                    @change="handleFileUpload"
+                  />
+                  <i class="fas fa-camera fa-2x"></i>
+                  <span>Profilbild ändern</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="balance-section">
+              <h2>Aktuelles Guthaben</h2>
+
+              <h2>{{ balance }}</h2>
+
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h2>Kontoinformationen</h2>
+
+          <div class="acc-info">
+            <div class="acc-detail">
+              <p>Registriert seit</p>
+                
+              <p class="info-display">{{ joinedDate }}</p>
+            </div>
+
+            <div class="acc-detail">
+              <p>Spielername</p>
+
+              <p class="info-display">{{ authUser.user.username }}</p>
+            </div>
+
+            <div class="acc-detail">
+              <p>Vorname</p>
+
+              <p class="info-display">{{ authUser.user.firstname }}</p>
+            </div>
+
+            <div class="acc-detail">
+              <p>Nachname</p>
+
+              <p class="info-display">{{ authUser.user.lastname }}</p>
+            </div>
+
+            <div class="acc-detail">
+              <p>Geburtsdatum</p>
+
+              <p class="info-display">{{ authUser.user.birthdate }}</p>
+            </div>
+
+            <div class="acc-detail">
+              <p>Nationalität</p>
+
+              <p class="info-display">{{ authUser.user.nationality }}</p>
+            </div>
+
+            <div class="acc-detail">
+              <p>E-Mail</p>
+
+              <p class="info-display">{{ authUser.user.email }}</p>
+
+              <button @click="openEmailModal" class="btn-set">
+                Ändern
+              </button>
+            </div>
+
+            <div class="acc-detail">
+              <p>Passwort</p>
+
+              <p class="info-display">{{ authUser.user.password }}</p>
+
+              <button @click="openPasswordModal" class="btn-set">
+                Ändern
+              </button>
+            </div>
+          </div>
+        </section>
+
+          <div class="notice">
+            <p>Hinweis: Wenn andere Angaben geändert werden sollen, ist eine E-Mail an den 
+              Kundendienst nötig.</p>
+          </div>
+        
+        <section class="acc-del">
+          <h2>Konto löschen</h2>
+
+          <p>Das löschen des Kontos führt zu:</p>
+          <br />
+          <ol>
+            <li>
+              Löscht das Profil dauerhaft.
+            </li>
+            <li>
+              Alle gespeicherten Informationen und das gesamte Spielgeld werden gelöscht.
+            </li>
+            <li>Erlaubt, dass Ihr Benutzername/Spielername für jeden verfügbar wird.</li>
+          </ol>
+
+          <button
+            @click="openDeleteModal"
+            class="btn-danger"
+            :disabled="isDeletingAccount"
+          >
+            {{ isDeletingAccount ? "Wird gelöscht..." : "Löschen" }}
+          </button>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <DeleteModal
+    v-model="showDeleteModal"
+    :isLoading="isDeletingAccount"
+    @confirm="deleteUser"
+  />
+</template>
+
+
+
 <style scoped>
-.main-content {
-  z-index: 1;
+.container {
   width: 100%;
   transition: all 0.3s ease;
   padding: 20px;
-  color: white;
   display: flex;
   justify-content: center;
   padding-top: 43px;
-  min-height: 100vh;
 }
 
 .profile-container {
   max-width: 680px;
   height: min-content;
-  background-color: #1c1f26;
   border-radius: 8px;
   border: 1px solid #909090;
   display: flex;
@@ -313,6 +316,13 @@ h1 {
   margin-bottom: 20px;
 }
 
+.profile-info-section {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
 h2 {
   font-size: 20px;
   font-weight: 500;
@@ -320,7 +330,7 @@ h2 {
 }
 
 p {
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .profileImage {
@@ -350,7 +360,7 @@ section {
 }
 
 .image-upload {
-  width: 250px;
+  width: 200px;
   height: 100px;
   border-radius: 25px;
   border-style: solid;
@@ -361,6 +371,20 @@ section {
   align-items: center;
   cursor: pointer;
   margin-top: 20px;
+}
+
+.acc-info {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.acc-detail {
+  flex: 1;
+}
+
+.notice {
+  max-width: 500px;
 }
 
 button[type="submit"],
@@ -388,23 +412,39 @@ button[type="submit"],
 }
 
 .info-display {
-    padding: 5px;
-    background-color: #f0f0f0;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    min-height: 20px;
+  padding: 5px;
+  background-color: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  min-height: 20px;
 }
 
-@media (max-width: 500px) {
+.acc-del {
+  border: red 3px solid;
+  padding: 30px;
+  border-radius: 8px;
+}
+
+@media (max-width: 650px) {
   .profileImage {
     display: flex;
     flex-direction: column;
+  }
+  .image-upload { 
+  width: 150px;
+  height: 80px;
   }
 }
 
 @media (max-width: 500px) {
   .profile-container {
     margin: 0 5px;
+  }
+}
+
+@media (max-width: 420px) {
+  .profile-info-section {
+    gap: 30px;
   }
 }
 </style>
