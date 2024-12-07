@@ -134,7 +134,7 @@ const handleFileUpload = async (event) => {
 
 <template>
 
-  <div class="main-content">
+  <div class="container">
     <div class="profile-container">
       <div class="profile-content">
         <h1>Profil</h1>
@@ -275,8 +275,7 @@ const handleFileUpload = async (event) => {
 
 
 <style scoped>
-.main-content {
-  z-index: 1;
+.container {
   width: 100%;
   transition: all 0.3s ease;
   padding: 20px;
