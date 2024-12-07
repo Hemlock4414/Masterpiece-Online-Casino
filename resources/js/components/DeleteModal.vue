@@ -5,7 +5,7 @@
                 <div class="modal-content">
                     <h2>Konto löschen</h2>
                     <p>Sind Sie sicher, dass Sie Ihr Konto löschen möchten?</p>
-                    <p>Alle Informationen und das gesamte Spielgeld werden gelöscht.</p>
+                    <p>Alle Ihre gespeicherten Informationen und Ihr gesamtes Spielgeld werden gelöscht.</p>
                     <div class="btns">
                         <button 
                             @click="closeModal" 
