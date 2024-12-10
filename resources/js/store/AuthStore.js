@@ -102,6 +102,19 @@ export const useAuthStore = defineStore("AuthStore", {
             }
         },
 
+        async deleteProfilePicture() {
+            try {
+                await authClient.get("/sanctum/csrf-cookie");
+                const response = await authClient.delete("/api/user/delete/pic");
+                this.profileImage = null;
+                await this.getAuthUser();
+                return response;
+            } catch (error) {
+                console.error('Fehler beim Löschen des Profilbildes:', error);
+                throw error;
+            }
+        },
+
         async updateEmail(data) {
             try {
                 await authClient.get("/sanctum/csrf-cookie");

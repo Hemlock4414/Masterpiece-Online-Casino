@@ -1,8 +1,6 @@
 <script setup>
 import { ref } from 'vue';
 import { RouterLink, RouterView } from "vue-router";
-
-// Importiere die Logout-Funktion und Router
 import { storeToRefs } from "pinia";
 import { useAuthStore } from "@/store/AuthStore";
 import router from "@/router";
@@ -124,7 +122,7 @@ const navigateToProfile = () => {
             <!-- User Menu (nur anzeigen wenn eingeloggt) -->
             <div v-else class="user-menu">
               <div class="balance-display">
-                Guthaben: {{ authUser.balance || '0' }} Credits
+                Guthaben: {{ authUser?.balance ?? '0' }} Credits
               </div>
               <button class="profile-btn" @click="navigateToProfile">
                 Mein Profil
