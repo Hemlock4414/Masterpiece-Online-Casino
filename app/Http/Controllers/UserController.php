@@ -281,12 +281,20 @@ class UserController extends Controller
             ]);
         
             $user = Auth::user();
+
+            // Debug-Logging
+            \Log::info('Profilbild Update gestartet', [
+                'user_id' => $user->id,
+                'hat_altes_bild' => !empty($user->profile_pic)
+            ]);
         
             if ($user->profile_pic && Storage::disk('public')->exists($user->profile_pic)) {
                 Storage::disk('public')->delete($user->profile_pic);
+                \Log::info('Altes Profilbild gelöscht');
             }
         
             $path = $request->file('profile_pic')->store('profile_pics', 'public');
+            \Log::info('Neues Profilbild gespeichert', ['pfad' => $path]);
         
             $user->profile_pic = $path;
             $user->save();
@@ -299,11 +307,12 @@ class UserController extends Controller
         } catch (\Exception $e) {
             Log::error('Fehler beim Aktualisieren des Profilbildes:', [
                 'error' => $e->getMessage(),
-                'user_id' => Auth::id()
+                'user_id' => Auth::id(),
+                'trace' => $e->getTraceAsString()
             ]);
             
             return response()->json([
-                'error' => 'Fehler beim Hochladen des Profilbildes'
+                'error' => 'Fehler beim Hochladen des Profilbildes: ' . $e->getMessage()
             ], 500);
         }
     }
