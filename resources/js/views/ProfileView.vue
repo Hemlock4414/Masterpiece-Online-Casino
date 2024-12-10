@@ -149,7 +149,6 @@ const handleFileUpload = async (event) => {
                 <div class="image-preview">
                   <img
                     :src="profileImage"
-                    alt="Profile Picture"
                     class="profile-picture"
                   />
                 </div>
@@ -168,9 +167,11 @@ const handleFileUpload = async (event) => {
             </div>
 
             <div class="balance-section">
-              <h2>Aktuelles Guthaben</h2>
+              <h2>Aktuelles Guthaben:</h2>
 
-              <h2>{{ balance }}</h2>
+              <div class="balance">
+                <h2>{{ balance }}</h2>
+              </div>
 
             </div>
           </div>
@@ -179,71 +180,62 @@ const handleFileUpload = async (event) => {
         <section>
           <h2>Kontoinformationen</h2>
 
-          <div class="acc-info">
-            <div class="acc-detail">
-              <p>Registriert seit</p>
-                
-              <p class="info-display">{{ joinedDate }}</p>
+          <div class="account-info">
+            <div class="account-detail">
+              <label>Angemeldet seit:</label>                
+              <input type="text" value="{{ joinedDate }}" readonly />
+              <span></span> <!-- Leerer Platzhalter für den Button -->
             </div>
 
-            <div class="acc-detail">
-              <p>Spielername</p>
-
-              <p class="info-display">{{ authUser.user.username }}</p>
+            <div class="account-detail">
+              <label>Spielername:</label>
+              <input type="text" value="{{ authUser.user.username }}" readonly />
+              <span></span>
             </div>
 
-            <div class="acc-detail">
-              <p>Vorname</p>
-
-              <p class="info-display">{{ authUser.user.firstname }}</p>
+            <div class="account-detail">
+              <label>Vorname:</label>
+              <input type="text" value="{{ authUser.user.firstname }}" readonly />
+              <span></span>
             </div>
 
-            <div class="acc-detail">
-              <p>Nachname</p>
-
-              <p class="info-display">{{ authUser.user.lastname }}</p>
+            <div class="account-detail">
+              <label>Nachname:</label>
+              <input type="text" value="{{ authUser.user.lastname }}" readonly />
+              <span></span>
             </div>
 
-            <div class="acc-detail">
-              <p>Geburtsdatum</p>
-
-              <p class="info-display">{{ authUser.user.birthdate }}</p>
+            <div class="account-detail">
+              <label>Geburtsdatum:</label>
+              <input type="text" value="{{ authUser.user.birthdate }}" readonly />
+              <span></span>
             </div>
 
-            <div class="acc-detail">
-              <p>Nationalität</p>
-
-              <p class="info-display">{{ authUser.user.nationality }}</p>
+            <div class="account-detail">
+              <label>Nationalität:</label>
+              <input type="text" value="{{ authUser.user.nationality }}" readonly />
+              <span></span>
             </div>
 
-            <div class="acc-detail">
-              <p>E-Mail</p>
-
-              <p class="info-display">{{ authUser.user.email }}</p>
-
-              <button @click="openEmailModal" class="btn-set">
-                Ändern
-              </button>
+            <div class="account-detail">
+              <label>E-Mail:</label>
+              <input type="text" value="{{ authUser.user.email }}" readonly />
+              <button @click="openEmailModal" class="btn-change">Ändern</button>              
             </div>
 
-            <div class="acc-detail">
-              <p>Passwort</p>
-
-              <p class="info-display">{{ authUser.user.password }}</p>
-
-              <button @click="openPasswordModal" class="btn-set">
-                Ändern
-              </button>
+            <div class="account-detail">
+              <label>Passwort:</label>
+              <input type="password" value="{{ authUser.user.password }}" readonly />
+              <button @click="openPasswordModal" class="btn-change">Ändern</button>
             </div>
           </div>
         </section>
 
           <div class="notice">
-            <p>Hinweis: Wenn andere Angaben geändert werden sollen, ist eine E-Mail an den 
-              Kundendienst nötig.</p>
+            <p>Hinweis: Wenn andere Angaben geändert werden sollen, ist eine E-Mail an uns nötig.</p>
           </div>
         
-        <section class="acc-del">
+        <section class="account-delete">
           <h2>Konto löschen</h2>
 
           <p>Das löschen des Kontos führt zu:</p>
@@ -276,8 +268,6 @@ const handleFileUpload = async (event) => {
     @confirm="deleteUser"
   />
 </template>
-
-
 
 <style scoped>
 .container {
@@ -323,15 +313,6 @@ h1 {
   margin-bottom: 20px;
 }
 
-h2 {
-  font-size: 20px;
-  font-weight: 500;
-  margin-bottom: 15px;
-}
-
-p {
-  font-size: 16px;
-}
 
 .profileImage {
   display: flex;
@@ -361,26 +342,87 @@ section {
 
 .image-upload {
   width: 200px;
-  height: 100px;
+  height: 60px;
   border-radius: 25px;
   border-style: solid;
   border-color: #909090;
   display: flex;
   flex-direction: column;
-  justify-content: space-evenly;
+  justify-content: center;
   align-items: center;
   cursor: pointer;
-  margin-top: 20px;
 }
 
-.acc-info {
+h2 {
+  text-align: left;
+  font-size: 20px;
+  font-weight: 500;
+  margin-bottom: 15px;
+}
+
+label {
+  flex: 1;
+  font-weight: 600;
+}
+
+.account-info {
   display: flex;
   flex-direction: column;
-  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #fff;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
 }
 
-.acc-detail {
-  flex: 1;
+.account-detail {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #fff;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+}
+
+input {
+  flex: 2;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  background-color: #eee;
+  text-align: left;
+  font-size: 14px;
+}
+
+input[readonly] {
+  background-color: #f9f9f9;
+  color: #555;
+}
+
+.btn-change {
+  flex: 0 0 auto;
+  margin-left: 10px;
+  padding: 5px 10px;
+  background-color: #333;
+  color: #fff;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.btn-change:hover {
+  background-color: #555;
+}
+
+.balance-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.balance {
+  font-size: 24px;
 }
 
 .notice {
@@ -419,7 +461,7 @@ button[type="submit"],
   min-height: 20px;
 }
 
-.acc-del {
+.account-delete {
   border: red 3px solid;
   padding: 30px;
   border-radius: 8px;
