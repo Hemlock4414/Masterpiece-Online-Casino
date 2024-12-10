@@ -1,32 +1,4 @@
-<template>
-    <Transition name="modal">
-        <div v-if="modelValue" class="modal-overlay">
-            <div class="modal">
-                <div class="modal-content">
-                    <h2>Konto löschen</h2>
-                    <p>Sind Sie sicher, dass Sie Ihr Konto löschen möchten?</p>
-                    <p>Alle Ihre gespeicherten Informationen und Ihr gesamtes Spielgeld werden gelöscht.</p>
-                    <div class="btns">
-                        <button 
-                            @click="closeModal" 
-                            class="btn-cancel"
-                            :disabled="isLoading">
-                            Abbrechen
-                        </button>
-                        <button 
-                            @click="confirmAction" 
-                            class="btn-del"
-                            :disabled="isLoading">
-                            {{ isLoading ? 'Wird gelöscht...' : 'Löschen' }}
-                        </button>
-                    </div>  
-                </div>
-            </div>
-        </div>
-    </Transition>
-</template>
-  
-  <script setup>
+<script setup>
   import { defineEmits } from 'vue'
 
   const props = defineProps({
@@ -55,8 +27,36 @@ const confirmAction = () => {
         // sondern erst nach erfolgreicher Löschung
     }
 }
-  </script>
+</script>
   
+<template>
+    <Transition name="modal">
+        <div v-if="modelValue" class="modal-overlay">
+            <div class="modal">
+                <div class="modal-content">
+                    <h2>Konto löschen</h2>
+                    <p>Sind Sie sicher, dass Sie Ihr Konto löschen möchten?</p>
+                    <p>Alle Ihre gespeicherten Informationen und Ihr gesamtes Spielgeld werden gelöscht.</p>
+                    <div class="btns">
+                        <button 
+                            @click="closeModal" 
+                            class="btn-cancel"
+                            :disabled="isLoading">
+                            Abbrechen
+                        </button>
+                        <button 
+                            @click="confirmAction" 
+                            class="btn-del"
+                            :disabled="isLoading">
+                            {{ isLoading ? 'Wird gelöscht...' : 'Löschen' }}
+                        </button>
+                    </div>  
+                </div>
+            </div>
+        </div>
+    </Transition>
+</template>
+
 <style scoped>
 
 .modal-overlay {
