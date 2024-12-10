@@ -8,12 +8,19 @@ const router = useRouter();
 const authStore = useAuthStore();
 
 const isSubmitting = ref(false);
+const previewImage = ref(null);
+const isUploading = ref(false);
 const updateMessage = ref("");
 const updateError = ref(false);
+const messageTimeout = ref(null);
 const fileInput = ref(null);
 
 const showDeleteModal = ref(false);
 const isDeletingAccount = ref(false);
+
+// Konstanten für Bildvalidierung
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif'];
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 const joinedDate = ref(""); // das Beitrittsdatum speichern
 
@@ -33,17 +40,142 @@ const authUser = ref({
 const isLoading = ref(false);
 const { profileImage } = useAuthStore();
 
-/* const profileImage = ref(null);
-const defaultProfilePicture = "../user-profile-icon.jpg"; */
+// Funktion für Bildvorschau
+const createImagePreview = (file) => {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      previewImage.value = e.target.result;
+      resolve();
+    };
+    reader.readAsDataURL(file);
+  });
+};
 
+// Hilfsfunktion zum Validieren des Bildes
+const validateImage = (file) => {
+  if (!ALLOWED_TYPES.includes(file.type)) {
+    return {
+      isValid: false,
+      message: 'Bitte nur Bilder im JPEG, PNG oder GIF Format hochladen'
+    };
+  }
+
+  if (file.size > MAX_FILE_SIZE) {
+    return {
+      isValid: false,
+      message: 'Das Bild darf maximal 5MB groß sein'
+    };
+  }
+
+  return { isValid: true };
+};
+
+// Hilfsfunktion zum Anzeigen von Nachrichten
+const showMessage = (message, isError = false) => {
+  if (messageTimeout.value) {
+    clearTimeout(messageTimeout.value);
+  }
+  
+  updateMessage.value = message;
+  updateError.value = isError;
+
+  // Nachricht nach 3 Sekunden ausblenden
+  messageTimeout.value = setTimeout(() => {
+    updateMessage.value = '';
+    updateError.value = false;
+  }, 3000);
+};
+
+// Modal zum Löschen öffnen
+const openDeleteModal = () => {
+  showDeleteModal.value = true;
+};
+
+// Hilfsfunktion zum Öffnen des Datei-Dialogs
 const triggerFileInput = () => {
   fileInput.value.click();
 };
+
+// Funktion zum Löschen des Benutzers
+const deleteUser = async () => {
+  try {
+    isDeletingAccount.value = true;
+
+    await authStore.deleteAccount();
+    showDeleteModal.value = false;
+
+    // Redirect zur Home-Seite nach erfolgreichem Löschen
+    router.push("/");
+  } catch (error) {
+    console.error("Error deleting account:", error);
+    alert(
+      error.response?.data?.message ||
+        "Konto konnte nicht gelöscht werden. Bitte versuchen Sie es später noch einmal."
+    );
+  } finally {
+    isDeletingAccount.value = false;
+  }
+};
+
+// Hauptfunktion zum Hochladen des Bildes
+const handleFileUpload = async (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  // Bild validieren
+  const { isValid, message } = validateImage(file);
+  if (!isValid) {
+    showMessage(message, true);
+    return;
+  }
+
+  try {
+    isUploading.value = true;
+
+    // Vorschau erstellen
+    await createImagePreview(file);
+
+    // FormData erstellen und Bild hochladen
+    const formData = new FormData();
+    formData.append('profile_pic', file);
+    await authStore.uploadProfilePicture(formData);
+
+    // Erfolgsmeldung anzeigen
+    showMessage('Profilbild wurde erfolgreich aktualisiert!');
+
+    // Benutzerdaten neu laden um aktualisiertes Bild zu erhalten
+    await authStore.fetchUser();
+  } catch (error) {
+    console.error('Fehler beim Hochladen des Bildes:', error);
+    showMessage('Fehler beim Hochladen des Bildes. Bitte versuchen Sie es erneut.', true);
+    
+    // Vorschau zurücksetzen bei Fehler
+    previewImage.value = null;
+  } finally {
+    isUploading.value = false;
+    // Datei-Input zurücksetzen
+    if (fileInput.value) {
+      fileInput.value.value = '';
+    }
+  }
+};
+
+// Initialisierung beim Laden der Komponente
+onMounted(async () => {
+  try {
+    await authStore.fetchUser();
+  } catch (error) {
+    console.error('Fehler beim Laden des Profilbildes:', error);
+    showMessage('Profilbild konnte nicht geladen werden', true);
+  }
+});
 
 // Benutzerdaten beim Laden der Seite abrufen
 onMounted(async () => {
   try {
     await authStore.fetchUser();
+    console.error("Fehler beim Laden des Users:", error);
     // Ensure we're creating a proper structure
     authUser.value = {
       user: {
@@ -68,68 +200,6 @@ onMounted(async () => {
   }
 });
 
-// Modal zum Löschen öffnen
-const openDeleteModal = () => {
-  showDeleteModal.value = true;
-};
-
-// Funktion zum Löschen des Benutzers
-const deleteUser = async () => {
-  try {
-    isDeletingAccount.value = true;
-
-    await authStore.deleteAccount();
-    showDeleteModal.value = false;
-
-    // Redirect zur Home-Seite nach erfolgreichem Löschen
-    router.push("/");
-  } catch (error) {
-    console.error("Error deleting account:", error);
-    alert(
-      error.response?.data?.message ||
-        "Konto konnte nicht gelöscht werden. Bitte versuchen Sie es später noch einmal."
-    );
-  } finally {
-    isDeletingAccount.value = false;
-  }
-};
-
-// Funktion zum Hochladen des Bildes vervollständigen
-const handleFileUpload = async (event) => {
-  const file = event.target.files[0];
-  if (file) {
-    try {
-      const formData = new FormData();
-      formData.append("profile_pic", file);
-
-      await authStore.uploadProfilePicture(formData);
-      // Optional: Erfolgsmeldung anzeigen
-      updateMessage.value = "Profile picture updated successfully!";
-      updateError.value = false;
-
-      // Optional: Profilbild neu laden
-      await authStore.fetchUser();
-    } catch (error) {
-      console.error("Fehler beim Hochladen des Bildes:", error);
-      updateMessage.value = "Error uploading image";
-      updateError.value = true;
-    }
-  }
-};
-
-// Optional: Profilbild beim Laden der Seite abrufen
-/* onMounted(async () => {
-  try {
-    await authStore.fetchUser();
-    if (authStore.user && authStore.user.user.profile_pic_url) {
-      profileImage.value = authStore.user.user.profile_pic_url;
-    } else {
-      console.log("Kein Profilbild gefunden.");
-    }
-  } catch (error) {
-    console.error("Fehler beim Laden des Profilbildes:", error);
-  }
-}); */
 </script>
 
 <template>
@@ -148,23 +218,41 @@ const handleFileUpload = async (event) => {
               <div class="profileImage">
                 <div class="image-preview">
                   <img
-                    :src="profileImage"
+                    :src="previewImage || authStore.profileImage"
                     class="profile-picture"
+                    alt="Profilbild"
                   />
+                  <div v-if="isUploading" class="upload-overlay">
+                    <span class="loading-spinner"></span>
+                    <span>Wird hochgeladen...</span>
+                  </div>
                 </div>
 
-                <div class="image-upload" @click="triggerFileInput">
+                <div 
+                  class="image-upload" 
+                  @click="triggerFileInput"
+                  :class="{ 'disabled': isUploading }"
+                >
                   <input
                     type="file"
                     ref="fileInput"
                     style="display: none"
+                    accept="image/*"
                     @change="handleFileUpload"
+                    :disabled="isUploading"
                   />
                   <i class="fas fa-camera fa-2x"></i>
-                  <span>Profilbild ändern</span>
+                  <span>{{ isUploading ? 'Wird hochgeladen...' : 'Profilbild ändern' }}</span>
                 </div>
               </div>
-            </div>
+
+              <div 
+                v-if="updateMessage" 
+                :class="['message', updateError ? 'error' : 'success']"
+                role="alert"
+              >
+                {{ updateMessage }}
+              </div>
 
             <div class="balance-section">
               <h2>Aktuelles Guthaben:</h2>
@@ -173,6 +261,7 @@ const handleFileUpload = async (event) => {
                 <h2>{{ authUser.user.balance }}</h2>
               </div>
 
+              </div>
             </div>
           </div>
         </section>
@@ -225,7 +314,7 @@ const handleFileUpload = async (event) => {
 
             <div class="account-detail">
               <label>Passwort:</label>
-              <input type="password" value="{{ authUser.user.password }}" readonly />
+              <input type="password" value="**********" readonly />
               <button @click="openPasswordModal" class="btn-change">Ändern</button>
             </div>
           </div>
@@ -239,7 +328,6 @@ const handleFileUpload = async (event) => {
           <h2>Konto löschen</h2>
 
           <p>Das löschen des Kontos führt zu:</p>
-          <br />
           <ol>
             <li>
               Löscht das Profil dauerhaft.
@@ -313,13 +401,13 @@ h1 {
   margin-bottom: 20px;
 }
 
-
 .profileImage {
   display: flex;
   flex-direction: row;
   align-items: center;
   gap: 1rem;
   margin-top: 30px;
+  position: relative;
 }
 
 .image-preview {
@@ -328,6 +416,7 @@ h1 {
   border-radius: 50%;
   overflow: hidden;
   border: 2px solid #909090;
+  position: relative;
 }
 
 .profile-picture {
@@ -336,27 +425,97 @@ h1 {
   object-fit: cover;
 }
 
-section {
-  margin: 40px 0;
+.upload-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  gap: 10px;
+}
+
+.loading-spinner {
+  width: 30px;
+  height: 30px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #ce3df3;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.message {
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 4px;
 }
 
 .image-upload {
   width: 200px;
   height: 60px;
   border-radius: 25px;
-  border-style: solid;
-  border-color: #909090;
+  border: 1px solid #909090;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.image-upload:hover:not(.disabled) {
+  background-color: #f5f5f5;
+  border-color: #ce3df3;
+}
+
+.image-upload.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.message {
+  margin-top: 10px;
+  padding: 10px 15px;
+  border-radius: 4px;
+  font-size: 14px;
+  animation: fadeIn 0.3s ease;
+}
+
+.success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+section {
+  margin: 40px 0;
 }
 
 h2 {
   text-align: left;
   font-size: 20px;
-  font-weight: 500;
+  font-weight: 700;
   margin-bottom: 15px;
 }
 
@@ -430,6 +589,10 @@ input[readonly] {
 
 .notice {
   max-width: 500px;
+}
+
+ol {
+  padding: 20px;
 }
 
 button[type="submit"],
