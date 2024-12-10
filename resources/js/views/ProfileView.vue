@@ -170,7 +170,7 @@ const handleFileUpload = async (event) => {
               <h2>Aktuelles Guthaben:</h2>
 
               <div class="balance">
-                <h2>{{ balance }}</h2>
+                <h2>{{ authUser.user.balance }}</h2>
               </div>
 
             </div>
@@ -184,37 +184,37 @@ const handleFileUpload = async (event) => {
             <div class="account-detail">
               <label>Angemeldet seit:</label>                
               <input type="text" value="{{ joinedDate }}" readonly />
-              <span></span> <!-- Leerer Platzhalter für den Button -->
+              <span class="placeholder"></span> <!-- Leerer Platzhalter für den Button -->
             </div>
 
             <div class="account-detail">
               <label>Spielername:</label>
               <input type="text" value="{{ authUser.user.username }}" readonly />
-              <span></span>
+              <span class="placeholder"></span>
             </div>
 
             <div class="account-detail">
               <label>Vorname:</label>
               <input type="text" value="{{ authUser.user.firstname }}" readonly />
-              <span></span>
+              <span class="placeholder"></span>
             </div>
 
             <div class="account-detail">
               <label>Nachname:</label>
               <input type="text" value="{{ authUser.user.lastname }}" readonly />
-              <span></span>
+              <span class="placeholder"></span>
             </div>
 
             <div class="account-detail">
               <label>Geburtsdatum:</label>
               <input type="text" value="{{ authUser.user.birthdate }}" readonly />
-              <span></span>
+              <span class="placeholder"></span>
             </div>
 
             <div class="account-detail">
               <label>Nationalität:</label>
               <input type="text" value="{{ authUser.user.nationality }}" readonly />
-              <span></span>
+              <span class="placeholder"></span>
             </div>
 
             <div class="account-detail">
@@ -360,34 +360,32 @@ h2 {
   margin-bottom: 15px;
 }
 
-label {
-  flex: 1;
-  font-weight: 600;
-}
-
 .account-info {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-  background-color: #fff;
-  padding: 10px;
-  border-radius: 5px;
-  border: 1px solid #ddd;
+  gap: 15px;
 }
 
 .account-detail {
   display: flex;
-  align-items: center;
+  align-items: center; /* Vertikale Ausrichtung der Inhalte */
   justify-content: space-between;
+  gap: 15px;
   background-color: #fff;
   padding: 10px;
   border-radius: 5px;
   border: 1px solid #ddd;
 }
 
+label {
+  flex: 1;  /* Label nimmt 1 Teil des Platzes */
+  font-weight: 600;
+  margin-right: 10px;
+  text-align: left
+}
+
 input {
-  flex: 2;
+  flex: 2;  /* Eingabefeld nimmt 2 Teile des Platzes */
   padding: 5px;
   border: 1px solid #ccc;
   border-radius: 3px;
@@ -401,15 +399,20 @@ input[readonly] {
   color: #555;
 }
 
+.placeholder {
+  flex: 1; /* Platz reservieren */
+  visibility: hidden; /* Unsichtbar machen */
+}
+
 .btn-change {
-  flex: 0 0 auto;
-  margin-left: 10px;
+  flex: 1;  /* Button nimmt 1 Teil des Platzes */
   padding: 5px 10px;
   background-color: #333;
   color: #fff;
   border: none;
   border-radius: 3px;
   cursor: pointer;
+  text-align: center;
 }
 
 .btn-change:hover {
