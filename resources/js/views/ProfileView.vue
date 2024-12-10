@@ -120,6 +120,21 @@ const deleteUser = async () => {
   }
 };
 
+// Profilbild löschen
+const deleteProfilePicture = async () => {
+    try {
+        isUploading.value = true;
+        await authStore.deleteProfilePicture();
+        showMessage('Profilbild wurde erfolgreich zurückgesetzt');
+        previewImage.value = null;
+    } catch (error) {
+        console.error('Fehler beim Zurücksetzen des Profilbildes:', error);
+        showMessage('Fehler beim Zurücksetzen des Profilbildes', true);
+    } finally {
+        isUploading.value = false;
+    }
+};
+
 // Hauptfunktion zum Hochladen des Bildes
 const handleFileUpload = async (event) => {
   const file = event.target.files[0];
@@ -169,7 +184,7 @@ onMounted(async () => {
   try {
     await authStore.getAuthUser();
 
-        const response = await authStore.getAuthUser();
+    const response = await authStore.getAuthUser();
     console.log('API Response Daten:', response.data.user);
     
     // Benutzerdaten strukturieren
@@ -204,12 +219,6 @@ onMounted(async () => {
   }
 });
 
-console.log("authUser:", authUser.value);
-console.log('Verarbeitete User-Daten:', authUser.value.user);
-console.log("created_at:", authUser.value.user?.created_at);
-console.log("joinedDate:", joinedDate.value);
-console.log('Formatiertes Beitrittsdatum:', joinedDate.value);
-
 </script>
 
 <template>
@@ -228,7 +237,7 @@ console.log('Formatiertes Beitrittsdatum:', joinedDate.value);
               <div class="profileImage">
                 <div class="image-preview">
                   <img
-                  :src="previewImage || authStore.profilePicUrl || '/storage/defaults/default-avatar.jpg'"
+                  :src="previewImage || authStore.profilePicUrl || '/storage/defaults/default-avatar.png'"
                   class="profile-picture"
                   alt="Profilbild"
                   />
@@ -238,11 +247,7 @@ console.log('Formatiertes Beitrittsdatum:', joinedDate.value);
                   </div>
                 </div>
 
-                <div 
-                  class="image-upload" 
-                  @click="triggerFileInput"
-                  :class="{ 'disabled': isUploading }"
-                >
+                <div class="image-upload"> 
                   <input
                     type="file"
                     ref="fileInput"
@@ -251,7 +256,22 @@ console.log('Formatiertes Beitrittsdatum:', joinedDate.value);
                     @change="handleFileUpload"
                     :disabled="isUploading"
                   />
-                  <span>{{ isUploading ? 'Wird hochgeladen...' : 'Profilbild ändern' }}</span>
+                  <div class="button-group">
+                    <button 
+                      @click="triggerFileInput" 
+                      :disabled="isUploading"
+                      class="upload-button"
+                    >
+                      {{ isUploading ? 'Wird hochgeladen...' : 'Profilbild ändern' }}
+                    </button>
+                    <button 
+                      @click="deleteProfilePicture" 
+                      :disabled="isUploading"
+                      class="delete-button"
+                    >
+                      Profilbild zurücksetzen
+                    </button>
+                  </div>
                   <div 
                     v-if="updateMessage" 
                     :class="['message', updateError ? 'error' : 'success']"
@@ -465,7 +485,7 @@ h1 {
 
 .image-upload {
   width: 200px;
-  height: 60px;
+  height: 90px;
   border-radius: 25px;
   border: 1px solid #909090;
   display: flex;
@@ -483,6 +503,54 @@ h1 {
 }
 
 .image-upload.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.button-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.upload-button,
+.delete-button {
+  padding: 8px 16px;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  border: 1px solid;
+}
+
+.upload-button {
+  background-color: #eee;
+  color: #333;
+  border-color: #909090;
+}
+
+.upload-button:hover:not(:disabled) {
+  background-color: #f5f5f5;
+  border-color: #ce3df3;
+}
+
+.upload-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.delete-button {
+  background-color: #f8d7da;
+  color: #721c24;
+  border-color: #f5c6cb;
+}
+
+.delete-button:hover:not(:disabled) {
+  background-color: #721c24;
+  color: white;
+}
+
+.delete-button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }

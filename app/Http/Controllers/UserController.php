@@ -318,6 +318,37 @@ class UserController extends Controller
         }
     }
 
+    public function deleteProfilePic()
+    {
+        try {
+            $user = auth()->user();
+            
+            // Wenn ein Profilbild existiert, lösche es
+            if ($user->profile_pic && Storage::disk('public')->exists($user->profile_pic)) {
+                Storage::disk('public')->delete($user->profile_pic);
+            }
+            
+            // Setze den profile_pic Wert auf null
+            $user->profile_pic = null;
+            $user->save();
+            
+            return response()->json([
+                'message' => 'Profilbild wurde erfolgreich gelöscht',
+                'profile_pic_url' => null
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Fehler beim Löschen des Profilbildes:', [
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id()
+            ]);
+            
+            return response()->json([
+                'error' => 'Fehler beim Löschen des Profilbildes'
+            ], 500);
+        }
+    }
+
     public function deleteAccount()
     {
         try {
