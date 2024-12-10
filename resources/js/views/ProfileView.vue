@@ -284,7 +284,7 @@ onMounted(async () => {
               </div>
 
               <div class="balance-section">
-                <h2>Aktuelles Guthaben:</h2>
+                <h2 class="balance-title">Aktuelles Guthaben:</h2>
 
                 <div class="balance">
                   <span>{{ authUser.user.balance }}</span>
@@ -349,7 +349,7 @@ onMounted(async () => {
         </section>
 
           <div class="notice">
-            <p>Hinweis: Wenn andere Angaben geändert werden sollen, ist eine E-Mail an uns nötig.</p>
+            <p><b>Hinweis:</b> Wenn andere Angaben geändert werden sollen, ist eine E-Mail an uns nötig.</p>
           </div>
         
         <section class="account-delete">
@@ -361,7 +361,7 @@ onMounted(async () => {
               Löscht das Profil dauerhaft.
             </li>
             <li>
-              Alle gespeicherten Informationen und das gesamte Spielgeld werden gelöscht.
+              Alle gespeicherten Informationen und das Spielgeld werden gelöscht.
             </li>
             <li>Erlaubt, dass Ihr Benutzername/Spielername für jeden verfügbar wird.</li>
           </ol>
@@ -668,15 +668,15 @@ input[readonly] {
   justify-content: center;
 }
 
+.balance-title {
+  text-align: center;
+}
+
 .balance {
   align-self: center;
   font-size: 36px;
   font-weight: 800;
   color: green;
-}
-
-.notice {
-  max-width: 500px;
 }
 
 ol {
@@ -726,21 +726,32 @@ button[type="submit"],
     display: flex;
     flex-direction: column;
   }
-  .image-upload { 
-  width: 150px;
-  height: 80px;
-  }
 }
 
 @media (max-width: 500px) {
   .profile-container {
     margin: 0 5px;
   }
+  .profile-main {
+    gap: 0px;
+  }
 }
 
 @media (max-width: 420px) {
   .profile-info-section {
     gap: 30px;
+  }
+  .profile-container {
+    padding: 5px;
+  }
+  .container {
+  padding: 0px;
+  }
+  .account-delete {
+    padding: 10px;
+  }
+  ol {
+    padding-right: 0;
   }
 }
 </style>
