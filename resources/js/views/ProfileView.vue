@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/store/AuthStore";
 import DeleteModal from "../components/DeleteModal.vue";
@@ -14,6 +14,7 @@ const updateMessage = ref("");
 const updateError = ref(false);
 const messageTimeout = ref(null);
 const fileInput = ref(null);
+const profileImage = computed(() => authStore.profilePicUrl);
 
 const showDeleteModal = ref(false);
 const isDeletingAccount = ref(false);
@@ -38,7 +39,6 @@ const authUser = ref({
 });
 
 const isLoading = ref(false);
-const { profileImage } = useAuthStore();
 
 // Funktion für Bildvorschau
 const createImagePreview = (file) => {
@@ -139,13 +139,14 @@ const handleFileUpload = async (event) => {
     // FormData erstellen und Bild hochladen
     const formData = new FormData();
     formData.append('profile_pic', file);
-    await authStore.uploadProfilePicture(formData);
+
+    await authStore.updateProfilePicture(formData);
 
     // Erfolgsmeldung anzeigen
     showMessage('Profilbild wurde erfolgreich aktualisiert!');
 
     // Benutzerdaten neu laden um aktualisiertes Bild zu erhalten
-    await authStore.fetchUser();
+    await authStore.getAuthUser();
   } catch (error) {
     console.error('Fehler beim Hochladen des Bildes:', error);
     showMessage('Fehler beim Hochladen des Bildes. Bitte versuchen Sie es erneut.', true);
@@ -161,30 +162,27 @@ const handleFileUpload = async (event) => {
   }
 };
 
-// Initialisierung beim Laden der Komponente
-onMounted(async () => {
-  try {
-    await authStore.fetchUser();
-  } catch (error) {
-    console.error('Fehler beim Laden des Profilbildes:', error);
-    showMessage('Profilbild konnte nicht geladen werden', true);
-  }
-});
-
 // Benutzerdaten beim Laden der Seite abrufen
 onMounted(async () => {
   try {
-    await authStore.fetchUser();
-    console.error("Fehler beim Laden des Users:", error);
-    // Ensure we're creating a proper structure
+    await authStore.getAuthUser();
+    
+    // Benutzerdaten strukturieren
     authUser.value = {
       user: {
-        name: authStore.user?.user?.name || "",
+        username: authStore.user?.user?.username || "",
+        firstname: authStore.user?.user?.firstname || "",
+        lastname: authStore.user?.user?.lastname || "",
         email: authStore.user?.user?.email || "",
+        birthdate: authStore.user?.user?.birth_date || "",
+        nationality: authStore.user?.user?.nationality || "",
+        balance: authStore.user?.user?.balance || 0,
         created_at: authStore.user?.user?.created_at,
+        profile_pic: authStore.user?.user?.profile_pic || null
       },
     };
-    // Format join date
+
+    // Beitrittsdatum formatieren
     if (authUser.value.user?.created_at) {
       const options = {
         day: "numeric",
@@ -197,6 +195,7 @@ onMounted(async () => {
     }
   } catch (error) {
     console.error("Fehler beim Laden des Users:", error);
+    showMessage('Fehler beim Laden der Benutzerdaten', true);
   }
 });
 
@@ -218,9 +217,9 @@ onMounted(async () => {
               <div class="profileImage">
                 <div class="image-preview">
                   <img
-                    :src="previewImage || authStore.profileImage"
-                    class="profile-picture"
-                    alt="Profilbild"
+                  :src="previewImage || authStore.profilePicUrl || '/storage/defaults/default-avatar.jpg'"
+                  class="profile-picture"
+                  alt="Profilbild"
                   />
                   <div v-if="isUploading" class="upload-overlay">
                     <span class="loading-spinner"></span>
@@ -241,23 +240,23 @@ onMounted(async () => {
                     @change="handleFileUpload"
                     :disabled="isUploading"
                   />
-                  <i class="fas fa-camera fa-2x"></i>
                   <span>{{ isUploading ? 'Wird hochgeladen...' : 'Profilbild ändern' }}</span>
+                  <div 
+                    v-if="updateMessage" 
+                    :class="['message', updateError ? 'error' : 'success']"
+                    role="alert"
+                  >
+                    {{ updateMessage }}
+                  </div>
                 </div>
-                <div 
-                  v-if="updateMessage" 
-                  :class="['message', updateError ? 'error' : 'success']"
-                  role="alert"
-                >
-                  {{ updateMessage }}
-                </div>
+
               </div>
 
               <div class="balance-section">
                 <h2>Aktuelles Guthaben:</h2>
 
                 <div class="balance">
-                  <h2>{{ authUser.user.balance }}</h2>
+                  <span>{{ authUser.user.balance }}</span>
                 </div>
               </div>
             </div>
@@ -270,43 +269,43 @@ onMounted(async () => {
           <div class="account-info">
             <div class="account-detail">
               <label>Angemeldet seit:</label>                
-              <input type="text" value="{{ joinedDate }}" readonly />
+              <input type="text" :value="joinedDate" readonly />
               <span class="placeholder"></span> <!-- Leerer Platzhalter für den Button -->
             </div>
 
             <div class="account-detail">
               <label>Spielername:</label>
-              <input type="text" value="{{ authUser.user.username }}" readonly />
+              <input type="text" :value="authUser.user.username" readonly />
               <span class="placeholder"></span>
             </div>
 
             <div class="account-detail">
               <label>Vorname:</label>
-              <input type="text" value="{{ authUser.user.firstname }}" readonly />
+              <input type="text" :value="authUser.user.firstname" readonly />
               <span class="placeholder"></span>
             </div>
 
             <div class="account-detail">
               <label>Nachname:</label>
-              <input type="text" value="{{ authUser.user.lastname }}" readonly />
+              <input type="text" :value="authUser.user.lastname" readonly />
               <span class="placeholder"></span>
             </div>
 
             <div class="account-detail">
               <label>Geburtsdatum:</label>
-              <input type="text" value="{{ authUser.user.birthdate }}" readonly />
+              <input type="text" :value="authUser.user.birthdate" readonly />
               <span class="placeholder"></span>
             </div>
 
             <div class="account-detail">
               <label>Nationalität:</label>
-              <input type="text" value="{{ authUser.user.nationality }}" readonly />
+              <input type="text" :value="authUser.user.nationality" readonly />
               <span class="placeholder"></span>
             </div>
 
             <div class="account-detail">
               <label>E-Mail:</label>
-              <input type="text" value="{{ authUser.user.email }}" readonly />
+              <input type="text" :value="authUser.user.email" readonly />
               <button @click="openEmailModal" class="btn-change">Ändern</button>              
             </div>
 
@@ -415,8 +414,8 @@ h1 {
 }
 
 .image-preview {
-  width: 150px;
-  height: 150px;
+  width: 180px;
+  height: 180px;
   border-radius: 50%;
   overflow: hidden;
   border: 2px solid #909090;
@@ -453,12 +452,6 @@ h1 {
   animation: spin 1s linear infinite;
 }
 
-.message {
-  margin-top: 10px;
-  padding: 10px;
-  border-radius: 4px;
-}
-
 .image-upload {
   width: 200px;
   height: 60px;
@@ -470,6 +463,7 @@ h1 {
   align-items: center;
   cursor: pointer;
   transition: all 0.3s ease;
+  position: relative; 
 }
 
 .image-upload:hover:not(.disabled) {
@@ -483,11 +477,16 @@ h1 {
 }
 
 .message {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
   margin-top: 10px;
   padding: 10px 15px;
   border-radius: 4px;
   font-size: 14px;
   animation: fadeIn 0.3s ease;
+  z-index: 1;
 }
 
 .success {
@@ -589,7 +588,10 @@ input[readonly] {
 }
 
 .balance {
-  font-size: 24px;
+  align-self: center;
+  font-size: 36px;
+  font-weight: 800;
+  color: green;
 }
 
 .notice {

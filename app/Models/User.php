@@ -90,9 +90,10 @@ class User extends Authenticatable
      */
     public function getProfilePicUrlAttribute()
     {
-        return $this->profile_pic 
-            ? asset(self::STORAGE_PATH . $this->profile_pic)
-            : null;
+        if ($this->profile_pic) {
+            return asset('storage/' . $this->profile_pic);
+        }
+        return asset('storage/defaults/default-avatar.jpg');
     }
 
     /**
