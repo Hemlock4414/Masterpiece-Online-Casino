@@ -15,10 +15,7 @@ class UserController extends Controller
 {
     public function index()
     {
-        // Hole alle Benutzer aus der Datenbank
         $users = User::all();
-
-        // Gib die Benutzer zurück
         return $users;
     }
 
@@ -29,7 +26,7 @@ class UserController extends Controller
         if ($user) {
             return response()->json(['user' => $user], 200);
         } else {
-            return response()->json(['message' => 'User not authenticated'], 401);
+            return response()->json(['message' => 'Benutzer nicht authentifiziert'], 401);
         }
     }
 
@@ -40,7 +37,6 @@ class UserController extends Controller
             'all_data' => $request->all()
         ]);
 
-        // Validierung der Eingabedaten
         $validator = Validator::make($request->all(), [
             'username' => 'required|string|max:255|unique:users',
             'firstname' => 'required|string|max:255',
@@ -51,7 +47,6 @@ class UserController extends Controller
             'password' => 'required|string|min:8|confirmed',
             'profile_pic' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ], [
-            // Hier fügen wir deutsche Fehlermeldungen hinzu
             'username.required' => 'Bitte geben Sie einen Spielernamen ein',
             'username.unique' => 'Dieser Spielername ist bereits vergeben',
             'firstname.required' => 'Bitte geben Sie Ihren Vornamen ein',
@@ -74,28 +69,19 @@ class UserController extends Controller
         try {
             $birthDate = $request->birth_date;
             
-            // Wenn das Datum im deutschen Format ist (DD.MM.YYYY)
             if (preg_match('/^\d{2}\.\d{2}\.\d{4}$/', $birthDate)) {
                 Log::info('Konvertiere deutsches Datum', ['original' => $birthDate]);
-                
-                // Zerlege das Datum in seine Bestandteile
                 list($day, $month, $year) = explode('.', $birthDate);
-                
-                // Erstelle das Datum im SQL-Format
                 $birthDate = sprintf('%04d-%02d-%02d', $year, $month, $day);
-                
                 Log::info('Datum konvertiert', ['converted' => $birthDate]);
                 
-                // Validiere das konvertierte Datum
                 if (!Carbon::createFromFormat('Y-m-d', $birthDate)->isValid()) {
                     throw new \Exception('Ungültiges Datum nach Konvertierung');
                 }
             } 
-            // Wenn das Datum bereits im ISO-Format ist (YYYY-MM-DD)
             elseif (preg_match('/^\d{4}-\d{2}-\d{2}$/', $birthDate)) {
                 Log::info('Datum bereits im ISO-Format', ['date' => $birthDate]);
                 
-                // Validiere das ISO-Datum
                 if (!Carbon::createFromFormat('Y-m-d', $birthDate)->isValid()) {
                     throw new \Exception('Ungültiges ISO-Datum');
                 }
@@ -106,7 +92,10 @@ class UserController extends Controller
 
             Log::info('Finales Datum für Datenbank:', ['birth_date' => $birthDate]);
 
-            // Speichere den Benutzer
+            // Berechne das Gesamtguthaben
+            $earnedBalance = $request->earned_balance ?? 0;
+            $totalBalance = User::calculateInitialBalance($earnedBalance);
+
             $user = User::create([
                 'username' => $request->username,
                 'firstname' => $request->firstname,
@@ -114,13 +103,17 @@ class UserController extends Controller
                 'email' => $request->email,
                 'birth_date' => $birthDate,
                 'nationality' => $request->nationality,
-                'balance' => 0,
+                'balance' => $totalBalance,
                 'password' => Hash::make($request->password),
             ]);
 
-            Log::info('User erfolgreich erstellt', ['user_id' => $user->id]);
+            Log::info('User erfolgreich erstellt', [
+                'user_id' => $user->id,
+                'initial_balance' => $totalBalance,
+                'registration_bonus' => User::REGISTRATION_BONUS,
+                'earned_balance' => $earnedBalance
+            ]);
 
-            // Speichere das Profilbild, falls vorhanden
             if ($request->hasFile('profile_pic')) {
                 $path = $request->file('profile_pic')->store('profile_pics', 'public');
                 $user->profile_pic = $path;
@@ -128,12 +121,9 @@ class UserController extends Controller
                 Log::info('Profilbild gespeichert', ['path' => $path]);
             }
 
-            // Nach erfolgreicher Registrierung direkt einloggen
             Auth::login($user);
-            // Session regenerieren für Sicherheit
             $request->session()->regenerate();
 
-            // Generiere die öffentliche URL des Profilbildes
             $profilePicUrl = $user->profile_pic ? asset('storage/' . $user->profile_pic) : null;
 
             return response()->json([
@@ -147,6 +137,8 @@ class UserController extends Controller
                     'nationality' => $user->nationality,
                     'balance' => $user->balance,
                     'profile_pic_url' => $profilePicUrl,
+                    'registration_bonus' => User::REGISTRATION_BONUS,
+                    'earned_balance' => $earnedBalance
                 ],
             ], 201);
 
@@ -167,31 +159,29 @@ class UserController extends Controller
 
     public function login(Request $request)
     {
-    $credentials = $request->validate([
-        'login' => 'required|string',  // Ein Feld für beide (username oder email)
-        'password' => 'required|string'
-    ]);
+        $credentials = $request->validate([
+            'login' => 'required|string',
+            'password' => 'required|string'
+        ]);
 
-    // Prüfe, ob die Eingabe eine E-Mail-Adresse ist
-    $loginType = filter_var($credentials['login'], FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+        $loginType = filter_var($credentials['login'], FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
 
-    // Versuche den Login mit dem entsprechenden Feld
-    $loginData = [
-        $loginType => $credentials['login'],
-        'password' => $credentials['password']
-    ];
+        $loginData = [
+            $loginType => $credentials['login'],
+            'password' => $credentials['password']
+        ];
 
-    if (Auth::attempt($loginData, $request->boolean('remember'))) {
-        $request->session()->regenerate();
-        
+        if (Auth::attempt($loginData, $request->boolean('remember'))) {
+            $request->session()->regenerate();
+            
+            return response()->json([
+                'user' => Auth::user()
+            ], 200);
+        }
+
         return response()->json([
-            'user' => Auth::user()
-        ], 200);
-    }
-
-    return response()->json([
-        'message' => 'Die Anmeldedaten sind ungültig.'
-    ], 422);
+            'message' => 'Die Anmeldedaten sind ungültig.'
+        ], 422);
     }
 
     public function show(Request $request)
@@ -206,10 +196,7 @@ class UserController extends Controller
                 return response()->json(['error' => 'Nicht authentifiziert'], 401);
             }
 
-            // Generiere die öffentliche URL des Profilbildes
             $profilePicUrl = $user->profile_pic ? asset('storage/' . $user->profile_pic) : null;
-
-            // Formatiere das Datum ins deutsche Format
             $birthDate = $user->birth_date ? Carbon::parse($user->birth_date)->format('d.m.Y') : null;
 
             Log::info('User-Daten erfolgreich abgerufen', ['user_id' => $user->id]);
@@ -253,12 +240,10 @@ class UserController extends Controller
 
         $user = Auth::user();
 
-        // Überprüfe das aktuelle Passwort
         if (!Hash::check($request->current_password, $user->password)) {
             return response()->json(['error' => 'Das aktuelle Passwort ist falsch'], 401);
         }
 
-        // Aktualisiere das Passwort
         $user->password = Hash::make($request->new_password);
         $user->save();
 
@@ -278,12 +263,10 @@ class UserController extends Controller
 
         $user = Auth::user();
 
-        // Überprüfe das aktuelle Passwort
         if (!Hash::check($request->current_password, $user->password)) {
             return response()->json(['error' => 'Das Passwort ist falsch'], 401);
         }
 
-        // Aktualisiere die E-Mail-Adresse
         $user->email = $request->new_email;
         $user->save();
 
@@ -292,40 +275,64 @@ class UserController extends Controller
 
     public function updateProfilePic(Request $request)
     {
-        $request->validate([
-            'profile_pic' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-        ]);
-    
-        $user = Auth::user();
-    
-        // Altes Profilbild löschen, falls vorhanden
-        if ($user->profile_pic) {
-            Storage::disk('public')->delete($user->profile_pic);
+        try {
+            $request->validate([
+                'profile_pic' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            ]);
+        
+            $user = Auth::user();
+        
+            if ($user->profile_pic && Storage::disk('public')->exists($user->profile_pic)) {
+                Storage::disk('public')->delete($user->profile_pic);
+            }
+        
+            $path = $request->file('profile_pic')->store('profile_pics', 'public');
+        
+            $user->profile_pic = $path;
+            $user->save();
+        
+            return response()->json([
+                'message' => 'Profilbild erfolgreich aktualisiert',
+                'profile_pic_url' => asset('storage/' . $path),
+            ]);
+        
+        } catch (\Exception $e) {
+            Log::error('Fehler beim Aktualisieren des Profilbildes:', [
+                'error' => $e->getMessage(),
+                'user_id' => Auth::id()
+            ]);
+            
+            return response()->json([
+                'error' => 'Fehler beim Hochladen des Profilbildes'
+            ], 500);
         }
-    
-        // Neues Bild speichern
-        $path = $request->file('profile_pic')->store('profile_pics', 'public');
-    
-        // Pfad in der Datenbank speichern
-        $user->profile_pic = $path;
-        $user->save();
-    
-        // Profilbild-URL zurückgeben
-        return response()->json([
-            'message' => 'Profilbild erfolgreich aktualisiert',
-            'profile_pic_url' => $user->profile_pic_url,
-        ]);
     }
 
     public function deleteAccount()
     {
-        // Hole den eingeloggten Benutzer
-        $user = auth()->user();
-
-        // Lösche den Benutzer
-        $user->delete();
-
-        return response()->json(['message' => 'Account deleted successfully'], 200);
+        try {
+            $user = auth()->user();
+            
+            if ($user->profile_pic && Storage::disk('public')->exists($user->profile_pic)) {
+                Storage::disk('public')->delete($user->profile_pic);
+            }
+            
+            $user->delete();
+            auth()->logout();
+            
+            return response()->json([
+                'message' => 'Konto wurde erfolgreich gelöscht'
+            ], 200);
+            
+        } catch (\Exception $e) {
+            Log::error('Fehler beim Löschen des Kontos:', [
+                'error' => $e->getMessage(),
+                'user_id' => Auth::id()
+            ]);
+            
+            return response()->json([
+                'error' => 'Fehler beim Löschen des Kontos'
+            ], 500);
+        }
     }
-
 }

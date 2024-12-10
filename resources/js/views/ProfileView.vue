@@ -214,7 +214,7 @@ onMounted(async () => {
           
           <h2>Profilbild</h2>
           <div class="profile-info-section">
-            <div>
+            <div class="profile-main">
               <div class="profileImage">
                 <div class="image-preview">
                   <img
@@ -244,23 +244,21 @@ onMounted(async () => {
                   <i class="fas fa-camera fa-2x"></i>
                   <span>{{ isUploading ? 'Wird hochgeladen...' : 'Profilbild ändern' }}</span>
                 </div>
+                <div 
+                  v-if="updateMessage" 
+                  :class="['message', updateError ? 'error' : 'success']"
+                  role="alert"
+                >
+                  {{ updateMessage }}
+                </div>
               </div>
 
-              <div 
-                v-if="updateMessage" 
-                :class="['message', updateError ? 'error' : 'success']"
-                role="alert"
-              >
-                {{ updateMessage }}
-              </div>
+              <div class="balance-section">
+                <h2>Aktuelles Guthaben:</h2>
 
-            <div class="balance-section">
-              <h2>Aktuelles Guthaben:</h2>
-
-              <div class="balance">
-                <h2>{{ authUser.user.balance }}</h2>
-              </div>
-
+                <div class="balance">
+                  <h2>{{ authUser.user.balance }}</h2>
+                </div>
               </div>
             </div>
           </div>
@@ -399,6 +397,12 @@ h1 {
   justify-content: space-around;
   align-items: center;
   margin-bottom: 20px;
+}
+
+.profile-main {
+  display: flex;
+  flex-direction: row;
+  gap: 40px;
 }
 
 .profileImage {
@@ -581,6 +585,7 @@ input[readonly] {
 .balance-section {
   display: flex;
   flex-direction: column;
+  justify-content: center;
 }
 
 .balance {
