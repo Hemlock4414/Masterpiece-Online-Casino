@@ -138,7 +138,7 @@ class UserController extends Controller
                     'balance' => $user->balance,
                     'profile_pic_url' => $profilePicUrl,
                     'registration_bonus' => User::REGISTRATION_BONUS,
-                    'earned_balance' => $earnedBalance
+                    'earned_balance' => $earnedBalance,
                 ],
             ], 201);
 
@@ -212,6 +212,7 @@ class UserController extends Controller
                     'nationality' => $user->nationality,
                     'balance' => $user->balance,
                     'profile_pic_url' => $profilePicUrl,
+                    'created_at' => $user->created_at,
                 ]
             ]);
 

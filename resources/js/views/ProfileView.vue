@@ -8,6 +8,7 @@ const router = useRouter();
 const authStore = useAuthStore();
 
 const isSubmitting = ref(false);
+const isLoading = ref(false);
 const previewImage = ref(null);
 const isUploading = ref(false);
 const updateMessage = ref("");
@@ -35,10 +36,11 @@ const authUser = ref({
     nationality: "",
     email: "",
     password: "",
+    balance: 1000,           
+    created_at: null,     
+    profile_pic: null,    
   },
 });
-
-const isLoading = ref(false);
 
 // Funktion für Bildvorschau
 const createImagePreview = (file) => {
@@ -166,6 +168,9 @@ const handleFileUpload = async (event) => {
 onMounted(async () => {
   try {
     await authStore.getAuthUser();
+
+        const response = await authStore.getAuthUser();
+    console.log('API Response Daten:', response.data.user);
     
     // Benutzerdaten strukturieren
     authUser.value = {
@@ -198,6 +203,12 @@ onMounted(async () => {
     showMessage('Fehler beim Laden der Benutzerdaten', true);
   }
 });
+
+console.log("authUser:", authUser.value);
+console.log('Verarbeitete User-Daten:', authUser.value.user);
+console.log("created_at:", authUser.value.user?.created_at);
+console.log("joinedDate:", joinedDate.value);
+console.log('Formatiertes Beitrittsdatum:', joinedDate.value);
 
 </script>
 
