@@ -1,19 +1,19 @@
 <script setup>
 import { ref } from 'vue';
 import { RouterLink, RouterView } from "vue-router";
-
-// Importiere die Logout-Funktion und Router
 import { storeToRefs } from "pinia";
 import { useAuthStore } from "@/store/AuthStore";
 import router from "@/router";
 
+// Authentifizierungszustand abrufen
 const { authUser } = storeToRefs(useAuthStore());
+const authStore = useAuthStore();
 const { login, logout } = useAuthStore();
 
 const username = ref("");
 const password = ref("");
 const rememberMe = ref(false);
-const isPasswordVisible = ref(false); // Zustand für das Passwort-Toggle
+const isPasswordVisible = ref(false);
 const errorMessage = ref("");
 
 const handleLogin = async () => {
@@ -124,7 +124,7 @@ const navigateToProfile = () => {
             <!-- User Menu (nur anzeigen wenn eingeloggt) -->
             <div v-else class="user-menu">
               <div class="balance-display">
-                Guthaben: {{ authUser.balance || '0' }} Credits
+                Guthaben: {{ authUser?.user?.balance ?? '0' }} Credits
               </div>
               <button class="profile-btn" @click="navigateToProfile">
                 Mein Profil
