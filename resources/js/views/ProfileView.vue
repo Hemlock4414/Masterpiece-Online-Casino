@@ -3,6 +3,8 @@ import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/store/AuthStore";
 import DeleteModal from "../components/DeleteModal.vue";
+import EmailChangeModal from '../components/EmailChangeModal.vue';
+import PasswordChangeModal from '../components/PasswordChangeModal.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -19,6 +21,9 @@ const profileImage = computed(() => authStore.profilePicUrl);
 
 const showDeleteModal = ref(false);
 const isDeletingAccount = ref(false);
+
+const showEmailModal = ref(false);
+const showPasswordModal = ref(false);
 
 // Konstanten für Bildvalidierung
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif'];
@@ -41,6 +46,18 @@ const authUser = ref({
     profile_pic: null,    
   },
 });
+
+const openEmailModal = () => {
+  showEmailModal.value = true;
+};
+
+const openPasswordModal = () => {
+  showPasswordModal.value = true;
+};
+
+const handleSuccess = (message) => {
+  showMessage(message);
+};
 
 // Funktion für Bildvorschau
 const createImagePreview = (file) => {
@@ -383,6 +400,19 @@ onMounted(async () => {
     :isLoading="isDeletingAccount"
     @confirm="deleteUser"
   />
+
+  <EmailChangeModal 
+    v-if="showEmailModal"
+    @close="showEmailModal = false"
+    @success="handleSuccess"
+  />
+  
+  <PasswordChangeModal 
+    v-if="showPasswordModal"
+    @close="showPasswordModal = false"
+    @success="handleSuccess"
+  />
+
 </template>
 
 <style scoped>
@@ -742,6 +772,9 @@ button[type="submit"],
   }
   .btn-change {
     padding: 5px 30px;
+  }
+  input {
+    text-align: center;
   }
 }
 
