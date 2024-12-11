@@ -31,7 +31,7 @@ const handleSubmit = async () => {
       password_confirmation: confirmPassword.value
     });
     
-    emit('success', 'Passwort wurde erfolgreich geändert. Sie werden nun ausgeloggt...');
+    emit('success', 'Passwort wurde erfolgreich geändert. Aus Sicherheitsgründen werden Sie nun ausgeloggt. Bitte benutzen Sie sich anschliessend Ihr neues Passwort.');
     setTimeout(() => {
       router.push('/');
     }, 2000);
