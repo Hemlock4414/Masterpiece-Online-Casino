@@ -447,18 +447,16 @@ h1 {
 .image-preview {
   width: 180px;
   height: 180px;
-  border-radius: 50%;
+  border-radius: 25%;
   overflow: hidden;
   border: 2px solid #909090;
-  position: relative;
 }
 
 .profile-picture {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center;
-  transform: scale(1.3);
+  /* transform: scale(1.2); */
 }
 
 .upload-overlay {
@@ -607,6 +605,8 @@ h2 {
   display: flex;
   flex-direction: column;
   gap: 15px;
+  max-width: 800px;
+  margin: 0 auto;
 }
 
 .account-detail {
@@ -620,7 +620,7 @@ h2 {
   border: 1px solid #ddd;
 }
 
-label {
+.account-detail label {
   flex: 1;  /* Label nimmt 1 Teil des Platzes */
   font-weight: 600;
   margin-right: 10px;
@@ -726,6 +726,7 @@ button[type="submit"],
     display: flex;
     flex-direction: column;
   }
+
 }
 
 @media (max-width: 500px) {
@@ -734,6 +735,13 @@ button[type="submit"],
   }
   .profile-main {
     gap: 0px;
+  }
+  .account-detail {
+    display: flex;
+    flex-direction: column;
+  }
+  .btn-change {
+    padding: 5px 30px;
   }
 }
 
