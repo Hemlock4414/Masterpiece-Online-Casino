@@ -1,20 +1,59 @@
 <script setup>
-import { ref, onMounted } from 'vue'
 import { RouterLink } from "vue-router";
+import { ref, onMounted, onUnmounted, nextTick } from "vue";
+import Flickity from 'flickity';
 
-import { storeToRefs } from "pinia";
-import { useAuthStore, authClient } from "@/store/AuthStore";
-import router from "@/router";
+import 'flickity/css/flickity.css';
 
-// Pinia Store (authUser und logout aus dem Store)
-const { authUser } = storeToRefs(useAuthStore());
-const { logout } = useAuthStore();
+// Bilder-Array definieren
+const images = ref([
+  { src: "/img/blackjack-1.jpg", alt: "Blackjack", link: null }, // Kein Link
+  { src: "/img/memory-1.png", alt: "Memory", link: "/memory/play" },
+  { src: "/img/poker-1.jpg", alt: "Poker", link: null },
+  { src: "/img/roulette-1.jpg", alt: "Roulette", link: null },
+  { src: "/img/slots-1.jpg", alt: "Slot Machines", link: null },
+  { src: "/img/blackjack-2.jpg", alt: "Blackjack", link: null },
+  { src: "/img/poker-2.jpg", alt: "Poker", link: null },
+  { src: "/img/roulette-2.jpg", alt: "Roulette", link: null },
+  { src: "/img/slots-2.jpg", alt: "Slot Machines", link: null },
+]);
 
-// Handle Logout
-const handleLogout = () => {
-    logout();
-    router.push("/login");
-};
+let flkty;
+
+onMounted(() => {
+  // Warte bis das DOM vollständig geladen ist
+  nextTick(() => {
+    flkty = new Flickity('.slider', {
+    cellAlign: "left",   // "left" für einzelne Bilder
+    contain: false,         // false um Lücken zu vermeiden
+    groupCells: false,      // false für einzelne Bilder
+    autoPlay: 2500,        // Slider wechselt alle 2 Sekunden
+    wrapAround: true,      // Endlos-Schleife
+    selectedAttraction: 0.0015,  // Beschleunigung der Bildbewegung
+    friction: 0.8,             // Verlangsamung des Übergangs
+    direction: "ltr",        // Horizontal von links nach rechts
+    // Neue Optionen für smootheres Verhalten
+    adaptiveHeight: false,
+    percentPosition: true,
+    freeScroll: false,
+    draggable: true,
+    watchCSS: false,
+    pageDots: false,         // keine Dots
+    prevNextButtons: false,   // keine Buttons
+    });
+    // Autoplay nach dem Draggen wieder starten
+    flkty.on('dragEnd', () => {
+    flkty.playPlayer();
+    });
+  });
+});
+
+// Optional: Cleanup bei Component Unmount
+onUnmounted(() => {
+  if (flkty) {
+    flkty.destroy();
+  }
+});
 
 </script>
 
@@ -28,7 +67,38 @@ const handleLogout = () => {
                     <img src="/public/img/hero-header.jpg" alt="">
              
                 </div>
-            </div>    
+            </div> 
+            
+            <!-- Flickity Slider -->
+            <div class="slider">
+                <div
+                v-for="(img, index) in images"
+                :key="index"
+                class="carousel-cell"
+                >
+                <div class="image-container">
+                    <RouterLink 
+                    v-if="img.link" 
+                    :to="img.link"
+                    >
+                    <img 
+                        :src="img.src" 
+                        :alt="img.alt" 
+                        class="game-image"
+                    />
+                    <span class="tooltip">{{ img.alt }}</span>
+                    </RouterLink>
+                    <div v-else>
+                    <img 
+                        :src="img.src" 
+                        :alt="img.alt"
+                        class="game-image"
+                    />
+                    <span class="tooltip">{{ img.alt }}</span>
+                    </div>
+                </div>
+                </div>
+            </div>
 
             <div class="row">
                 <!-- Alle 6 Kacheln in einer Row -->
@@ -106,6 +176,70 @@ const handleLogout = () => {
     width: 100%;  
     height: auto;  
     display: block;
+}
+
+/* Neue Flickity-spezifische Styles */
+.carousel-cell {
+  width: 300px;
+  height: 200px;
+  margin-right: 10px;
+}
+
+.carousel-cell img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Wichtig für die Slider-Dimension */
+.slider {
+  width: 100%;
+  /* max-width: 1440px; */
+  margin: 10px auto;
+  /* Optional: Zusätzliche Styles für besseres Verhalten */
+  position: relative;
+  overflow: hidden;
+}
+
+.game-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+  transition: transform 0.3s ease-in-out;
+  cursor: pointer;
+}
+
+.game-image:hover {
+  transform: scale(1.1);
+}
+
+.image-container {
+  position: relative;
+  width: 300px;
+  height: 200px;
+  z-index: 1;  /* Erhöht den z-index */
+}
+
+.tooltip {
+  position: absolute;
+  bottom: -40px;  /* Etwas tiefer gesetzt */
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 14px;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+  z-index: 2;  /* Höher als der Container */
+  white-space: nowrap; /* Verhindert Zeilenumbrüche */
+}
+
+.image-container:hover .tooltip {
+  opacity: 1;
 }
 
 .row {
