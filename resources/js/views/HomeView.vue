@@ -2,7 +2,7 @@
 import { RouterLink } from "vue-router";
 import { ref, onMounted, onUnmounted, nextTick } from "vue";
 import Flickity from 'flickity';
-
+// npm install flickity
 import 'flickity/css/flickity.css';
 
 // Bilder-Array definieren
@@ -206,26 +206,25 @@ onUnmounted(() => {
   height: 100%;
   object-fit: cover;
   border-radius: 8px;
-  transition: transform 0.3s ease-in-out;
-  cursor: pointer;
-}
-
-.game-image:hover {
-  transform: scale(1.1);
+  transition: all 0.3s ease-in-out;
 }
 
 .image-container {
   position: relative;
   width: 300px;
   height: 200px;
-  z-index: 1;  /* Erhöht den z-index */
+}
+
+.image-container:hover .game-image {
+  filter: brightness(0.7);  /* Verdunkelt das Bild beim Hover */
+  transform: scale(1.1);
 }
 
 .tooltip {
   position: absolute;
-  bottom: -40px;  /* Etwas tiefer gesetzt */
+  top: 50%;  /* Mittig über dem Bild */
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);  /* Zentriert den Tooltip */
   background: rgba(0, 0, 0, 0.8);
   color: white;
   padding: 5px 10px;
@@ -234,10 +233,11 @@ onUnmounted(() => {
   opacity: 0;
   transition: opacity 0.3s;
   pointer-events: none;
-  z-index: 2;  /* Höher als der Container */
-  white-space: nowrap; /* Verhindert Zeilenumbrüche */
+  z-index: 5;  /* Höherer z-index */
+  white-space: nowrap;
 }
 
+/* Anzeige des Tooltips beim Hover */
 .image-container:hover .tooltip {
   opacity: 1;
 }
