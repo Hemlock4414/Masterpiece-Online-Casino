@@ -13,9 +13,9 @@
                     <h1 class="heading topline">Datenschutzerklärung</h1>
                     
                     <p class="topline">
-                    "NAME" will Ihre persönlichen Daten schützen und mit der vorliegenden Datenschutzerklärung 
+                    Fortuna Fortune will Ihre persönlichen Daten schützen und mit der vorliegenden Datenschutzerklärung 
                     ("Erklärung") zeigen wir Ihnen auf, in welcher Weise wir Ihre Personendaten verwenden und wie 
-                    "NAME" (nachstehend als „die Webseite“ oder auch wir/uns bezeichnet) diese schützt.</p><br>
+                    Fortuna Fortune (nachstehend als „die Webseite“ oder auch wir/uns bezeichnet) diese schützt.</p><br>
                     <p class="topline">
                     Personendaten im Sinn dieser Erklärung sind alle Daten, die wir im Zusammenhang mit Ihrer Nutzung 
                     von dieser Webseite erhalten und anhand derer Sie direkt oder indirekt identifiziert werden können, wie 
@@ -109,7 +109,7 @@
                             Unternehmen geltend gemacht werden können (d.h. insbesondere während der gesetzlichen 
                             Verjährungsfrist) und soweit wir anderweitig gesetzlich dazu verpflichtet sind oder berechtigte 
                             Geschäftsinteressen dies erfordern (z.B. für Beweis- und Dokumentationszwecke). Sobald Ihre 
-                            Personendaten für die in Kapitel 4 genannten Zwecke nicht mehr erforderlich sind, werden sie 
+                            Personendaten nicht mehr erforderlich sind, werden sie 
                             grundsätzlich und soweit möglich gelöscht oder anonymisiert. Für betriebliche Daten (z.B. 
                             Systemprotokolle, Logs) gelten grundsätzlich kürzere Aufbewahrungsfristen von zwölf Monaten oder 
                             weniger.</p><br>
@@ -129,8 +129,8 @@
                         <section id="C6">  
                             <h2 class="heading">Cookies</h2>
 
-                            <p>Wir setzen auf unserer Website Cookies ein. Wir haben separate <a href="/agb#C13">Cookie-Richtlinie</a> festgelegt, die 
-                            ein integraler Bestandteil der vorliegenden Datenschutzerklärung sind.</p><br>
+                            <p>Wir setzen auf unserer Webseite Cookies ein. Wir haben eine <a href="/agb#C13">Cookie-Richtlinie</a> festgelegt, die 
+                            ein integraler Bestandteil der vorliegenden Datenschutzerklärung ist.</p><br>
                         </section> 
 
                         <section id="C7">  
