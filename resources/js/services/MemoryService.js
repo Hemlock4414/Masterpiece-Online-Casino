@@ -1,7 +1,6 @@
 import apiClient from './apiClient';
 import { LobbyService } from './LobbyService';
 
-// Neues Spiel erstellen
 export const createGame = async (pairs = 8, guestId = null) => {
     try {
         const requestData = {
@@ -11,10 +10,9 @@ export const createGame = async (pairs = 8, guestId = null) => {
             requestData.guest_id = parseInt(guestId);
         }
         
-        console.log('Request Data:', requestData);
         const response = await apiClient.post('/memory-games/create', requestData);
         
-        // Spieler-Status in Lobby aktualisieren
+        // Status-Update wird über Presence Channel gehandhabt
         await LobbyService.updatePlayerStatus('waiting');
         
         return response.data;
@@ -24,11 +22,9 @@ export const createGame = async (pairs = 8, guestId = null) => {
     }
 };
 
-// Spiel starten
 export const startGame = async (gameId) => {
     try {
         const response = await apiClient.post(`/memory-games/${gameId}/start`);
-        // Status auf 'in_game' setzen
         await LobbyService.updatePlayerStatus('in_game');
         return response.data;
     } catch (error) {
@@ -37,11 +33,9 @@ export const startGame = async (gameId) => {
     }
 };
 
-// Spiel beenden
 export const stopGame = async (gameId, status = 'finished') => {
     try {
         const response = await apiClient.post(`/memory-games/${gameId}/stop`, { status });
-        // Status zurück auf 'available' setzen
         await LobbyService.updatePlayerStatus('available');
         return response.data;
     } catch (error) {
@@ -50,7 +44,7 @@ export const stopGame = async (gameId, status = 'finished') => {
     }
 };
 
-// Restliche Methoden bleiben unverändert...
+// Die anderen Methoden bleiben unverändert
 export const updatePlayerScore = async (gameId, playerId, score) => {
     try {
         const response = await apiClient.put(`/memory-games/${gameId}/players/${playerId}`, {
@@ -86,7 +80,6 @@ export const nextTurn = async (gameId) => {
     }
 };
 
-// Neue Methode für Multiplayer-Join
 export const joinGame = async (gameId) => {
     try {
         const response = await apiClient.post(`/memory-games/${gameId}/join`);

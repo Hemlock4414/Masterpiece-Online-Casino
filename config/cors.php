@@ -15,7 +15,7 @@ return [
     |
     */
 
-    'paths' => ['api/*', 'sanctum/csrf-cookie'],
+    'paths' => ['api/*', 'sanctum/csrf-cookie', 'broadcasting/auth'],
 
     'allowed_methods' => ['*'],
 
@@ -28,7 +28,6 @@ return [
     'exposed_headers' => [],
 
     'max_age' => 0,
-
-    'supports_credentials' => false,
-
+    
+    'supports_credentials' => true  // Dies sollte true sein für Presence Channels!
 ];

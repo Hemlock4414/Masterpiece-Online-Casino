@@ -5,6 +5,7 @@ namespace App\Events;
 use App\Models\Lobby;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
+use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
@@ -22,7 +23,7 @@ class LobbyStatusUpdated implements ShouldBroadcast
 
     public function broadcastOn()
     {
-        return new Channel('lobby'); // Normaler Channel statt Presence
+        return new PresenceChannel('game.lobby');
     }
 
     public function broadcastWith(): array

@@ -135,9 +135,7 @@ class LobbyController extends Controller
                 return response()->json(['error' => 'Spieler nicht gefunden'], 404);
             }
     
-            // Status aktualisieren
-            $player->touch(); // Aktualisiert updated_at für Online-Status
-    
+            // Nur noch Status-Änderungen broadcasten
             broadcast(new PlayerStatusChanged([
                 'id' => $player->player_id,
                 'name' => $player->name,
@@ -154,23 +152,10 @@ class LobbyController extends Controller
 
     public function getOnlinePlayers()
     {
-        try {
-            // Aktive Spieler der letzten 5 Minuten
-            $players = MemoryPlayer::where('updated_at', '>', now()->subMinutes(5))
-                ->get()
-                ->map(function($player) {
-                    return [
-                        'id' => $player->player_id,
-                        'name' => $player->name,
-                        'status' => 'available',
-                        'isRegistered' => !is_null($player->user_id)
-                    ];
-                });
-    
-            return response()->json($players);
-        } catch (\Exception $e) {
-            \Log::error('Fehler beim Laden der Online-Spieler:', ['error' => $e->getMessage()]);
-            return response()->json(['error' => 'Fehler beim Laden der Spieler'], 500);
-        }
+        // Diese Methode wird nicht mehr benötigt, da der Presence Channel
+        // automatisch die Online-Spieler verwaltet
+        return response()->json([
+            'message' => 'Bitte Presence Channel Events nutzen'
+        ]);
     }
 }

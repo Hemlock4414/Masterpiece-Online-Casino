@@ -15,7 +15,8 @@ class MemoryPlayerController extends Controller
         try {
             $game = MemoryGame::with(['players' => function($query) {
                 $query->select('memory_players.*', 'users.name as user_name')
-                      ->leftJoin('users', 'users.id', '=', 'memory_players.user_id');
+                      ->leftJoin('users', 'users.id', '=', 'memory_players.user_id')
+                      ->where('memory_players.last_seen_at', '>', now()->subMinutes(5));
             }])->findOrFail($gameId);
             
             return response()->json($game->players);
@@ -43,11 +44,15 @@ class MemoryPlayerController extends Controller
                 ], 400);
             }
     
-            // Spieler erstellen/abrufen mit zentraler Methode
+            // Spieler erstellen/abrufen
             $player = auth()->check() 
                 ? MemoryPlayer::firstOrCreate(
                     ['user_id' => auth()->id()],
-                    ['name' => auth()->user()->name]
+                    [
+                        'name' => auth()->user()->name,
+                        'status' => 'available',
+                        'last_seen_at' => now()
+                    ]
                 )
                 : MemoryPlayer::createOrGetGuest($request->guest_id);
     
@@ -60,13 +65,10 @@ class MemoryPlayerController extends Controller
             // Spieler zum Spiel hinzufügen
             $game->players()->attach($player->player_id, ['player_score' => 0]);
 
-            // Status-Event broadcasten
-            broadcast(new PlayerStatusChanged([
-                'id' => $player->player_id,
-                'name' => $player->name,
-                'status' => 'waiting',
-                'isRegistered' => auth()->check()
-            ]));
+            // Status über Presence Channel aktualisieren
+            $player->updateStatus('waiting');
+            
+            broadcast(new PlayerStatusChanged($player->getPresenceData()));
     
             return response()->json([
                 'message' => 'Spieler erfolgreich hinzugefügt',
@@ -92,15 +94,11 @@ class MemoryPlayerController extends Controller
                 'player_score' => $validated['player_score']
             ]);
 
-            // Status-Event broadcaaten wenn Spiel beendet
+            // Status aktualisieren wenn Spiel beendet
             if ($game->isFinished()) {
                 $player = MemoryPlayer::find($playerId);
-                broadcast(new PlayerStatusChanged([
-                    'id' => $player->player_id,
-                    'name' => $player->name,
-                    'status' => 'available',
-                    'isRegistered' => !is_null($player->user_id)
-                ]));
+                $player->updateStatus('available');
+                broadcast(new PlayerStatusChanged($player->getPresenceData()));
             }
 
             return response()->json([
@@ -113,27 +111,37 @@ class MemoryPlayerController extends Controller
         }
     }
 
-    // Neue Methode für Spieler-Status
-    public function updateStatus($gameId, $playerId, Request $request)
+    public function updateStatus($playerId, Request $request)
     {
         try {
             $validated = $request->validate([
-                'status' => 'required|in:waiting,in_game,available'
+                'status' => 'required|in:waiting,in_game,available,offline'
             ]);
 
             $player = MemoryPlayer::findOrFail($playerId);
+            $player->updateStatus($validated['status']);
             
-            broadcast(new PlayerStatusChanged([
-                'id' => $player->player_id,
-                'name' => $player->name,
-                'status' => $validated['status'],
-                'isRegistered' => !is_null($player->user_id)
-            ]));
+            broadcast(new PlayerStatusChanged($player->getPresenceData()));
 
             return response()->json(['success' => true]);
         } catch (\Exception $e) {
             Log::error('Fehler beim Aktualisieren des Status:', ['error' => $e->getMessage()]);
             return response()->json(['error' => 'Status konnte nicht aktualisiert werden'], 500);
+        }
+    }
+
+    // Neue Methode für Presence Channel Heartbeat
+    public function heartbeat($playerId)
+    {
+        try {
+            $player = MemoryPlayer::findOrFail($playerId);
+            $player->last_seen_at = now();
+            $player->save();
+
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            Log::error('Fehler beim Heartbeat:', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Heartbeat fehlgeschlagen'], 500);
         }
     }
 }

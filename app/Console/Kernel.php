@@ -17,9 +17,14 @@ class Kernel extends ConsoleKernel
                 ->dailyAt('00:00')
                 ->appendOutputTo(storage_path('logs/memory-cleanup.log'));
 
-        $schedule->command('lobby:check-expired')->everyMinute() 
+        $schedule->command('lobby:check-expired')
                 ->everyMinute()
                 ->appendOutputTo(storage_path('logs/lobby-expired.log'));
+                
+        // Schedule für Presence Channel Cleanup
+        $schedule->command('presence:cleanup')
+                ->hourly()
+                ->appendOutputTo(storage_path('logs/presence-cleanup.log'));
     }
 
     /**

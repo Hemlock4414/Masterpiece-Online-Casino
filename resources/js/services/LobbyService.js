@@ -17,7 +17,7 @@ export const LobbyService = {
                 player_id: playerId,
                 status: status
             });
-            console.log('Status updated:', response.data);
+            // Broadcast über Presence Channel wird vom Server gehandhabt
             return response.data;
         } catch (error) {
             console.error('Error updating status:', error);
@@ -28,7 +28,6 @@ export const LobbyService = {
     updateLobbyStatus: async (lobbyId, status) => {
         try {
             const response = await apiClient.post(`/lobby/status/${lobbyId}`, { status });
-            console.log('Lobby status updated:', response.data);
             return response.data;
         } catch (error) {
             console.error('Error updating lobby status:', error);
@@ -36,15 +35,10 @@ export const LobbyService = {
         }
     },
 
+    // Diese Methode wird nicht mehr benötigt, da Presence Channel die Online-Spieler verwaltet
     getOnlinePlayers: async () => {
-        try {
-            const response = await apiClient.get('/lobby/online-players');
-            console.log('Online players:', response.data);
-            return response.data;
-        } catch (error) {
-            console.error('Error fetching online players:', error);
-            throw error;
-        }
+        console.warn('getOnlinePlayers is deprecated. Use Presence Channel instead.');
+        return [];
     },
 
     challengePlayer: async (playerId) => {
@@ -53,10 +47,22 @@ export const LobbyService = {
             const response = await apiClient.post(`/lobby/challenge/${playerId}`, {
                 challenger_id: challenger
             });
-            console.log('Challenge sent:', response.data);
             return response.data;
         } catch (error) {
             console.error('Error challenging player:', error);
+            throw error;
+        }
+    },
+
+    // Neue Methode für Presence Channel Authentication
+    getPresenceChannelAuth: async () => {
+        try {
+            const response = await apiClient.post('/broadcasting/auth', {
+                channel_name: 'presence-game.lobby'
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error getting presence channel auth:', error);
             throw error;
         }
     }

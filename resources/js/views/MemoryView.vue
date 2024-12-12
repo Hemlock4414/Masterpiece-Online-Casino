@@ -267,20 +267,20 @@ const handleCardFlip = async (card) => {
 onMounted(async () => {
   await createNewGame();
 
-  // Höre auf Lobby-Events
-  window.Echo.channel('lobby')
-  .listen('LobbyStatusUpdated', (e) => {
-    if (e.lobby.status === 'accepted' && e.lobby.game_id === gameId.value) {
-      handlePlayerJoin(e.challenger);
-    }
-  });
+  // Höre auf Lobby-Events Presence Channel
+  window.Echo.join('game.lobby')
+    .listen('LobbyStatusUpdated', (e) => {
+      if (e.lobby.status === 'accepted' && e.lobby.game_id === gameId.value) {
+        handlePlayerJoin(e.challenger);
+      }
+    });
 });
 
 // Timer stoppen, wenn die Komponente zerstört wird
 onUnmounted(() => {
   stopTimer();
-  LobbyService.updatePlayerStatus('available');
-  window.Echo.leave('lobby');
+  window.Echo.leave('game.lobby');
+  // Status-Update wird jetzt automatisch durch Presence Channel handling
 });
 </script>
 

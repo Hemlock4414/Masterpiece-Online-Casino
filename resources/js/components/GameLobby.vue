@@ -29,6 +29,11 @@ const updatePlayerList = (player) => {
   }
 };
 
+// Spieler aus Liste entfernen
+const removePlayer = (playerId) => {
+  onlinePlayers.value = onlinePlayers.value.filter(p => p.id !== playerId);
+};
+
 // Spieler-Herausforderung
 const showChallengeModal = (lobby) => {
   if (!lobby || lobby.challenged_id !== user.value?.id) return;
@@ -67,10 +72,23 @@ const challengePlayer = async (player) => {
 };
 
 onMounted(() => {
-  const playerId = LobbyService.getCurrentPlayerId();
-  console.log('WebSocket-Verbindung wird aufgebaut für Spieler:', playerId);
+  // Presence Channel abonnieren
+  const presenceChannel = window.Echo.join('game.lobby');
   
-  window.Echo.channel('lobby')
+  // Presence Events
+  presenceChannel
+    .here((players) => {
+      console.log('Aktuelle Spieler:', players);
+      onlinePlayers.value = players;
+    })
+    .joining((player) => {
+      console.log('Spieler ist beigetreten:', player);
+      updatePlayerList(player);
+    })
+    .leaving((player) => {
+      console.log('Spieler hat verlassen:', player);
+      removePlayer(player.id);
+    })
     .listen('PlayerStatusChanged', (e) => {
       console.log('Status-Update empfangen:', e);
       if (e.player) {
@@ -85,7 +103,7 @@ onMounted(() => {
     .listen('LobbyStatusUpdated', (e) => {
       console.log('Lobby-Update empfangen:', e);
       if (e.lobby) {
-        const lobby = {
+        showChallengeModal({
           lobby_id: e.lobby.lobby_id,
           challenger_id: e.lobby.challenger_id,
           challenger_name: e.lobby.challenger_name,
@@ -94,18 +112,15 @@ onMounted(() => {
           challenged_name: e.lobby.challenged_name,
           challenged_registered: e.lobby.challenged_registered,
           status: e.lobby.status
-        };
-        showChallengeModal(lobby);
+        });
       }
     });
 });
 
 // Cleanup beim Unmount
 onUnmounted(() => {
-  window.Echo.leave('lobby');
-  LobbyService.updatePlayerStatus('offline');
+  window.Echo.leave('game.lobby');
 });
-
 </script>
 
 <template>
