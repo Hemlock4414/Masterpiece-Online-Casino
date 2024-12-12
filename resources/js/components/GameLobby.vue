@@ -169,8 +169,8 @@ onUnmounted(() => {
   position: fixed;
   right: 0;
   top: var(--header-height);  /* Anpassen je nach Header-Höhe */
-  bottom: var(--footer-height);     /* Anpassen je nach Footer-Höhe */
-  width: 300px;
+  bottom: var(--footer-height); /* Anpassen je nach Footer-Höhe */
+  width: 500px;
   background: white;
   box-shadow: -2px 0 5px rgba(0,0,0,0.1);
   transition: transform 0.3s ease;

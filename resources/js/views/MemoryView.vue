@@ -285,95 +285,95 @@ onUnmounted(() => {
 </script>
 
 <template>
+  <main>
+    <div class="memory-container">
 
-  <div class="memory-container">
+      <GameLobby />
 
-    <GameLobby />
+      <div class="memory-game">
 
-    <div class="memory-game">
-
-      <div class="header">
-        <h1>Memory</h1>
-        <div class="timer">
-          <h2>Timer</h2>
-          <p>{{ Math.floor(timer / 60) }}:{{ String(timer % 60).padStart(2, '0') }}</p>
-        </div>
-      </div>
-
-      <div class="game-status">
-        <p>Spielstatus: {{ gameStatus }}</p>
-      </div>
-
-      <div class="game-layout">
-        <div class="player-list">
-          <h2>Spieler</h2>
-          <ul>
-            <li 
-              v-for="player in players" 
-              :key="player.player_id"
-              :class="{ 'active-player': currentPlayer?.player_id === player.player_id }"
-            >
-              {{ player.name }}: {{ player.pivot?.player_score ?? 0 }} Punkte
-            </li>
-          </ul>
+        <div class="header">
+          <h1>Memory</h1>
+          <div class="timer">
+            <h2>Timer</h2>
+            <p>{{ Math.floor(timer / 60) }}:{{ String(timer % 60).padStart(2, '0') }}</p>
+          </div>
         </div>
 
-        <div class="player-info" v-if="currentPlayer">
-          <p>Am Zug: {{ currentPlayer.name }}</p>
+        <div class="game-status">
+          <p>Spielstatus: {{ gameStatus }}</p>
         </div>
 
-        <div class="round-info">
-          <h2>Runden</h2>
-          <p>{{ roundCount }}</p>
+        <div class="game-layout">
+          <div class="player-list">
+            <h2>Spieler</h2>
+            <ul>
+              <li 
+                v-for="player in players" 
+                :key="player.player_id"
+                :class="{ 'active-player': currentPlayer?.player_id === player.player_id }"
+              >
+                {{ player.name }}: {{ player.pivot?.player_score ?? 0 }} Punkte
+              </li>
+            </ul>
+          </div>
+
+          <div class="player-info" v-if="currentPlayer">
+            <p>Am Zug: {{ currentPlayer.name }}</p>
+          </div>
+
+          <div class="round-info">
+            <h2>Runden</h2>
+            <p>{{ roundCount }}</p>
+          </div>
         </div>
+
+        <div class="game-controls">
+          <button 
+            v-if="gameStatus === 'waiting'" 
+            @click="startGame"
+            class="btn-primary"
+          >
+            Spiel Starten
+          </button>
+
+          <button 
+            v-if="gameStatus === 'in_progress'" 
+            @click="abortGame"
+            class="btn-secondary"
+          >
+            Spiel abbrechen
+          </button>
+
+          <button 
+            v-if="gameStatus === 'finished'" 
+            @click="createNewGame"
+            class="btn-primary"
+          >
+            Neues Spiel
+          </button>
+        </div>
+
+        <MemoryGrid 
+          v-if="(gameStatus === 'in_progress' || gameStatus === 'finished') && cards.length" 
+          :cards="cards"
+          :flippedCards="flippedCards"
+          @flipCard="handleCardFlip" 
+        />
+
+        <MemoryEndModal
+        v-if="showModal"
+        :title="'Spiel beendet!'"
+        :points="gameResult.points"
+        :rounds="gameResult.rounds"
+        :time="gameResult.time"
+        :on-new-game="createNewGame"
+        :on-go-to-home="() => $router.push('/')"
+        />
+
       </div>
-
-      <div class="game-controls">
-        <button 
-          v-if="gameStatus === 'waiting'" 
-          @click="startGame"
-          class="btn-primary"
-        >
-          Spiel Starten
-        </button>
-
-        <button 
-          v-if="gameStatus === 'in_progress'" 
-          @click="abortGame"
-          class="btn-secondary"
-        >
-          Spiel abbrechen
-        </button>
-
-        <button 
-          v-if="gameStatus === 'finished'" 
-          @click="createNewGame"
-          class="btn-primary"
-        >
-          Neues Spiel
-        </button>
-      </div>
-
-      <MemoryGrid 
-        v-if="(gameStatus === 'in_progress' || gameStatus === 'finished') && cards.length" 
-        :cards="cards"
-        :flippedCards="flippedCards"
-        @flipCard="handleCardFlip" 
-      />
-
-      <MemoryEndModal
-      v-if="showModal"
-      :title="'Spiel beendet!'"
-      :points="gameResult.points"
-      :rounds="gameResult.rounds"
-      :time="gameResult.time"
-      :on-new-game="createNewGame"
-      :on-go-to-home="() => $router.push('/')"
-      />
-
     </div>
-  </div>
-
+  </main>
 </template>
 
 <style scoped>

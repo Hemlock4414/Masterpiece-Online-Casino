@@ -29,4 +29,9 @@ main {
     flex: 1;
 }
 
+:root {
+    --header-height: 315px;
+    --footer-height: 170px;
+}
+
 
