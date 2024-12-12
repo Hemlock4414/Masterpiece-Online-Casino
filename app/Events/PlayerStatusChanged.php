@@ -17,9 +17,9 @@ class PlayerStatusChanged implements ShouldBroadcast
         $this->player = $player;
     }
 
-    public function broadcastOn()
+    public function broadcastOn(): array
     {
-        return new PresenceChannel('game.lobby');
+        return [new PresenceChannel('game.lobby')];
     }
 
     public function broadcastWith()

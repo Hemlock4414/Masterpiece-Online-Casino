@@ -21,9 +21,9 @@ class LobbyStatusUpdated implements ShouldBroadcast
         $this->lobby = $lobby;
     }
 
-    public function broadcastOn()
+    public function broadcastOn(): array
     {
-        return new PresenceChannel('game.lobby');
+        return [new PresenceChannel('game.lobby')];
     }
 
     public function broadcastWith(): array

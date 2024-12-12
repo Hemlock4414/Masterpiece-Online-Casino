@@ -10,16 +10,14 @@ window.Pusher = Pusher;
 
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
-// Reverb Konfiguration
+// Reverb Konfiguration (via Pusher-Protokoll)
 window.Echo = new Echo({
-    broadcaster: 'pusher', // Wichtig: 'pusher' statt 'reverb' // Reverb als Broadcaster angeben
+    broadcaster: 'reverb', // Reverb: Laravel's eigener WebSocket-Server
     key: import.meta.env.VITE_REVERB_APP_KEY,
     wsHost: import.meta.env.VITE_REVERB_HOST,
     wsPort: import.meta.env.VITE_REVERB_PORT,
     wssPort: import.meta.env.VITE_REVERB_PORT,
     forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? 'https') === 'https',
     enabledTransports: ['ws', 'wss'],
-    cluster: 'mt1',  // Hinzugefügt
-    encrypted: false  // Hinzugefügt
 });
 
