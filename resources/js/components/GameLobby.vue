@@ -160,15 +160,24 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+:root {
+  --header-height: 315px;
+  --footer-height: 170px;
+}
+
 .lobby-container {
-  position: absolute;
+  position: fixed;
   right: 0;
+  top: var(--header-height);  /* Anpassen je nach Header-Höhe */
+  bottom: var(--footer-height);     /* Anpassen je nach Footer-Höhe */
   width: 300px;
   background: white;
   box-shadow: -2px 0 5px rgba(0,0,0,0.1);
   transition: transform 0.3s ease;
-  z-index: 10;
-  height: calc(100vh - 120px);
+  z-index: 1000;
+  overflow-y: auto;
+  height: auto;
+  background: rgba(255, 0, 0, 0.1);
 }
 
 .lobby-container.closed {
