@@ -2,12 +2,10 @@ import { useAuthStore } from "@/store/AuthStore";
 import apiClient from './apiClient';
 
 export const LobbyService = {
+    
     getCurrentPlayerId: () => {
         const authStore = useAuthStore();
-        if (authStore.user?.id) {
-            return authStore.user.id;
-        }
-        return sessionStorage.getItem('memoryGuestId');
+        return authStore.currentPlayerId;
     },
 
     updatePlayerStatus: async (status) => {

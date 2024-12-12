@@ -16,6 +16,9 @@ const isProcessingMove = ref(false);
 const roundCount = ref(0);
 const timer = ref(0); 
 
+const presenceChannel = ref(null);
+const isConnected = ref(false);
+
 const showModal = ref(false);
 const gameResult = ref({
   points: 0,
@@ -25,36 +28,38 @@ const gameResult = ref({
 
 let timerInterval = null;
 
-// Helper-Funktionen für sessionStorage
-const getStoredGuestId = () => {
-  return sessionStorage.getItem('memoryGuestId');
+const handlePresenceSubscribed = (members) => {
+  console.log('Presence channel subscribed:', members);
+  isConnected.value = true;
 };
 
-const setStoredGuestId = (id) => {
-  sessionStorage.setItem('memoryGuestId', id);
+const handlePlayerJoined = async (player) => {
+  console.log('Spieler beigetreten:', player);
+  if (gameStatus.value === 'waiting' && players.value.length < 2) {
+    await handlePlayerJoin(player);
+  }
+};
+
+const handlePlayerLeft = (player) => {
+  console.log('Spieler hat verlassen:', player);
+  if (gameStatus.value === 'in_progress') {
+    abortGame();
+  }
 };
 
 const createNewGame = async () => {
   try {
-    console.log('Erstelle neues Spiel...'); 
-    
-    const storedGuestId = getStoredGuestId();
-    console.log('Gespeicherte Gast-ID gefunden:', storedGuestId); // Debug
-
+    const storedGuestId = authStore.guestId;;
     const game = await createGame(8, storedGuestId);
-    console.log('Server-Antwort:', game); // Debug
     
-    console.log('Spiel erfolgreich erstellt:', game);
     gameId.value = game.game_id;
     gameStatus.value = 'waiting';
     cards.value = game.cards;
     players.value = game.players;
     
-    // Speichere die Gast-ID wenn es ein neuer Gast ist
     const guestPlayer = players.value.find(p => p.name.includes('Gast'));
     if (guestPlayer && !storedGuestId) {
-      setStoredGuestId(guestPlayer.player_id);
-      console.log('Gast-ID gespeichert:', guestPlayer.player_id); // Debug
+      authStore.setGuestId(guestPlayer.player_id);
     }
 
     currentPlayer.value = players.value[0];
@@ -71,7 +76,6 @@ const createNewGame = async () => {
 const startGame = async () => {
   try {
     if (!gameId.value) return;
-
     const response = await startGameAPI(gameId.value);
 
     if (response.game) {
@@ -79,9 +83,6 @@ const startGame = async () => {
       players.value = response.game.players;
       gameStatus.value = response.game.status;
       currentPlayer.value = players.value[0];
-
-      // Spieler-Status auf 'in_game' setzen
-      await LobbyService.updatePlayerStatus('in_game');
       startTimer();
     }
   } catch (error) {
@@ -166,14 +167,6 @@ const handlePlayerJoin = async (player) => {
       await startGame();
     }
   }
-};
-
-// Basis-Funktion zum Zurücksetzen des Spielstatus
-const resetGameState = () => {
-  flippedCards.value = [];
-  roundCount.value = 0;
-  timer.value = 0;
-  showModal.value = false;
 };
 
 const switchPlayer = () => {
@@ -267,8 +260,13 @@ const handleCardFlip = async (card) => {
 onMounted(async () => {
   await createNewGame();
 
-  // Höre auf Lobby-Events Presence Channel
-  window.Echo.join('game.lobby')
+  // Presence Channel Setup
+  presenceChannel.value = window.Echo.join('game.lobby');
+  
+  presenceChannel.value
+    .here(handlePresenceSubscribed)
+    .joining(handlePlayerJoined)
+    .leaving(handlePlayerLeft)
     .listen('LobbyStatusUpdated', (e) => {
       if (e.lobby.status === 'accepted' && e.lobby.game_id === gameId.value) {
         handlePlayerJoin(e.challenger);
@@ -276,11 +274,11 @@ onMounted(async () => {
     });
 });
 
-// Timer stoppen, wenn die Komponente zerstört wird
 onUnmounted(() => {
   stopTimer();
-  window.Echo.leave('game.lobby');
-  // Status-Update wird jetzt automatisch durch Presence Channel handling
+  if (presenceChannel.value) {
+    presenceChannel.value.unsubscribe();
+  }
 });
 </script>
 

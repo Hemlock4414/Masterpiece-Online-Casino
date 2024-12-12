@@ -10,6 +10,7 @@ export const useAuthStore = defineStore("AuthStore", {
     state: () => {
         return {
             user: null,
+            guestId: null
         };
     },
 
@@ -54,9 +55,16 @@ export const useAuthStore = defineStore("AuthStore", {
                 await authClient.get("/sanctum/csrf-cookie");
                 let response = await authClient.get("/api/user");
                 this.user = response.data;
+                
+                // Gast-ID aus Session wiederherstellen
+                if (!this.user) {
+                    this.guestId = sessionStorage.getItem('memoryGuestId');
+                }
+                
                 return response;
             } catch (error) {
                 this.user = null;
+                this.guestId = sessionStorage.getItem('memoryGuestId');
                 console.error(error);
             }
         },
@@ -72,10 +80,15 @@ export const useAuthStore = defineStore("AuthStore", {
                 throw error;
             }
         },
+        setGuestId(id) {
+            this.guestId = id;
+            sessionStorage.setItem('memoryGuestId', id);
+        },
     },
 
     // get Elements from store
     getters: {
         authUser: (state) => state.user,
+        currentPlayerId: (state) => state.user?.id || state.guestId
     },
 });

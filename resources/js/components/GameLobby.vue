@@ -12,6 +12,7 @@ const onlinePlayers = ref([]);
 const isChallengeModalVisible = ref(false);
 const challengeMessage = ref('');
 const currentLobby = ref(null);
+const presenceChannel = ref(null);
 
 // Toggle Sidebar
 const toggleSidebar = () => {
@@ -21,7 +22,6 @@ const toggleSidebar = () => {
 // Spieler zur Liste hinzufügen/aktualisieren
 const updatePlayerList = (player) => {
   const index = onlinePlayers.value.findIndex(p => p.id === player.id);
-  
   if (index !== -1) {
     onlinePlayers.value[index] = player;
   } else {
@@ -30,17 +30,21 @@ const updatePlayerList = (player) => {
 };
 
 // Spieler aus Liste entfernen
-const removePlayer = (playerId) => {
-  onlinePlayers.value = onlinePlayers.value.filter(p => p.id !== playerId);
+const removePlayer = (player) => {
+  onlinePlayers.value = onlinePlayers.value.filter(p => p.id !== player.id);
 };
 
 // Spieler-Herausforderung
 const showChallengeModal = (lobby) => {
-  if (!lobby || lobby.challenged_id !== user.value?.id) return;
+  if (!lobby || lobby.challenged_id !== getCurrentPlayerId()) return;
   
   isChallengeModalVisible.value = true;
   challengeMessage.value = `${lobby.challenger_name} fordert Sie zu einer Partie Memory heraus!`;
   currentLobby.value = lobby;
+};
+
+const getCurrentPlayerId = () => {
+  return authStore.currentPlayerId;
 };
 
 const acceptChallenge = async () => {
@@ -48,7 +52,7 @@ const acceptChallenge = async () => {
     await LobbyService.updateLobbyStatus(currentLobby.value.lobby_id, 'accepted');
     isChallengeModalVisible.value = false;
   } catch (error) {
-    console.error('Fehler beim Akzeptieren der Herausforderung:', error);
+    console.error('Fehler beim Akzeptieren:', error);
   }
 };
 
@@ -57,13 +61,12 @@ const declineChallenge = async () => {
     await LobbyService.updateLobbyStatus(currentLobby.value.lobby_id, 'declined');
     isChallengeModalVisible.value = false;
   } catch (error) {
-    console.error('Fehler beim Ablehnen der Herausforderung:', error);
+    console.error('Fehler beim Ablehnen:', error);
   }
 };
 
 const challengePlayer = async (player) => {
-  if (!user.value?.id && player.id === sessionStorage.getItem('memoryGuestId')) return;
-  
+  if (player.id === getCurrentPlayerId()) return;
   try {
     await LobbyService.challengePlayer(player.id);
   } catch (error) {
@@ -73,53 +76,34 @@ const challengePlayer = async (player) => {
 
 onMounted(() => {
   // Presence Channel abonnieren
-  const presenceChannel = window.Echo.join('game.lobby');
+  presenceChannel.value = window.Echo.join('game.lobby');
   
   // Presence Events
-  presenceChannel
+  presenceChannel.value
     .here((players) => {
-      console.log('Aktuelle Spieler:', players);
       onlinePlayers.value = players;
     })
     .joining((player) => {
-      console.log('Spieler ist beigetreten:', player);
       updatePlayerList(player);
     })
     .leaving((player) => {
-      console.log('Spieler hat verlassen:', player);
-      removePlayer(player.id);
+      removePlayer(player);
     })
     .listen('PlayerStatusChanged', (e) => {
-      console.log('Status-Update empfangen:', e);
-      if (e.player) {
-        updatePlayerList({
-          id: e.player.id,
-          name: e.player.name,
-          status: e.player.status,
-          isRegistered: e.player.isRegistered
-        });
-      }
+      updatePlayerList(e.player);
     })
     .listen('LobbyStatusUpdated', (e) => {
-      console.log('Lobby-Update empfangen:', e);
       if (e.lobby) {
-        showChallengeModal({
-          lobby_id: e.lobby.lobby_id,
-          challenger_id: e.lobby.challenger_id,
-          challenger_name: e.lobby.challenger_name,
-          challenger_registered: e.lobby.challenger_registered,
-          challenged_id: e.lobby.challenged_id,
-          challenged_name: e.lobby.challenged_name,
-          challenged_registered: e.lobby.challenged_registered,
-          status: e.lobby.status
-        });
+        showChallengeModal(e.lobby);
       }
     });
 });
 
 // Cleanup beim Unmount
 onUnmounted(() => {
-  window.Echo.leave('game.lobby');
+  if (presenceChannel.value) {
+    presenceChannel.value.unsubscribe();
+  }
 });
 </script>
 
@@ -139,26 +123,24 @@ onUnmounted(() => {
         <div v-for="player in onlinePlayers" 
              :key="player.id" 
              class="player-card"
-             :class="{ 'self': player.id === (user?.id || sessionStorage.getItem('memoryGuestId')) }">
-             <div class="player-info">
-              <span class="player-name">
-                {{ player.name }} 
-                {{ player.id === (user?.id || sessionStorage.getItem('memoryGuestId')) ? '(Sie)' : '' }}
-                {{ player.isRegistered ? '👤' : '👻' }}
-              </span>
-              <span class="player-status" :class="player.status">
-                {{ player.status || 'verfügbar' }}
-              </span>
-            </div>
-            <button 
-              v-if="player.id !== (user?.id || sessionStorage.getItem('memoryGuestId')) && 
-                    onlinePlayers.length < 2 && 
-                    player.status !== 'offline'"
-              class="challenge-btn"
-              :disabled="player.status === 'in_game'"
-              @click="challengePlayer(player)">
-              Herausfordern
-            </button>
+             :class="{ 'self': player.id === getCurrentPlayerId() }">
+          <div class="player-info">
+            <span class="player-name">
+              {{ player.name }} 
+              {{ player.id === getCurrentPlayerId() ? '(Sie)' : '' }}
+              {{ player.isRegistered ? '👤' : '👻' }}
+            </span>
+            <span class="player-status" :class="player.status">
+              {{ player.status || 'verfügbar' }}
+            </span>
+          </div>
+          <button 
+            v-if="player.id !== getCurrentPlayerId() && 
+                  player.status === 'available'"
+            class="challenge-btn"
+            @click="challengePlayer(player)">
+            Herausfordern
+          </button>
         </div>
       </div>
 
