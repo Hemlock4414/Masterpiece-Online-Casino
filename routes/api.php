@@ -44,47 +44,50 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
 // Memory Game
 
-//Neues Spiel erstellen
-Route::post('/memory-games/create', [MemoryGameController::class, 'create']);
+Route::prefix('memory-games')->group(function () {
+    //Neues Spiel erstellen
+    Route::post('/create', [MemoryGameController::class, 'create']);
 
-// Spiel starten
-Route::post('/memory-games/{gameId}/start', [MemoryGameController::class, 'start']);
+    // Spiel starten
+    Route::post('/{gameId}/start', [MemoryGameController::class, 'start']);
 
-// Spiel beenden
-Route::post('/memory-games/{gameId}/stop', [MemoryGameController::class, 'stop']);
+    // Spiel beenden
+    Route::post('/{gameId}/stop', [MemoryGameController::class, 'stop']);
 
-// Punktestand aktualisieren
-Route::put('/memory-games/{gameId}/players/{player}', [MemoryPlayerController::class, 'update']); 
+    // Punktestand aktualisieren
+    Route::put('/{gameId}/players/{player}', [MemoryPlayerController::class, 'update']);
 
-// Spieler abrufen
-Route::get('/memory-games/{gameId}/players', [MemoryPlayerController::class, 'index']); 
+    // Spieler abrufen
+    Route::get('/{gameId}/players', [MemoryPlayerController::class, 'index']);
 
-// Spieler hinzufügen
-Route::post('/memory-games/{gameId}/players', [MemoryPlayerController::class, 'store']); 
+    // Spieler hinzufügen
+    Route::post('/{gameId}/players', [MemoryPlayerController::class, 'store']);
 
-// Spielerwechsel
-Route::post('/memory-games/{gameId}/next-turn', [MemoryGameController::class, 'nextTurn']);
+    // Spielerwechsel
+    Route::post('/{gameId}/next-turn', [MemoryGameController::class, 'nextTurn']);
 
-// Matched Cards aktualisieren
-Route::post('/memory-games/{gameId}/cards/match', [MemoryCardController::class, 'updateMatched']);
+    // Matched Cards aktualisieren
+    Route::post('/{gameId}/cards/match', [MemoryCardController::class, 'updateMatched']);
 
-// alle Karten eines Memory-Spiels abrufen
-Route::get('/memory-games/{gameId}/cards', [MemoryCardController::class, 'index']);
+    // alle Karten eines Memory-Spiels abrufen
+    Route::get('/{gameId}/cards', [MemoryCardController::class, 'index']);
 
-// Spiel anzeigen
-Route::get('/memory-games/{gameId}', [MemoryGameController::class, 'show']);
+    // Spiel anzeigen
+    Route::get('/{gameId}', [MemoryGameController::class, 'show']);
+});
 
-
-// Spieler-Lobby
+// Spieler-Lobby mit Presence Channel Support
 Route::prefix('lobby')->group(function () {
-    // Online Spieler
-    Route::get('/online-players', [LobbyController::class, 'getOnlinePlayers']);
+    // Status & Presence
     Route::post('/player-status', [LobbyController::class, 'updatePlayerStatus']);
+    Route::post('/player-heartbeat/{playerId}', [MemoryPlayerController::class, 'heartbeat']);
     
     // Lobby Management
     Route::post('/challenge/{playerId}', [LobbyController::class, 'challengePlayer']);
     Route::post('/status/{lobbyId}', [LobbyController::class, 'updateLobbyStatus']);
     
-    // Hilfreich für Debug/Wartung
-    Route::get('/check-expired', [LobbyController::class, 'checkExpiredChallenges']);
+    // Presence Channel Authentication wird automatisch durch Laravel gehandelt
+    Route::get('/presence/auth', function () {
+        return auth()->check() ? auth()->user() : ['guest_id' => session('memoryGuestId')];
+    })->middleware('auth.broadcast');
 });
