@@ -109,12 +109,14 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="lobby-container" :class="{ 'closed': !isOpen }">
-    <button @click="toggleSidebar" class="toggle-btn">
-      <MenuIcon v-if="!isOpen" />
-      <XCircle v-else />
-    </button>
+  <!-- Button außerhalb des Containers -->
+  <button @click="toggleSidebar" class="toggle-btn" :class="{ 'closed': !isOpen }">
+    <MenuIcon v-if="!isOpen" />
+    <XCircle v-else />
+  </button>
     
+  <!-- Separater Container -->
+  <div class="lobby-container" :class="{ 'closed': !isOpen }">
     <div class="lobby-content" v-if="isOpen">
       <h2>Spieler-Lobby</h2>
       
@@ -168,15 +170,14 @@ onUnmounted(() => {
 .lobby-container {
   position: fixed;
   right: 0;
-  top: var(--header-height);  /* Anpassen je nach Header-Höhe */
-  bottom: var(--footer-height); /* Anpassen je nach Footer-Höhe */
-  width: 500px;
+  top: var(--header-height);
+  bottom: var(--footer-height);
+  width: 300px;
   background: white;
   box-shadow: -2px 0 5px rgba(0,0,0,0.1);
   transition: transform 0.3s ease;
   z-index: 1000;
   overflow-y: auto;
-  height: auto;
   background: rgba(255, 0, 0, 0.1);
 }
 
@@ -185,16 +186,27 @@ onUnmounted(() => {
 }
 
 .toggle-btn {
-  position: absolute;
-  left: -40px;
-  top: 20px;
+  position: fixed;
+  right: 300px; /* Breite des Containers */
+  top: var(--header-height);
+  padding: 8px;
   background: white;
   border: none;
-  padding: 8px;
   border-radius: 4px 0 0 4px;
   box-shadow: -2px 0 5px rgba(0,0,0,0.1);
   cursor: pointer;
-  z-index: 10;
+  z-index: 1001;
+  transition: right 0.3s ease;
+}
+
+.toggle-btn.closed {
+  right: 0;
+}
+
+.lobby-content {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
 }
 
 .player-card {
