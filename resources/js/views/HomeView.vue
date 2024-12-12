@@ -180,9 +180,9 @@ onUnmounted(() => {
 
 /* Neue Flickity-spezifische Styles */
 .carousel-cell {
-  width: 300px;
-  height: 200px;
-  margin-right: 10px;
+  width: 400px;
+  height: 266px;
+  margin-right: 15px;
 }
 
 .carousel-cell img {
@@ -191,12 +191,9 @@ onUnmounted(() => {
   object-fit: cover;
 }
 
-/* Wichtig für die Slider-Dimension */
 .slider {
   width: 100%;
-  /* max-width: 1440px; */
-  margin: 10px auto;
-  /* Optional: Zusätzliche Styles für besseres Verhalten */
+  margin: 20px auto;
   position: relative;
   overflow: hidden;
 }
@@ -205,41 +202,47 @@ onUnmounted(() => {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 8px;
+  border-radius: 12px;
   transition: all 0.3s ease-in-out;
 }
 
 .image-container {
   position: relative;
-  width: 300px;
-  height: 200px;
+  width: 400px;  
+  height: 266px;
+}
+
+.image-container:hover .tooltip {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1.1);
 }
 
 .image-container:hover .game-image {
-  filter: brightness(0.7);  /* Verdunkelt das Bild beim Hover */
+  filter: brightness(0.5);
   transform: scale(1.1);
 }
 
+/* Casino-style Tooltip */
 .tooltip {
   position: absolute;
-  top: 50%;  /* Mittig über dem Bild */
+  top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);  /* Zentriert den Tooltip */
-  background: rgba(0, 0, 0, 0.8);
-  color: white;
-  padding: 5px 10px;
-  border-radius: 4px;
-  font-size: 14px;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(145deg, #2c0636 0%, #4a0f5f 100%); /* Casino-Purple Farbverlauf */
+  color: #ffd700; /* Gold-Farbe für Text */
+  padding: 12px 25px;
+  border-radius: 8px;
+  font-size: 24px;
+  font-weight: bold;
   opacity: 0;
-  transition: opacity 0.3s;
+  transition: all 0.3s ease;
   pointer-events: none;
-  z-index: 5;  /* Höherer z-index */
+  z-index: 5;
   white-space: nowrap;
-}
-
-/* Anzeige des Tooltips beim Hover */
-.image-container:hover .tooltip {
-  opacity: 1;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  border: 2px solid #ffd700; /* Goldener Rand */
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.3); /* Goldener Glow-Effekt */
 }
 
 .row {
@@ -248,7 +251,7 @@ onUnmounted(() => {
     grid-template-columns: repeat(3, 1fr);
     gap: 50px;
     margin-bottom: 20px;
-    margin-top: 30px;
+    margin-top: 20px;
 }
 
 .card-container {
