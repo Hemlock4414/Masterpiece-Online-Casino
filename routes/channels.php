@@ -2,8 +2,9 @@
 
 use Illuminate\Support\Facades\Broadcast;
 use App\Broadcasting\GameLobbyChannel;
+use App\Models\MemoryPlayer;
 
-Broadcast::channel('game.lobby', GameLobbyChannel::class);
+Broadcast::channel('presence-game.lobby', GameLobbyChannel::class);
 
 // Private Spiel-Channel für spezifische Spiele
 Broadcast::channel('game.{gameId}', function ($user, $gameId) {

@@ -12,16 +12,15 @@ class GameLobbyChannel
     {
         $player = $user 
             ? MemoryPlayer::where('user_id', $user->id)->first()
-            : MemoryPlayer::createOrGetGuest(session('memoryGuestId'));
+            : MemoryPlayer::where('guest_id', session('memoryGuestId'))->first();
 
         if (!$player) return false;
 
         return [
             'id' => $player->player_id,
             'name' => $player->name,
-            'status' => 'available',
-            'isRegistered' => !is_null($player->user_id),
-            'last_seen' => now()->timestamp
+            'status' => 'available', // Default Status bei Join
+            'isRegistered' => !is_null($player->user_id)
         ];
     }
 }

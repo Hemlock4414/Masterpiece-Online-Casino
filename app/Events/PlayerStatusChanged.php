@@ -19,7 +19,7 @@ class PlayerStatusChanged implements ShouldBroadcast
 
     public function broadcastOn(): array
     {
-        return [new PresenceChannel('game.lobby')];
+        return [new PresenceChannel('presence-game.lobby')];
     }
 
     public function broadcastWith()

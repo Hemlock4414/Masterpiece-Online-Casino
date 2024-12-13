@@ -16,18 +16,11 @@ class MemoryPlayer extends Model
     protected $primaryKey = 'player_id';
 
     protected $fillable = [
-        'user_id',
-        'name',
+        'user_id', 
         'guest_id',
-        'status',
-        'last_seen_at'
+        'name',
     ];
 
-    protected $casts = [
-        'last_seen_at' => 'datetime',
-    ];
-
-    // Bestehende Relationships bleiben unverändert
     public function games()
     {
         return $this->belongsToMany(MemoryGame::class, 'memory_game_player', 'player_id', 'game_id')
@@ -60,24 +53,6 @@ class MemoryPlayer extends Model
         return $player;
     }
 
-    // Neue Methoden für Presence Channel
-    public function isOnline()
-    {
-        return $this->last_seen_at && $this->last_seen_at->diffInMinutes(now()) < 5;
-    }
-
-    public function getPresenceData()
-    {
-        return [
-            'id' => $this->player_id,
-            'name' => $this->name,
-            'status' => $this->status ?? 'available',
-            'isRegistered' => !is_null($this->user_id),
-            'last_seen' => $this->last_seen_at?->timestamp
-        ];
-    }
-
-
     public function broadcastOn(string $event): array
     {
         return [new PresenceChannel('presence-game.lobby')];
@@ -88,18 +63,8 @@ class MemoryPlayer extends Model
         return [
             'id' => $this->player_id,
             'name' => $this->name,
-            'status' => $this->status,
             'isRegistered' => !is_null($this->user_id),
-            'last_seen' => $this->last_seen_at?->timestamp
         ];
-    }
-
-    public function updateStatus($status)
-    {
-        $this->status = $status;
-        $this->last_seen_at = now();
-        $this->save();
-        return $this;
     }
 
     public function user()

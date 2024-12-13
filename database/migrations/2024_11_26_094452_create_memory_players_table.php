@@ -11,16 +11,12 @@ return new class extends Migration
         Schema::create('memory_players', function (Blueprint $table) {
             $table->id('player_id');
             $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null');
-            $table->string('guest_id')->nullable()->unique(); // Für Gast-Identifizierung
-            $table->string('name')->default('Gast');
-            $table->enum('status', ['available', 'waiting', 'in_game', 'offline'])->default('available');
-            $table->timestamp('last_seen_at')->nullable();
+            $table->string('guest_id')->nullable()->unique(); // Für Session-basierte Gast-Identifikation
+            $table->string('name');
             $table->timestamps();
 
-            // Indizes für bessere Performance
+            // Index für effiziente Gast-Lookups
             $table->index('guest_id');
-            $table->index('status');
-            $table->index('last_seen_at');
         });
     }
 
