@@ -7,7 +7,7 @@ use Illuminate\Support\ServiceProvider;
 
 class BroadcastServiceProvider extends ServiceProvider
 {
-    public function boot(): void
+    public function boot()
     {
         // Diese Route ermöglicht die Authentifizierung für private und presence channels
         Broadcast::routes(['middleware' => ['web']]);

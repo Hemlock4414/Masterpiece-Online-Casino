@@ -9,6 +9,8 @@ window.axios = axios;
 window.Pusher = Pusher;
 
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+window.axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]').content;
+window.axios.defaults.withCredentials = true;
 
 // Reverb Konfiguration (via Pusher-Protokoll)
 window.Echo = new Echo({
