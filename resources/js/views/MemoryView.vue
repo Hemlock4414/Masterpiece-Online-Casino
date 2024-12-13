@@ -4,6 +4,7 @@ import MemoryGrid from '../components/MemoryGrid.vue';
 import MemoryEndModal from '../components/MemoryEndModal.vue';
 import GameLobby from '../components/GameLobby.vue';
 import { LobbyService } from '../services/LobbyService';
+import { useAuthStore } from "@/store/AuthStore";
 import { createGame, stopGame, updateMatchedCards, startGame as startGameAPI } from '../services/MemoryService';
 
 const gameId = ref(null);
@@ -15,6 +16,7 @@ const currentPlayer = ref(null);
 const isProcessingMove = ref(false);
 const roundCount = ref(0);
 const timer = ref(0); 
+const authStore = useAuthStore();
 
 const presenceChannel = ref(null);
 const isConnected = ref(false);

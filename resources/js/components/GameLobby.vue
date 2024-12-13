@@ -75,16 +75,22 @@ const challengePlayer = async (player) => {
 };
 
 onMounted(() => {
-  const presenceChannel = window.Echo.join('game.lobby')
+  presenceChannel.value = window.Echo.join('presence-game.lobby')
     .here((players) => {
-        onlinePlayers.value = players;
+      onlinePlayers.value = players;
     })
     .joining((player) => {
-        updatePlayerList(player);
+      updatePlayerList(player);
     })
     .leaving((player) => {
-        removePlayer(player);
+      removePlayer(player);
+    })
+    .listen('LobbyStatusUpdated', (e) => {
+      if (e.lobby) {
+        showChallengeModal(e.lobby);
+      }
     });
+});
 
 // Cleanup beim Unmount
 onUnmounted(() => {
