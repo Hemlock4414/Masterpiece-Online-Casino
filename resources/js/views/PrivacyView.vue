@@ -1,5 +1,7 @@
 <script setup>
-
+function scrollToTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 </script>
 
 <template>
@@ -64,7 +66,8 @@
                             nicht gänzlich anonym erfasst werden, sondern mit Personendaten in Verbindung stehen oder 
                             verknüpft sind. Weitere Informationen über Cookies und deren Verwaltung finden Sie in 
                             unserer <a href="/agb#C13">Cookie-Richtlinie</a>.
-                            </p><br>
+                            </p>
+                            <br>
                         </section>
 
                         <section id="C2">
@@ -82,7 +85,10 @@
                                 <li><p>Verbesserung der Sicherheit, der Dienste und der Funktionen von dieser Webseite. Dies kann 
                                 Recherchen, Umfragen, Ersuchen um Ihr freiwilliges Feedback, interne Schulungen sowie 
                                 Dienstleistungen von Partnern beinhalten.</p></li>
-                            </ul><br>
+                            </ul>
+                            <button class="scroll-top-btn" @click="scrollToTop" aria-label="Nach oben" title="Zurück zum Seitenanfang">
+                                &uarr;
+                            </button>
                         </section>
 
                         <section id="C3">
@@ -95,7 +101,8 @@
                             unterliegen.</p><br>
                             <p>
                             Wir nutzen hauptsächlich Rechenzentren in der Schweiz für die Verarbeitung 
-                            personenbezogener Daten.</p><br>
+                            personenbezogener Daten.</p>
+                            <br>
                         </section>
 
                         <section id="C4">
@@ -112,7 +119,10 @@
                             Personendaten nicht mehr erforderlich sind, werden sie 
                             grundsätzlich und soweit möglich gelöscht oder anonymisiert. Für betriebliche Daten (z.B. 
                             Systemprotokolle, Logs) gelten grundsätzlich kürzere Aufbewahrungsfristen von zwölf Monaten oder 
-                            weniger.</p><br>
+                            weniger.</p>
+                            <button class="scroll-top-btn" @click="scrollToTop" aria-label="Nach oben" title="Zurück zum Seitenanfang">
+                                &uarr;
+                            </button>
                         </section>
 
                         <section id="C5">
@@ -140,6 +150,9 @@
                             Erklärung regelmässig zu konsultieren. Es gilt die jeweils auf der Webseite publizierte Fassung.</p><br>
 
                             <p>Derzeitiger Stand ist Dezember 2024.</p>
+                            <button class="scroll-top-btn" @click="scrollToTop" aria-label="Nach oben" title="Zurück zum Seitenanfang">
+                                &uarr;
+                            </button>
                         </section>
                     </div>          
                 </div>
@@ -210,6 +223,26 @@
 
 section {
     margin-bottom: 15px;
+}
+
+.scroll-top-btn {
+    position: sticky;  /* Bleibt beim Scrollen sichtbar */
+    bottom: 20px;      /* Abstand vom unteren Rand */
+    right: 0;          /* Rechts im Container */
+    font-size: 24px;
+    color: #007bff;
+    background: none;
+    border: none;
+    cursor: pointer;
+    margin-left: auto;
+    margin-right: 10px;  /* Kleiner Abstand vom Rand */
+    z-index: 10;         /* Über anderen Elementen */
+    width: calc(100% - 20px);  /* Breite des Containers */
+    text-align: right;   /* Pfeil rechts ausrichten */
+}
+
+.scroll-top-btn:hover {
+    color: #0056b3;
 }
 
 @media (max-width: 580px) {

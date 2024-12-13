@@ -1,5 +1,7 @@
 <script setup>
-
+function scrollToTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 </script>
 
 <template>
@@ -49,8 +51,7 @@
                                         <li><a class="sidebar-nav-link" href="#C16"><h4>Was sind die Vorteile von Cookies?</h4></a></li>
                                         <li><a class="sidebar-nav-link" href="#C17"><h4>Welche Cookie-Typen verwenden wir?</h4></a></li>
                                         <li><a class="sidebar-nav-link" href="#C18"><h4>Unbedingt notwendige Cookies</h4></a></li>
-                                        <li><a class="sidebar-nav-link" href="#C19"><h4>Cookie-Präferenzen einstellen</h4></a></li>
-                                        <li><a class="sidebar-nav-link" href="#C20"><h4>Änderungen der Cookie-Richtlinie</h4></a></li>
+                                        <li><a class="sidebar-nav-link" href="#C19"><h4>Änderungen der Cookie-Richtlinie</h4></a></li>
                                     </ul>
                                 </li>
                             </ul>
@@ -88,7 +89,9 @@
                             Wir behalten uns das Recht vor, sämtliche uns von Ihnen zur Verfügung gestellten 
                             persönlichen Daten so lange zu speichern, wie es gesetzlich erlaubt ist. Weitere Informationen 
                             zum Datenschutz finden Sie in unserer <a href="/datenschutz">Datenschutzerklärung</a>.</p>
-
+                            <button class="scroll-top-btn" @click="scrollToTop" aria-label="Nach oben" title="Zurück zum Seitenanfang">
+                                &uarr;
+                            </button>
                         </section>
 
                         <section id="C2">
@@ -118,6 +121,9 @@
                             Sie sind ausschliesslich selbst verantwortlich für die technische Konfiguration Ihres 
                             Computers, Mobiltelefons, Tablet-Computers oder sonstigen Geräts, mit dem Sie auf unsere Webseite 
                             zugreifen.</p>
+                            <button class="scroll-top-btn" @click="scrollToTop" aria-label="Nach oben" title="Zurück zum Seitenanfang">
+                                &uarr;
+                            </button>
                         </section>
 
                         <section id="C3">
@@ -151,6 +157,9 @@
                             wir uns das Recht vor, bei Verdacht oder Nutzung Ihres Spielerkontos durch einen 
                             Dritten, dieses Konto zu sperren.
                             </p>
+                            <button class="scroll-top-btn" @click="scrollToTop" aria-label="Nach oben" title="Zurück zum Seitenanfang">
+                                &uarr;
+                            </button>
                         </section>
 
                         <section id="C4">
@@ -160,7 +169,7 @@
                             <p>Sie können jederzeit Ihr Spielerkonto auflösen. Dabei werden alle personenbezogenen Daten sowie das 
                             Spielerguthaben permanent gelöscht. Ihr Spielername wird wieder anderen zur Verfügung stehen.
                             </p>
-
+                            <br>
                         </section>
 
                         <section id="C5">
@@ -187,7 +196,9 @@
                             Spielern, Einsetzung von hard- oder softwaregestützten Methoden, Nutzung von Bots oder anderer 
                             Malware oder sonst in betrügerischer Weise das Spiel beeinflusst, können wir Ihr 
                             Spielerkonto sperren.</p>
-
+                            <button class="scroll-top-btn" @click="scrollToTop" aria-label="Nach oben" title="Zurück zum Seitenanfang">
+                                &uarr;
+                            </button>
                         </section>
 
                         <section id="C6">
@@ -197,7 +208,7 @@
                             Webseite <a href="/fair-gaming">Verantwortungsvolles Spielen</a> stellen wir 
                             verschiedene Hilfsmittel zur Kontrolle oder Begrenzung des eigenen 
                             Spielverhaltens zur Verfügung.</p>
-
+                            <br>
                         </section>
 
                         <section id="C7">
@@ -216,7 +227,9 @@
                             oder das Spiel für nichtig zu erklären, wenn das Spielergebnis im Falle eines Softwarefehlers, 
                             einer Funktionsstörung des Zufallsgenerators oder sonstigen technischen Fehlern sich als nicht 
                             korrekt erweist.</p>
-
+                            <button class="scroll-top-btn" @click="scrollToTop" aria-label="Nach oben" title="Zurück zum Seitenanfang">
+                                &uarr;
+                            </button>
                         </section>
 
                         <section id="C8">
@@ -228,7 +241,7 @@
                             <p>Die Verwendung der Personendaten ist in der Datenschutzerklärung geregelt. Die 
                             <a href="/privacy">Datenschutzerklärung</a> ist integraler und bindender Bestandteil 
                             dieser AGB.</p>
-
+                            <br>
                         </section>
 
                         <section id="C9">
@@ -249,7 +262,10 @@
                                 <li>Fehlfunktionen, Systemausfälle, Defekte, Verzögerungen, Unterbrechungen, manipulierte oder unsachgemässe Datenübertragungen, Verlust oder Verfälschung von Daten</li>
                                 <li>Folgen durch Fehler in Kommunikationsverbindungen, DDOS-Attacken, Viren oder jegliche andere schädliche Technologie, die dem Spieler bei der Nutzung der Dienste auf unserer Webseite entstehen</li>
                                 <li>Verluste, die bei der Übertragung von Informationen an uns entstehen</li>
-                            </ul><br>
+                            </ul>
+                            <button class="scroll-top-btn" @click="scrollToTop" aria-label="Nach oben" title="Zurück zum Seitenanfang">
+                                &uarr;
+                            </button>
                         </section>
 
                         <section id="C10">
@@ -261,6 +277,7 @@
                             Das (vollständige oder teilweise) Reproduzieren, Verbreiten, Übermitteln (elektronisch oder mit 
                             anderen Mitteln), Modifizieren, Verknüpfen oder Benutzen der Inhalte für öffentliche oder 
                             kommerzielle Zwecke ist ohne vorherige schriftliche Zustimmung von uns untersagt.</p>
+                            <br>
                         </section>
 
                         <section id="C11">
@@ -270,6 +287,7 @@
                                 in Kraft und bleiben bis zur Veröffentlichung einer neuen Version oder bis zu deren 
                                 Widerruf gültig. Durch die fortgesetzte Nutzung unserer Plattform stimmen Sie den jeweils aktuellen 
                             AGB zu.</p>
+                            <br>
                         </section>
 
                         <section id="C12">
@@ -282,7 +300,9 @@
                             Spielregeln unserer Spiele vertraut zu machen.</p><br>
 
                             <p>Derzeitiger Stand ist Dezember 2024.</p>
-
+                            <button class="scroll-top-btn" @click="scrollToTop" aria-label="Nach oben" title="Zurück zum Seitenanfang">
+                                &uarr;
+                            </button>
                         </section>
 
                         <section id="C13">
@@ -341,24 +361,15 @@
                                 personenbezogenen Daten.</p>
                             </article>
 
-                            <article id="C19">
-                                <h3 class="heading">Cookie-Präferenzen einstellen</h3>
-                                <p>Sie haben die Möglichkeit, Ihre Präferenzen auf dieser Webseite im Dialog für die 
-                                Cookie-Einstellungen festzulegen. Sie können ausserdem über Ihren Webbrowser Cookies 
-                                blockieren, deaktivieren oder löschen. Eine spezifische Kategorie von Cookies zu deaktivieren 
-                                bedeutet nicht automatisch, dass die Cookies in Ihrem Browser gelöscht werden. Dies ist nur 
-                                mithilfe der Browser-Funktionen möglich. Bitte beachten Sie, dass nach dem Deaktivieren oder 
-                                Löschen von bestimmten Cookies oder Kategorien von Cookies manche Funktionen und Features der 
-                                Webseite nicht mehr verfügbar sind.</p>
-                            </article>
-
-                            <article id="C20">
+                            <article id="C29">
                                 <h3 class="heading">Änderungen der Cookie-Richtlinie</h3>
                                 <p>Wir können jederzeit Änderungen an dieser Richtlinie vornehmen, falls das für unsere 
                                 Geschäftstätigkeit oder die Einhaltung gesetzlicher Anforderungen notwendig sein 
                                 sollte. Die aktualisierte Version der Richtlinie wird auf der Webseite veröffentlicht.</p>
                             </article>
-
+                            <button class="scroll-top-btn" @click="scrollToTop" aria-label="Nach oben" title="Zurück zum Seitenanfang">
+                                &uarr;
+                            </button>
                         </section>
 
                     </div>
@@ -437,6 +448,26 @@ article {
 .heading {
     margin-top: 10px;
     margin-bottom: 5px;
+}
+
+.scroll-top-btn {
+    position: sticky;  /* Bleibt beim Scrollen sichtbar */
+    bottom: 20px;      /* Abstand vom unteren Rand */
+    right: 0;          /* Rechts im Container */
+    font-size: 24px;
+    color: #007bff;
+    background: none;
+    border: none;
+    cursor: pointer;
+    margin-left: auto;
+    margin-right: 10px;  /* Kleiner Abstand vom Rand */
+    z-index: 10;         /* Über anderen Elementen */
+    width: calc(100% - 20px);  /* Breite des Containers */
+    text-align: right;   /* Pfeil rechts ausrichten */
+}
+
+.scroll-top-btn:hover {
+    color: #0056b3;
 }
 
 @media (max-width: 580px) {
