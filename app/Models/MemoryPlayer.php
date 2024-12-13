@@ -4,10 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\BroadcastsEvents;
+use Illuminate\Broadcasting\PresenceChannel;
 
 class MemoryPlayer extends Model
 {
     use HasFactory;
+    use BroadcastsEvents;
 
     protected $table = 'memory_players';
     protected $primaryKey = 'player_id';
@@ -74,6 +77,23 @@ class MemoryPlayer extends Model
         ];
     }
 
+
+    public function broadcastOn(string $event): array
+    {
+        return [new PresenceChannel('presence-game.lobby')];
+    }
+
+    public function broadcastWith(string $event): array
+    {
+        return [
+            'id' => $this->player_id,
+            'name' => $this->name,
+            'status' => $this->status,
+            'isRegistered' => !is_null($this->user_id),
+            'last_seen' => $this->last_seen_at?->timestamp
+        ];
+    }
+
     public function updateStatus($status)
     {
         $this->status = $status;
@@ -82,7 +102,6 @@ class MemoryPlayer extends Model
         return $this;
     }
 
-    // Bestehende Methoden bleiben unverändert...
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
