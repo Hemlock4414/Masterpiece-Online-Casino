@@ -56,7 +56,7 @@ function scrollToTop() {
                                 Vorsichtsmaßnahmen treffen, um Minderjährigen den Zugriff auf unsere Plattform zu blockieren, 
                                 aber es für uns unmöglich ist jeden einzelnen Vorfall von unbeaufsichtigter Aktivität von 
                                 Minderjährigen zu verhindern. </p>
-
+                            <br>
                         </section>
 
                         <section id="C2">
@@ -72,9 +72,7 @@ function scrollToTop() {
                                     <li>Schaffen Sie einen Ausgleich zwischen Spiel- und anderen Aktivitäten.</li>
                                     <li>Vermeiden Sie zu spielen, wenn Sie gestresst oder depressiv sind.</li>
                                 </ul>
-                                <button class="scroll-top-btn" @click="scrollToTop" aria-label="Nach oben">
-                                    &uarr;
-                                </button>
+                                <br>
                         </section> 
 
                         <section id="C3">
@@ -105,7 +103,9 @@ function scrollToTop() {
                                 <li>Hat Glücksspiel Ihren Ehrgeiz oder Ihre Effizienz vermindert?</li>
                                 <li>Haben Sie schon gespielt, um Sorgen und/oder Problemen zu entkommen?</li>    
                             </ol>
-
+                            <button class="scroll-top-btn" @click="scrollToTop" aria-label="Nach oben" title="Zurück zum Seitenanfang">
+                                &uarr;
+                            </button>
                         </section>
 
                         <section id="C4">
@@ -155,7 +155,9 @@ function scrollToTop() {
                                     können Sie allein, mit Ihrem Partner / Ihrer Partnerin, einer Vertrauensperson oder mit 
                                     Unterstützung eines Therapeuten bearbeiten.</p>
                                 <p>Laden Sie hier das <a href="/public/selbsthilfe-manual.pdf" download="selbsthilfe-manual.pdf">Selbsthilfe-Manual</a> als PDF herunter.</p>
-
+                                <button class="scroll-top-btn" @click="scrollToTop" aria-label="Nach oben" title="Zurück zum Seitenanfang">
+                                    &uarr;
+                                </button>
                             </article>
                         </section>
                     </div>
@@ -252,12 +254,19 @@ article {
 }
 
 .scroll-top-btn {
+    position: sticky;  /* Bleibt beim Scrollen sichtbar */
+    bottom: 20px;      /* Abstand vom unteren Rand */
+    right: 0;          /* Rechts im Container */
     font-size: 24px;
     color: #007bff;
     background: none;
     border: none;
     cursor: pointer;
     margin-left: auto;
+    margin-right: 10px;  /* Kleiner Abstand vom Rand */
+    z-index: 10;         /* Über anderen Elementen */
+    width: calc(100% - 20px);  /* Breite des Containers */
+    text-align: right;   /* Pfeil rechts ausrichten */
 }
 
 .scroll-top-btn:hover {
