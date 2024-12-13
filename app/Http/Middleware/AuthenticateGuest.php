@@ -42,11 +42,16 @@ class AuthenticateGuest
 
         // Setze den Gast-Status für Presence Channel
         if ($request->is('broadcasting/auth*')) {
-            $request->setUserResolver(function () {
-                return null; // Erlaubt Gast-Zugriff auf Presence Channels
-            });
+            $player = MemoryPlayer::where('guest_id', session('memoryGuestId'))->first();
+            
+            if ($player) {
+                $request->setUserResolver(function () use ($player) {
+                    return (object)[
+                        'id' => null,
+                        'memory_player' => $player
+                    ];
+                });
+            }
         }
-
-        return $next($request);
     }
 }

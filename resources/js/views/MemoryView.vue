@@ -263,12 +263,16 @@ onMounted(async () => {
   await createNewGame();
 
   // Presence Channel Setup
-  presenceChannel.value = window.Echo.join('game.lobby');
-  
-  presenceChannel.value
-    .here(handlePresenceSubscribed)
-    .joining(handlePlayerJoined)
-    .leaving(handlePlayerLeft)
+  presenceChannel.value = window.Echo.join('presence-game.lobby')
+    .here((players) => {
+      handlePresenceSubscribed(players);
+    })
+    .joining((player) => {
+      handlePlayerJoined(player);
+    })
+    .leaving((player) => {
+      handlePlayerLeft(player);
+    })
     .listen('LobbyStatusUpdated', (e) => {
       if (e.lobby.status === 'accepted' && e.lobby.game_id === gameId.value) {
         handlePlayerJoin(e.challenger);
