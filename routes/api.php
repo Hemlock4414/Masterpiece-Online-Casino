@@ -7,6 +7,13 @@ use App\Http\Controllers\LobbyController;
 use App\Http\Controllers\MemoryCardController;
 use App\Http\Controllers\MemoryGameController;
 use App\Http\Controllers\MemoryPlayerController;
+use Illuminate\Support\Facades\Broadcast;
+use App\Http\Controllers\BroadcastController;
+
+
+
+// Broadcasting Auth Route
+Route::post('/broadcasting/auth', [BroadcastController::class, 'authenticate']);
 
 // TODO remove this on public release, only for testing!
 Route::get('/test', function () {

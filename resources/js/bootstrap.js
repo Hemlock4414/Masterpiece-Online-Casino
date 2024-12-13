@@ -9,8 +9,9 @@ window.axios = axios;
 window.Pusher = Pusher;
 
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
-window.axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]').content;
+window.axios.defaults.headers.common['Content-Type'] = 'application/json';
 window.axios.defaults.withCredentials = true;
+window.axios.defaults.baseURL = '/api';
 
 // Reverb Konfiguration (via Pusher-Protokoll)
 window.Echo = new Echo({
@@ -21,10 +22,5 @@ window.Echo = new Echo({
     wssPort: import.meta.env.VITE_REVERB_PORT,
     forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? 'https') === 'https',
     enabledTransports: ['ws', 'wss'],
-    auth: {
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-        }
-    }
 });
 

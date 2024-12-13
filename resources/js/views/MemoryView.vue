@@ -263,7 +263,7 @@ onMounted(async () => {
   await createNewGame();
 
   // Presence Channel Setup
-  presenceChannel.value = window.Echo.join('presence-game.lobby')
+  presenceChannel.value = window.Echo.join('game.lobby')
     .here((players) => {
       handlePresenceSubscribed(players);
     })

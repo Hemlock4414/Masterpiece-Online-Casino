@@ -75,7 +75,7 @@ const challengePlayer = async (player) => {
 };
 
 onMounted(() => {
-  presenceChannel.value = window.Echo.join('presence-game.lobby')
+  presenceChannel.value = window.Echo.join('game.lobby')
     .here((players) => {
       onlinePlayers.value = players;
     })
@@ -90,6 +90,7 @@ onMounted(() => {
         showChallengeModal(e.lobby);
       }
     });
+    console.log(presenceChannel);
 });
 
 // Cleanup beim Unmount

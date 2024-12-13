@@ -11,15 +11,18 @@ class GameLobbyChannel
     public function join($user = null)
     {
         try {
-            $player = $user 
-                ? MemoryPlayer::where('user_id', $user->id)->first()
-                : MemoryPlayer::firstWhere('guest_id', session('memoryGuestId'))->first();
-
+            if ($user && isset($user->memory_player)) {
+                $player = $user->memory_player;
+            } else {
+                $player = $user 
+                    ? MemoryPlayer::firstWhere('user_id', $user->id)
+                    : MemoryPlayer::firstWhere('guest_id', session('memoryGuestId'));
+            }
+    
             if (!$player) {
-                // Debug-Logging
-                \Log::info('Player nicht gefunden', [
+                \Log::error('Auth failed', [
                     'user' => $user,
-                    'guestId' => session('memoryGuestId')
+                    'session' => session()->all()
                 ]);
                 return false;
             }
@@ -42,10 +45,7 @@ class GameLobbyChannel
                 'isRegistered' => !is_null($player->user_id)
             ];
         } catch (\Exception $e) {
-            \Log::error('GameLobbyChannel Error:', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
+            \Log::error('GameLobbyChannel Error:', ['error' => $e->getMessage()]);
             return false;
         }
     }

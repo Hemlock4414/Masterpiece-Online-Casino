@@ -9,9 +9,7 @@ class BroadcastServiceProvider extends ServiceProvider
 {
     public function boot()
     {
-        // Diese Route ermöglicht die Authentifizierung für private und presence channels
-        Broadcast::routes(['middleware' => ['web']]);
-
+        Broadcast::routes(['middleware' => ['api']]);
         require base_path('routes/channels.php');
     }
 }
