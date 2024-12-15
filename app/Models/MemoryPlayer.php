@@ -29,26 +29,27 @@ class MemoryPlayer extends Model
                     ->withTimestamps();
     }
 
-    public static function createOrGetGuest($guestId = null)
+    public static function createOrGetGuest($guestId)
     {
         if ($guestId) {
             $player = self::where('guest_id', $guestId)->first();
             if ($player) {
-                $player->touch(); // Aktualisiert last_seen_at
                 return $player;
             }
         }
     
-        // Erstelle neuen Gast-Spieler
+        // Session ID für Konsistenz verwenden
+        $sessionId = session()->getId();
+        $guestId = 'guest_' . $sessionId;
+    
         $player = new self([
-            'name' => 'Gast ' . rand(1000, 9999),
-            'guest_id' => $guestId ?? 'guest_' . uniqid(),
-            'status' => 'available',
-            'last_seen_at' => now()
+            'name' => 'Gast ' . substr($guestId, -4),
+            'guest_id' => $guestId
         ]);
         $player->save();
         
-        session(['memoryGuestId' => $player->guest_id]);
+        session(['memoryGuestId' => $guestId]);
+        session()->save();  // Explizit speichern
         
         return $player;
     }

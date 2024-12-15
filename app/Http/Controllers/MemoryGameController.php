@@ -21,6 +21,8 @@ class MemoryGameController extends Controller
                 'pairs' => 'integer|min:2|max:32',
                 'guest_id' => 'nullable|integer'
             ]);
+        
+            Log::info('Request data:', ['validated' => $validated]);
     
             $game = new MemoryGame([
                 'status' => 'waiting',
@@ -78,7 +80,11 @@ class MemoryGameController extends Controller
     
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Fehler beim Erstellen des Spiels:', ['error' => $e->getMessage()]);
+            Log::error('Fehler beim Erstellen des Spiels:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),  // Stack trace hinzugefügt
+                'request' => $request->all()         // Request Daten hinzugefügt
+            ]);
             return response()->json(['error' => 'Fehler beim Erstellen des Spiels'], 500);
         }
     }
