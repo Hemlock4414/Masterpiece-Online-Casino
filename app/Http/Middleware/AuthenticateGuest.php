@@ -9,15 +9,15 @@ use App\Models\MemoryPlayer;
 
 class AuthenticateGuest
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
-     * @return mixed
-     */
     public function handle(Request $request, Closure $next)
     {
+        // Debug-Log für Session-Status
+        \Log::info('Session Status:', [
+            'has_guest_id' => session()->has('memoryGuestId'),
+            'guest_id' => session('memoryGuestId'),
+            'session_id' => session()->getId()
+        ]);
+
         // Wenn der Benutzer bereits eingeloggt ist, überspringe die Gast-Authentifizierung
         if (auth()->check()) {
             return $next($request);
@@ -28,6 +28,9 @@ class AuthenticateGuest
             // Erstelle eine neue Gast-ID
             $guestId = 'guest_' . Str::random(10);
             session(['memoryGuestId' => $guestId]);
+            session()->save(); // Explizit speichern
+
+            \Log::info('Neue Gast-ID erstellt:', ['guestId' => $guestId]);
 
             // Erstelle einen Gast-Spieler in der Datenbank
             try {
@@ -53,5 +56,7 @@ class AuthenticateGuest
                 });
             }
         }
+
+        return $next($request); // Dies fehlte vorher
     }
 }
