@@ -10,6 +10,10 @@ const newPassword = ref('');
 const confirmPassword = ref('');
 const isSubmitting = ref(false);
 
+const updateMessage = ref('');
+const updateError = ref(false);
+const messageTimeout = ref(null);
+
 // Toggle-States für Passwortfelder
 const showCurrentPassword = ref(false);
 const showNewPassword = ref(false);
@@ -17,9 +21,26 @@ const showConfirmPassword = ref(false);
 
 const emit = defineEmits(['close', 'success']);
 
+// Hilfsfunktion zum Anzeigen von Nachrichten
+const showMessage = (message, isError = false) => {
+  console.log('Nachricht:', message);
+  if (messageTimeout.value) {
+    clearTimeout(messageTimeout.value);
+  }
+  
+  updateMessage.value = message;
+  updateError.value = isError;
+
+  // Nachricht nach 3 Sekunden ausblenden
+  messageTimeout.value = setTimeout(() => {
+    updateMessage.value = '';
+    updateError.value = false;
+  }, 3000);
+};
+
 const handleSubmit = async () => {
   if (newPassword.value !== confirmPassword.value) {
-    alert('Die Passwörter stimmen nicht überein');
+    showMessage('Die Passwörter stimmen nicht überein', true);
     return;
   }
   
@@ -27,20 +48,30 @@ const handleSubmit = async () => {
     isSubmitting.value = true;
     await authStore.updatePassword({
       current_password: currentPassword.value,
-      password: newPassword.value,
+      password: newPassword.value, 
       password_confirmation: confirmPassword.value
     });
     
-    emit('success', 'Passwort wurde erfolgreich geändert. Aus Sicherheitsgründen werden Sie nun ausgeloggt. Bitte benutzen Sie anschliessend Ihr neues Passwort.');
+    showMessage('Passwort wurde erfolgreich geändert. Aus Sicherheitsgründen werden Sie nun ausgeloggt. Bitte benutzen Sie anschliessend Ihr neues Passwort');
+    
     setTimeout(() => {
+      emit('success', 'Passwort erfolgreich geändert');
       router.push('/');
-    }, 2000);
+    }, 3000);
   } catch (error) {
-    console.error('Fehler beim Ändern des Passworts:', error);
-  } finally {
-    isSubmitting.value = false;
+  console.error('Fehler:', error);
+  const errorMessage = 
+    error.response?.data?.message || 
+    error.response?.data?.error || 
+    'Fehler beim Ändern des Passworts';
+  
+  console.log('Backend-Fehlermeldung:', errorMessage);
+  showMessage(errorMessage, true);
+} finally {
+    isSubmitting.value = false; 
   }
 };
+
 </script>
 
 <template>
@@ -123,6 +154,14 @@ const handleSubmit = async () => {
             </button>
           </div>
         </form>
+        
+        <div 
+          v-if="updateMessage" 
+          :class="['message', updateError ? 'error' : 'success']"
+          role="alert"
+        >
+          {{ updateMessage }}
+        </div>
       </div>
     </div>
 </template>
@@ -142,6 +181,7 @@ const handleSubmit = async () => {
 }
 
 .modal-content {
+  position: relative;
   background-color: white;
   padding: 2rem;
   border-radius: 8px;
@@ -260,6 +300,37 @@ p {
 /* Anpassung für das Input-Feld, damit der Toggle-Button nicht überlappt */
 .form-input {
   padding-right: 40px;
+}
+
+.message {
+  position: absolute;
+  bottom: -50px;
+  left: 0;
+  right: 0;
+  margin-top: 10px;
+  padding: 10px 15px;
+  border-radius: 4px;
+  font-size: 14px;
+  animation: fadeIn 0.3s ease;
+  z-index: 1;
+  text-align: center;
+}
+
+.success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @media (max-width: 640px) {
