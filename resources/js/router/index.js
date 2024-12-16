@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 
 import HomeView from "../views/HomeView.vue";
-import MemoryView from "../views/MemoryView.vue";
 
 import { storeToRefs } from "pinia";
 import { useAuthStore } from "@/store/AuthStore";
@@ -36,16 +35,6 @@ const router = createRouter({
             path: "/registrieren",
             name: "register",
             component: () => import("../views/RegisterView.vue"),
-        },
-        {
-            path: "/post/edit/:id",
-            name: "post-edit",
-            component: () => import("../views/EditView.vue"),
-        },
-        {
-            path: "/post/create",
-            name: "post-create",
-            component: () => import("../views/CreateView.vue"),
         },
         {
             // Hier brauchen wir keine Meta-Informationen, da diese Route für nicht authentifizierte User zugänglich sein soll.

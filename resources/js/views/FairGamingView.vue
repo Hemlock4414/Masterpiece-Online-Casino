@@ -1,5 +1,7 @@
 <script setup>
-
+function scrollToTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 </script>
 
 
@@ -17,7 +19,7 @@
 
                     <p class="topline">Wir möchten, dass Sie sich mit unseren Richtlinien für faires Glücksspiel vertraut machen, 
                     sowie über die Schritte, die wir unternommen haben, um Ihnen eine verantwortliche und sichere 
-                    Spiel-Umgebung zu garantieren.</p>
+                    Spielumgebung zu bieten.</p>
 
                 </div>  
 
@@ -48,47 +50,47 @@
                         <section id="C1">
                             <h2 class="heading">Kein Spiel für Minderjährige</h2>
 
-                            <p>Glücksspiel unter 18 Jahren ist in allen internationalen Gerichtsbarkeiten illegal</p>
+                            <p>Glücksspiel unter 18 Jahren ist in allen internationalen Gerichtsbarkeiten illegal.</p><br>
 
-                            <p><b>Elterliche Vorsorgemaßnahmen:</b> Bitte beachten Sie, dass wir zwar die höchsten 
+                            <p><b>Elterliche Vorsorgemaßnahmen:</b> Bitte beachten Sie, dass wir zwar  
                                 Vorsichtsmaßnahmen treffen, um Minderjährigen den Zugriff auf unsere Plattform zu blockieren, 
                                 aber es für uns unmöglich ist jeden einzelnen Vorfall von unbeaufsichtigter Aktivität von 
                                 Minderjährigen zu verhindern. </p>
-
+                            <br>
                         </section>
 
                         <section id="C2">
 
                             <h2 class="heading">Kontrolliertes Spielverhalten</h2>
 
-                            <p>Um sicherzustellen, dass Ihre Spiel-Erfahrung positiv und unterhaltsam bleibt, empfehlen wir 
+                            <p>Um sicherzustellen, dass Ihre Spielerfahrung positiv und unterhaltsam bleibt, empfehlen wir 
                                 Ihnen folgende Richtlinien einzuhalten:</p><br>
 
                                 <ul>
                                     <li>Setzen Sie sich eine zeitliche Beschränkung und halten Sie sich daran.</li>
-                                    <li>Machen Sie regelmäßige Pausen.</li>
+                                    <li>Machen Sie regelmässige Pausen.</li>
                                     <li>Schaffen Sie einen Ausgleich zwischen Spiel- und anderen Aktivitäten.</li>
-                                    <li>Vermeiden Sie zu spielen, wenn Sie gestresst, oder depressiv sind.</li>
+                                    <li>Vermeiden Sie zu spielen, wenn Sie gestresst oder depressiv sind.</li>
                                 </ul>
-
+                                <br>
                         </section> 
 
                         <section id="C3">
 
                             <h2 class="heading">Die Anzeichen von Spielsucht erkennen</h2>
 
-                            <p>Verantwortungsvolles Spiel bedeutet, dass man sich selbst Limits setzt in Bezug auf die Mengen 
+                            <p>Verantwortungsvolles Spiel bedeutet, dass man sich selbst Limits setzt in Bezug auf die Menge 
                                 an Zeit und Geld, die man an den virtuellen Tischen investieren möchte, und dass man sich an 
-                                diese Limits hält. Gewohnheitsmäßige Abweichung von diesen selbst auferlegten Limits könnten 
+                                diese Limits hält. Gewohnheitsmäsige Abweichung von diesen selbst auferlegten Limits könnten 
                                 auf eine Sucht hinweisen. Wenn Sie vermuten, dass Sie eine Spielsucht haben, beantworten Sie 
                                 bitte die Fragen im folgenden Fragebogen:</p><br>
 
                             <ol>
-                                <li>Haben Sie jemals die Schule oder die Arbeit wegen Ihres Spiels versäumt?</li>
+                                <li>Haben Sie jemals die Schule oder die Arbeit wegen Ihres Spielens versäumt?</li>
                                 <li>Hat sich Glücksspiel negativ auf Ihr Privatleben ausgewirkt?</li>
                                 <li>Hat Glücksspiel Ihrem Ruf geschadet?</li>
                                 <li>Hatten Sie, nachdem Sie verloren haben, das Gefühl, sofort wieder zum Spiel zurückkehren 
-                                    zu müssen, um Ihre Verluste zurück zu gewinnen?</li>
+                                    zu müssen, um Ihre Verluste zurückzugewinnen?</li>
                                 <li>Hatten Sie, nachdem Sie gewonnen haben, den starken Drang zurückzukehren und noch mehr 
                                     zu gewinnen?</li>
                                 <li>Haben Sie des Öfteren so lange gespielt, bis Sie keinen Cent mehr in der Tasche hatten?</li>
@@ -101,7 +103,9 @@
                                 <li>Hat Glücksspiel Ihren Ehrgeiz oder Ihre Effizienz vermindert?</li>
                                 <li>Haben Sie schon gespielt, um Sorgen und/oder Problemen zu entkommen?</li>    
                             </ol>
-
+                            <button class="scroll-top-btn" @click="scrollToTop" aria-label="Nach oben" title="Zurück zum Seitenanfang">
+                                &uarr;
+                            </button>
                         </section>
 
                         <section id="C4">
@@ -151,7 +155,9 @@
                                     können Sie allein, mit Ihrem Partner / Ihrer Partnerin, einer Vertrauensperson oder mit 
                                     Unterstützung eines Therapeuten bearbeiten.</p>
                                 <p>Laden Sie hier das <a href="/public/selbsthilfe-manual.pdf" download="selbsthilfe-manual.pdf">Selbsthilfe-Manual</a> als PDF herunter.</p>
-
+                                <button class="scroll-top-btn" @click="scrollToTop" aria-label="Nach oben" title="Zurück zum Seitenanfang">
+                                    &uarr;
+                                </button>
                             </article>
                         </section>
                     </div>
@@ -247,6 +253,26 @@ article {
     height: auto;
 }
 
+.scroll-top-btn {
+    position: sticky;  /* Bleibt beim Scrollen sichtbar */
+    bottom: 20px;      /* Abstand vom unteren Rand */
+    right: 0;          /* Rechts im Container */
+    font-size: 24px;
+    color: #007bff;
+    background: none;
+    border: none;
+    cursor: pointer;
+    margin-left: auto;
+    margin-right: 10px;  /* Kleiner Abstand vom Rand */
+    z-index: 10;         /* Über anderen Elementen */
+    width: calc(100% - 20px);  /* Breite des Containers */
+    text-align: right;   /* Pfeil rechts ausrichten */
+}
+
+.scroll-top-btn:hover {
+    color: #0056b3;
+}
+
 @media (max-width: 780px) {
     .helpline {
         flex-direction: column;
@@ -277,5 +303,4 @@ article {
         padding: 0 5px;
     }
 }
-
 </style>
