@@ -130,7 +130,12 @@ export const useAuthStore = defineStore("AuthStore", {
         async updatePassword(data) {
             try {
                 await authClient.get("/sanctum/csrf-cookie");
-                const response = await authClient.post("/api/user/update/password", data);
+                const response = await authClient.post("/api/user/update/password", {
+                    current_password: data.current_password,
+                    new_password: data.password,
+                    new_password_confirmation: data.password_confirmation
+                });
+                await this.logout();
                 return response;
             } catch (error) {
                 console.error('Fehler beim Aktualisieren des Passworts:', error);
