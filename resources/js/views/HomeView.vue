@@ -103,14 +103,13 @@ onUnmounted(() => {
 
             <div class="row">
                 <!-- Alle 6 Kacheln in einer Row -->
-                <RouterLink to="/blackjack/play" style="text-decoration: none;">
+                
                     <div class="card-container">
                         <div class="card">
                             <img src="/public/img/casino-placeholder.jpg" alt="Bild 1" class="card-image">
                         </div>
                         <button class="button">Play Blackjack</button>
                     </div>
-                </RouterLink>
                 
                 <RouterLink to="/memory/play" style="text-decoration: none;">
                     <div class="card-container">
