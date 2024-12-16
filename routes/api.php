@@ -37,8 +37,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/user/update/password', [UserController::class, 'updatePassword']);
     Route::post('/user/update/email', [UserController::class, 'updateEmail']);
     Route::post('/user/update/pic', [UserController::class, 'updateProfilePic']);
+    Route::delete('/user/delete/pic', [UserController::class, 'deleteProfilePic']);
     Route::delete('/user/delete', [UserController::class, 'deleteAccount']);
-
 });
 
 // Memory Game

@@ -1,5 +1,7 @@
 <script setup>
-
+function scrollToTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 </script>
 
 <template>
@@ -13,12 +15,12 @@
                 <div class="headline">
                     <h1 class="heading topline">Allgemeine Geschäftsbedingungen</h1>
 
-                    <p class="topline">Diese allgemeinen Geschäftsbedingungen und Nutzungsbedingungen ("AGB") von "NAME" 
+                    <p class="topline">Diese allgemeinen Geschäftsbedingungen und Nutzungsbedingungen ("AGB") von Fortuna Fortune 
                     (nachstehend als „die Webseite“ oder auch wir/uns bezeichnet) sind Voraussetzung für 
                     die Nutzung der Webseite und der gesamten zur Verfügung gestellten Spielangebote.
 
-                    Durch die Nutzung unserer Webseite oder eines unserer Spiele, erkennst du unsere AGB 
-                    vollumfänglich an und stimmst zu, diese während der gesamten Nutzung unserer Webseiten zu akzeptieren.
+                    Durch die Nutzung unserer Webseite oder eines unserer Spiele, erkennen Sie unsere AGB 
+                    vollumfänglich an und stimmen zu, diese während der gesamten Nutzung unserer Webseite zu akzeptieren.
                     </p>
 
                 </div>
@@ -48,9 +50,8 @@
                                         <li><a class="sidebar-nav-link" href="#C15"><h4>Was ist ein Cookie?</h4></a></li>
                                         <li><a class="sidebar-nav-link" href="#C16"><h4>Was sind die Vorteile von Cookies?</h4></a></li>
                                         <li><a class="sidebar-nav-link" href="#C17"><h4>Welche Cookie-Typen verwenden wir?</h4></a></li>
-                                        <li><a class="sidebar-nav-link" href="#C18"><h4>Unbedint notwendige Cookies</h4></a></li>
-                                        <li><a class="sidebar-nav-link" href="#C19"><h4>Cookie-Präferenzen einstellen</h4></a></li>
-                                        <li><a class="sidebar-nav-link" href="#C20"><h4>Änderungen der Cookie-Richtlinie</h4></a></li>
+                                        <li><a class="sidebar-nav-link" href="#C18"><h4>Unbedingt notwendige Cookies</h4></a></li>
+                                        <li><a class="sidebar-nav-link" href="#C19"><h4>Änderungen der Cookie-Richtlinie</h4></a></li>
                                     </ul>
                                 </li>
                             </ul>
@@ -69,7 +70,7 @@
                             betroffenen Konten zu sperren, bis diese überprüft werden können. Es ist verboten, Spielerkonten 
                             an andere Personen zu verkaufen, zu übertragen oder von anderen Personen zu erwerben.</p><br>
                             <p>
-                            Sie dürfen unsere Webseiten und Ihr Kundenkonto ausschliesslich zum Zweck der eigenen Teilnahme 
+                            Sie dürfen unsere Webseiten und Ihr Spielerkonto ausschliesslich zum Zweck der eigenen Teilnahme 
                             an Casinospielen für private Erholungs- und Freizeitzwecke nutzen und nicht zu Erwerbszwecken 
                             oder anderen kommerziellen Gründen.</p><br>
                             <p>
@@ -80,15 +81,17 @@
                             Kapitel "Kontosperrung" vorgesehenen Konsequenzen anordnen.</p><br>
                             <p>
                             Sie verpflichten sich, im Zusammenhang mit der Webseite und anderen Angeboten uns, 
-                            keine Inhalte (bspw. Bilder, Videos, Links, Worte, usw.) mit werbenden, politischen, religiösen, 
+                            keine Inhalte (z.B. Bilder, Videos, Links, Worte, usw.) mit werbenden, politischen, religiösen, 
                             beleidigenden, belästigenden, drohenden, gewalttätigen, sexistischen, pornografischen oder 
                             sonstigen moralisch verwerflichen oder anstössigen, insbesondere rassistischen sowie rechts¬ 
                             oder linksextremen Inhalten, Personen oder Darstellungen zu verbreiten.</p><br>
                             <p>
                             Wir behalten uns das Recht vor, sämtliche uns von Ihnen zur Verfügung gestellten 
                             persönlichen Daten so lange zu speichern, wie es gesetzlich erlaubt ist. Weitere Informationen 
-                            zum Datenschutz findesn Sie in unserer <a href="/datenschutz">Datenschutzerklärung</a>.</p>
-
+                            zum Datenschutz finden Sie in unserer <a href="/datenschutz">Datenschutzerklärung</a>.</p>
+                            <button class="scroll-top-btn" @click="scrollToTop" aria-label="Nach oben" title="Zurück zum Seitenanfang">
+                                &uarr;
+                            </button>
                         </section>
 
                         <section id="C2">
@@ -118,12 +121,15 @@
                             Sie sind ausschliesslich selbst verantwortlich für die technische Konfiguration Ihres 
                             Computers, Mobiltelefons, Tablet-Computers oder sonstigen Geräts, mit dem Sie auf unsere Webseite 
                             zugreifen.</p>
+                            <button class="scroll-top-btn" @click="scrollToTop" aria-label="Nach oben" title="Zurück zum Seitenanfang">
+                                &uarr;
+                            </button>
                         </section>
 
                         <section id="C3">
                             <h2 class="heading">Registrierung des Spielerkontos</h2>
 
-                            <p>Der Spieler oder die Spielerin hat keinen Anspruch auf einen bestimmten Spielernamen. Der 
+                            <p>Der Spieler oder die Spielerin hat keinen Anspruch auf einen bestimmten Spielernamen/Benutzernamen. Der 
                             Spielername muss eindeutig und klar identifizierbar sein. Beleidigende, anstössige oder in 
                             anderer Weise unangebrachte Namen sind nicht erlaubt. Ferner verboten sind 
                             Spielernamen, die einen Internet-Link enthalten oder auf einen Internet-Link anspielen oder 
@@ -148,19 +154,22 @@
                             Es unterliegt allein Ihrer Verantwortung, die Zugangsdaten sicher aufzubewahren und nicht an 
                             Dritte weiterzugeben. Wir sind für einen Missbrauch der Zugangsdaten und den daraus 
                             resultierenden Folgen nicht verantwortlich, sollten Dritte an diese gelangen. Des Weiteren behalten 
-                            wir uns das Recht vor, bei Verdacht oder Nutzung deines Kundenkontos durch einen 
+                            wir uns das Recht vor, bei Verdacht oder Nutzung Ihres Spielerkontos durch einen 
                             Dritten, dieses Konto zu sperren.
                             </p>
+                            <button class="scroll-top-btn" @click="scrollToTop" aria-label="Nach oben" title="Zurück zum Seitenanfang">
+                                &uarr;
+                            </button>
                         </section>
 
                         <section id="C4">
 
                             <h2 class="heading">Kündigung des Spielerkontos</h2>
 
-                            <p>Sie können jederzeit das Spielerkonto auflösen. Dabei werden alle personenbezogenen Daten sowie das 
-                            Spieler-Guthaben permanent gelöscht. Ihr Spielername wird wieder anderen zur Verfügung stehen.
+                            <p>Sie können jederzeit Ihr Spielerkonto auflösen. Dabei werden alle personenbezogenen Daten sowie das 
+                            Spielerguthaben permanent gelöscht. Ihr Spielername wird wieder anderen zur Verfügung stehen.
                             </p>
-
+                            <br>
                         </section>
 
                         <section id="C5">
@@ -179,32 +188,34 @@
                                 und aggressiven Verhaltensäusserungen.</li>
 
                                 <li>Im Falle eines einfachen Verdachts oder einer Beobachtung durch uns auf Betrug oder 
-                                illegale Aktivitäten des Spielers oder eines Versuchs, die Website illegal zu nutzen, einschliesslich der Nutzung des 
+                                illegale Aktivitäten des Spielers oder eines Versuchs, die Webseite illegal zu nutzen, einschliesslich der Nutzung des 
                                 Spielerkontos eines anderen Spielers (auch mit dessen Zustimmung).</li>
                             </ul><br>
 
-                            <p>Wenn begründeter Verdacht besteht, dass du diese Webseite in missbräuchlicher Weise benutzt, namentlich durch Absprachen mit anderen 
+                            <p>Wenn begründeter Verdacht besteht, dass Sie diese Webseite in missbräuchlicher Weise benutzen, namentlich durch Absprachen mit anderen 
                             Spielern, Einsetzung von hard- oder softwaregestützten Methoden, Nutzung von Bots oder anderer 
                             Malware oder sonst in betrügerischer Weise das Spiel beeinflusst, können wir Ihr 
                             Spielerkonto sperren.</p>
-
+                            <button class="scroll-top-btn" @click="scrollToTop" aria-label="Nach oben" title="Zurück zum Seitenanfang">
+                                &uarr;
+                            </button>
                         </section>
 
                         <section id="C6">
                             <h2 class="heading">Verantwortungsvolles Spielen</h2>
 
                             <p>Bei uns steht ein positives und unterhaltsames Spielerlebnis im Vordergrund. Auf unserer 
-                            Webseite unter <a href="/fair-gaming">Verantwortungsvolles Spielen</a> stellen wir 
+                            Webseite <a href="/fair-gaming">Verantwortungsvolles Spielen</a> stellen wir 
                             verschiedene Hilfsmittel zur Kontrolle oder Begrenzung des eigenen 
                             Spielverhaltens zur Verfügung.</p>
-
+                            <br>
                         </section>
 
                         <section id="C7">
                             <h2 class="heading">Allgemeine Spielregeln</h2>
 
-                            <p>Eine Spielanleitung steht jeweils in den einzelnen Spielen zur Verfügung. Es obliegt deiner eigenen Verantwortung, 
-                            dich mit den spezifischen Spielregeln unserer Spiele vertraut zu machen.</p><br>
+                            <p>Eine Spielanleitung steht jeweils in den einzelnen Spielen zur Verfügung. Es obliegt Ihrer eigenen Verantwortung, 
+                            sich mit den spezifischen Spielregeln unserer Spiele vertraut zu machen.</p><br>
 
                             <p>Wird die Verbindung während eines laufenden Spiels unterbrochen, wird das Spiel auf den 
                             Spielservern aufgezeichnet. Das Ergebnis wird im Status des Spielerkontos angezeigt und ein 
@@ -216,19 +227,21 @@
                             oder das Spiel für nichtig zu erklären, wenn das Spielergebnis im Falle eines Softwarefehlers, 
                             einer Funktionsstörung des Zufallsgenerators oder sonstigen technischen Fehlern sich als nicht 
                             korrekt erweist.</p>
-
+                            <button class="scroll-top-btn" @click="scrollToTop" aria-label="Nach oben" title="Zurück zum Seitenanfang">
+                                &uarr;
+                            </button>
                         </section>
 
                         <section id="C8">
                             <h2 class="heading">Datenschutz und Privatsphäre</h2>
 
                             <p>Der Datenschutz ist für uns wichtig: Sie können sich darauf verlassen, dass wir mit 
-                            Euren Daten sorgfältig umgehen und den Datenschutz in jeder Beziehung respektieren.</p><br>
+                            Ihren Daten sorgfältig umgehen und den Datenschutz in jeder Beziehung respektieren.</p><br>
 
                             <p>Die Verwendung der Personendaten ist in der Datenschutzerklärung geregelt. Die 
                             <a href="/privacy">Datenschutzerklärung</a> ist integraler und bindender Bestandteil 
                             dieser AGB.</p>
-
+                            <br>
                         </section>
 
                         <section id="C9">
@@ -244,12 +257,15 @@
                             Verantwortung und Haftung aus für:</p><br>
 
                             <ul>
-                                <li>Schäden oder Verluste, die durch Fehler gleich welcher Art in der StarVegas.ch-Software verursacht wurden</li>
-                                <li>die Genauigkeit der auf StarVegas.ch angebotenen Informationsdienste oder Statistik- und Zwischenergebnisse</li>
+                                <li>Schäden oder Verluste, die durch Fehler gleich welcher Art in unserer Software verursacht wurden</li>
+                                <li>Die Genauigkeit der auf unserer Webseite angebotenen Informationsdienste oder Statistik- und Zwischenergebnisse</li>
                                 <li>Fehlfunktionen, Systemausfälle, Defekte, Verzögerungen, Unterbrechungen, manipulierte oder unsachgemässe Datenübertragungen, Verlust oder Verfälschung von Daten</li>
-                                <li>Folgen durch Fehler in Kommunikationsverbindungen, DDOS-Attacken, Viren oder jegliche andere schädliche Technologie, die dem Spieler bei der Nutzung der Dienste von StarVegas.ch entstehen</li>
-                                <li>Verluste, die bei der Übertragung von Informationen an StarVegas.ch entstehen</li>
-                            </ul><br>
+                                <li>Folgen durch Fehler in Kommunikationsverbindungen, DDOS-Attacken, Viren oder jegliche andere schädliche Technologie, die dem Spieler bei der Nutzung der Dienste auf unserer Webseite entstehen</li>
+                                <li>Verluste, die bei der Übertragung von Informationen an uns entstehen</li>
+                            </ul>
+                            <button class="scroll-top-btn" @click="scrollToTop" aria-label="Nach oben" title="Zurück zum Seitenanfang">
+                                &uarr;
+                            </button>
                         </section>
 
                         <section id="C10">
@@ -261,6 +277,7 @@
                             Das (vollständige oder teilweise) Reproduzieren, Verbreiten, Übermitteln (elektronisch oder mit 
                             anderen Mitteln), Modifizieren, Verknüpfen oder Benutzen der Inhalte für öffentliche oder 
                             kommerzielle Zwecke ist ohne vorherige schriftliche Zustimmung von uns untersagt.</p>
+                            <br>
                         </section>
 
                         <section id="C11">
@@ -269,20 +286,23 @@
                             <p>Diese AGB gelten auf unbestimmte Zeit. Sie treten mit der Nutzung unserer Dienstleistungen 
                                 in Kraft und bleiben bis zur Veröffentlichung einer neuen Version oder bis zu deren 
                                 Widerruf gültig. Durch die fortgesetzte Nutzung unserer Plattform stimmen Sie den jeweils aktuellen 
-                            Bedingungen zu.</p>
+                            AGB zu.</p>
+                            <br>
                         </section>
 
                         <section id="C12">
                             <h2 class="heading">Fassung / Änderungen</h2>
 
-                            <p>Wir behalten uns das Recht vor, jederzeit Änderungen an diesen AGBs vorzunehmen und somit 
+                            <p>Wir behalten uns das Recht vor, jederzeit Änderungen an diesen AGB vorzunehmen und somit 
                             die Vereinbarung zwischen Ihnen und uns zu ändern.</p><br>
 
-                            <p>Es obliegt Ihrer eigenen Verantwortung unsere AGB zu prüfen und dich mit den spezifischen 
+                            <p>Es obliegt Ihrer eigenen Verantwortung unsere AGB zu prüfen und sich mit den spezifischen 
                             Spielregeln unserer Spiele vertraut zu machen.</p><br>
 
                             <p>Derzeitiger Stand ist Dezember 2024.</p>
-
+                            <button class="scroll-top-btn" @click="scrollToTop" aria-label="Nach oben" title="Zurück zum Seitenanfang">
+                                &uarr;
+                            </button>
                         </section>
 
                         <section id="C13">
@@ -291,9 +311,8 @@
                             <article id="C14">
 
                                 <h3 class="heading">Allgemeine Informationen</h3>
-                                <p>Wir verwenden Cookies auf dieser Website. Sie haben die Möglichkeit, Ihre Präferenzen 
-                                im Dialog für die Cookie-Einstellungen festzulegen [link to cookies setting]. Diese 
-                                Cookie-Richtlinien (Richtlinien) enthält nähere Informationen über Cookies und wie wir 
+                                <p>Wir verwenden Cookies auf dieser Webseite. Diese 
+                                Cookie-Richtlinie (Richtlinie) enthält nähere Informationen über Cookies und wie wir 
                                 diese verwenden. Sie ist ein integraler Bestandteil unserer Datenschutzerklärung.</p>
 
                             </article>
@@ -303,13 +322,13 @@
                                 <p>Ein Internet-Cookie ist eine kleine Datei, die Buchstaben und Zahlen enthält. Es wird 
                                 auf dem Gerät gespeichert, mit dem auf das Internet zugegriffen wird, zum Beispiel ein 
                                 Computer, Tablet, Mobiltelefon oder ein anderes Gerät. Ein Cookie wird aufgrund einer 
-                                Anfrage Ihres Webservers (Website) an Ihren Browser, wie Internet Explorer, Firefox, 
+                                Anfrage Ihres Webservers (Webseite) an Ihren Browser, wie Internet Explorer, Firefox, 
                                 Chrome usw., erstellt. Cookies werden im Allgemeinen nicht benutzt, um personenbezogene 
                                 Daten der Nutzer zu verarbeiten. Nur in Ausnahmefällen können sie verwendet werden, um 
-                                Daten zu verarbeiten, die potenziell genutzt werden können, um einen Websitenutzer 
+                                Daten zu verarbeiten, die potenziell genutzt werden können, um einen Webseitenutzer 
                                 indirekt zu identifizieren. Cookies werden als passiv angesehen, da sie keine 
                                 Softwareprogramme, Viren oder Spionageprogramme enthalten und nicht auf Informationen 
-                                auf der Festplatte des Geräts zugreifen können. Wenn ein Nutzer wieder auf die Website 
+                                auf der Festplatte des Geräts zugreifen können. Wenn ein Nutzer wieder auf die Webseite 
                                 zugreift, kann der Webserver die zuvor gespeicherten Cookies lesen und entsprechend 
                                 reagieren.</p>
 
@@ -320,50 +339,38 @@
                                 <h3 class="heading">Was sind die Vorteile von Cookies?</h3>
                                 <p>Cookies spielen eine wichtige Rolle, um Nutzern den Zugang zu im Internet angebotenen Diensten 
                                 zu erleichtern, wie zum Beispiel für die korrekte Darstellung oder Funktionalität einer 
-                                Website. Ausserdem ermöglichen Cookies für Websitebetreiber wertvolles Feedback zum 
-                                Nutzerverhalten. Auf diese Weise können sie Websites leichter zugänglich machen und eine 
+                                Webseite. Ausserdem ermöglichen Cookies für Webseitebetreiber wertvolles Feedback zum 
+                                Nutzerverhalten. Auf diese Weise können sie Webseites leichter zugänglich machen und eine 
                                 bessere Navigationserfahrung ermöglichen, zum Beispiel, indem sie Nutzerpräferenzen in Bezug 
                                 auf Sprache, Warenkörbe, Anzeigen etc. speichern.</p>
                             </article>
 
                             <article id="C17">
                                 <h3 class="heading">Welche Cookie-Typen verwenden wir?</h3>
-                                <p>Die auf dieser Website verwendeten Cookie-Typen können in die unten aufgeführten Kategorien 
-                                eingeteilt werden. Der in jeder Kategorie verwendete, spezifische Cookie-Typ ist im Dialog 
-                                für die Cookie-Einstellungen enthalten.</p>
+                                <p>Die auf dieser Webseite verwendeten Cookie-Typen können in die unten aufgeführten Kategorien 
+                                eingeteilt werden.</p>
                             </article>
 
                             <article id="C18">
                                 <h3 class="heading">Unbedingt notwendige Cookies</h3>
-                                <p>Diese Cookies ermöglichen Grundfunktionen der Website und können nicht ausgeschaltet werden. 
+                                <p>Diese Cookies ermöglichen Grundfunktionen der Webseite und können nicht ausgeschaltet werden. 
                                 Sie werden üblicherweise bei einem Servicewunsch gesetzt, wie zum Beispiel beim Einstellen 
                                 Ihres Datenschutzes, beim Einloggen oder beim Ausfüllen von Formularen. Sie können Ihren 
                                 Browser so einstellen, dass diese Cookies blockiert oder Sie gewarnt werden, bestimmte 
-                                Bereiche der Website werden dann jedoch nicht funktionieren. Diese Cookies speichern keine 
+                                Bereiche der Webseite werden dann jedoch nicht funktionieren. Diese Cookies speichern keine 
                                 personenbezogenen Daten.</p>
                             </article>
 
-                            <article id="C19">
-                                <h3 class="heading">Cookie-Präferenzen einstellen</h3>
-                                <p>Sie haben die Möglichkeit, Ihre Präferenzen auf dieser Website im Dialog für die 
-                                Cookie-Einstellungen festzulegen. Sie können ausserdem über Ihren Webbrowser Cookies 
-                                blockieren, deaktivieren oder löschen. Eine spezifische Kategorie von Cookies zu deaktivieren 
-                                bedeutet nicht automatisch, dass die Cookies in Ihrem Browser gelöscht werden. Dies ist nur 
-                                mithilfe der Browser-Funktionen möglich. Bitte beachten Sie, dass nach dem Deaktivieren oder 
-                                Löschen von bestimmten Cookies oder Kategorien von Cookies manche Funktionen und Features der 
-                                Website nicht mehr verfügbar sind.</p>
-                            </article>
-
-                            <article id="C20">
+                            <article id="C29">
                                 <h3 class="heading">Änderungen der Cookie-Richtlinie</h3>
-                                <p>Wir können jederzeit Änderungen an diesen Richtlinien vornehmen, falls das für unsere 
+                                <p>Wir können jederzeit Änderungen an dieser Richtlinie vornehmen, falls das für unsere 
                                 Geschäftstätigkeit oder die Einhaltung gesetzlicher Anforderungen notwendig sein 
-                                sollte. Die aktualisierte Version der Richtlinie wird auf der Website veröffentlicht.</p>
+                                sollte. Die aktualisierte Version der Richtlinie wird auf der Webseite veröffentlicht.</p>
                             </article>
-
+                            <button class="scroll-top-btn" @click="scrollToTop" aria-label="Nach oben" title="Zurück zum Seitenanfang">
+                                &uarr;
+                            </button>
                         </section>
-
-                        <button>Cookie Einstellungen</button>
 
                     </div>
                     
@@ -441,6 +448,26 @@ article {
 .heading {
     margin-top: 10px;
     margin-bottom: 5px;
+}
+
+.scroll-top-btn {
+    position: sticky;  /* Bleibt beim Scrollen sichtbar */
+    bottom: 20px;      /* Abstand vom unteren Rand */
+    right: 0;          /* Rechts im Container */
+    font-size: 24px;
+    color: #007bff;
+    background: none;
+    border: none;
+    cursor: pointer;
+    margin-left: auto;
+    margin-right: 10px;  /* Kleiner Abstand vom Rand */
+    z-index: 10;         /* Über anderen Elementen */
+    width: calc(100% - 20px);  /* Breite des Containers */
+    text-align: right;   /* Pfeil rechts ausrichten */
+}
+
+.scroll-top-btn:hover {
+    color: #0056b3;
 }
 
 @media (max-width: 580px) {
