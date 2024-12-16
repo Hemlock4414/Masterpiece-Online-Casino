@@ -13,6 +13,7 @@ const images = ref([
   { src: "/img/roulette-1.jpg", alt: "Roulette", link: null },
   { src: "/img/slots-1.jpg", alt: "Slot Machines", link: null },
   { src: "/img/blackjack-2.jpg", alt: "Blackjack", link: null },
+  { src: "/img/memory-2.png", alt: "Memory", link: "/memory/play" },
   { src: "/img/poker-2.jpg", alt: "Poker", link: null },
   { src: "/img/roulette-2.jpg", alt: "Roulette", link: null },
   { src: "/img/slots-2.jpg", alt: "Slot Machines", link: null },
