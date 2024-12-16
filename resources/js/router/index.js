@@ -60,11 +60,11 @@ const router = createRouter({
             name: "memory",
             component: () => import("../views/MemoryView.vue"),
         },
-        {
-            path: "/blackjack/play",
-            name: "blackjack",
-            component: () => import("../views/BlackjackView.vue"),
-        },
+        // {
+        //     path: "/blackjack/play",
+        //     name: "blackjack",
+        //     component: () => import("../views/BlackjackView.vue"),
+        // },
             // {
             // path: "/dashboard",
             // name: "dashboard",
