@@ -15,16 +15,6 @@ const router = createRouter({
             component: HomeView,
         },
         {
-            path: "/dashboard",
-            name: "dashboard",
-            // route level code-splitting
-            // this generates a separate chunk (Dashboard.[hash].js) for this route
-            // which is lazy-loaded when the route is visited.
-            component: () => import("../views/DashboardView.vue"),
-            // die Meta-Informationen verwenden wir um den Zugriff zu schützen
-            meta: { requiresAuth: true },
-        },
-        {
             // Hier brauchen wir keine Meta-Informationen, da diese Route für nicht authentifizierte User zugänglich sein soll.
             path: "/einloggen",
             name: "login",
@@ -75,7 +65,16 @@ const router = createRouter({
             name: "blackjack",
             component: () => import("../views/BlackjackView.vue"),
         },
-
+            // {
+            // path: "/dashboard",
+            // name: "dashboard",
+            // route level code-splitting
+            // this generates a separate chunk (Dashboard.[hash].js) for this route
+            // which is lazy-loaded when the route is visited.
+            // component: () => import("../views/DashboardView.vue"),
+            // die Meta-Informationen verwenden wir um den Zugriff zu schützen
+            // meta: { requiresAuth: true },
+        // },
     ],
 
 });
