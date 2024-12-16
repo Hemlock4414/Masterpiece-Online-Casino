@@ -108,9 +108,7 @@ const navigateToProfile = () => {
                     <input type="checkbox" v-model="rememberMe" />
                     Anmeldedaten merken
                   </label>
-                  <a href="/passwort-vergessen">
-                    Passwort vergessen?
-                  </a>
+                  <RouterLink to="/passwort-vergessen">Passwort vergessen?</RouterLink>
                 </div>
               </div>
               <!-- Buttons (Einloggen und Registrieren) -->
