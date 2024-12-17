@@ -2,7 +2,7 @@
 import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/store/AuthStore";
-import DeleteModal from "../components/DeleteModal.vue";
+import DeleteAccountModal from "../components/DeleteAccountModal.vue";
 import EmailChangeModal from '../components/EmailChangeModal.vue';
 import PasswordChangeModal from '../components/PasswordChangeModal.vue';
 
@@ -19,7 +19,7 @@ const messageTimeout = ref(null);
 const fileInput = ref(null);
 const profileImage = computed(() => authStore.profilePicUrl);
 
-const showDeleteModal = ref(false);
+const showDeleteAccountModal = ref(false);
 const isDeletingAccount = ref(false);
 
 const showEmailModal = ref(false);
@@ -107,8 +107,8 @@ const showMessage = (message, isError = false) => {
 };
 
 // Modal zum Löschen öffnen
-const openDeleteModal = () => {
-  showDeleteModal.value = true;
+const openDeleteAccountModal = () => {
+  showDeleteAccountModal.value = true;
 };
 
 // Hilfsfunktion zum Öffnen des Datei-Dialogs
@@ -116,22 +116,21 @@ const triggerFileInput = () => {
   fileInput.value.click();
 };
 
-// Funktion zum Löschen des Benutzers
 const deleteUser = async () => {
   try {
     isDeletingAccount.value = true;
-
     await authStore.deleteAccount();
-    showDeleteModal.value = false;
-
-    // Redirect zur Home-Seite nach erfolgreichem Löschen
-    router.push("/");
+    showDeleteAccountModal.value = false;
+    router.push("/"); 
   } catch (error) {
     console.error("Error deleting account:", error);
-    alert(
-      error.response?.data?.message ||
-        "Konto konnte nicht gelöscht werden. Bitte versuchen Sie es später noch einmal."
-    );
+    showDeleteAccountModal.value = false;
+    showGoodbye.value = true;
+    goodbyeMessage.value = "Fehler beim Löschen des Kontos. Bitte versuchen Sie es später erneut.";
+    
+    setTimeout(() => {
+      showGoodbye.value = false;
+    }, 3000);
   } finally {
     isDeletingAccount.value = false;
   }
@@ -353,7 +352,7 @@ onMounted(async () => {
 
             <div class="account-detail">
               <label>E-Mail:</label>
-              <input type="text" :value="authUser.user.email" readonly />
+              <input type="text" :value="authStore.user?.user?.email"  readonly />
               <button @click="openEmailModal" class="btn-change">Ändern</button>              
             </div>
 
@@ -384,7 +383,7 @@ onMounted(async () => {
           </ol>
 
           <button
-            @click="openDeleteModal"
+            @click="openDeleteAccountModal"
             class="btn-danger"
             :disabled="isDeletingAccount"
           >
@@ -395,8 +394,8 @@ onMounted(async () => {
     </div>
   </div>
 
-  <DeleteModal
-    v-model="showDeleteModal"
+  <DeleteAccountModal
+    v-model="showDeleteAccountModal"
     :isLoading="isDeletingAccount"
     @confirm="deleteUser"
   />

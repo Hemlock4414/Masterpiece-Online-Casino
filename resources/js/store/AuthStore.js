@@ -118,11 +118,20 @@ export const useAuthStore = defineStore("AuthStore", {
         async updateEmail(data) {
             try {
                 await authClient.get("/sanctum/csrf-cookie");
-                const response = await authClient.post("/api/user/update/email", data);
-                await this.getAuthUser(); // Aktualisiere Benutzerdaten
+                const response = await authClient.post("/api/user/update/email", {
+                    current_password: data.current_password,
+                    email: data.email
+                });
+                
+                // Aktualisiere den user im Store
+                if (this.user && this.user.user) {
+                    this.user.user.email = data.email;
+                }
+                
+                await this.getAuthUser(); // Optional als Backup
                 return response;
             } catch (error) {
-                console.error('Fehler beim Aktualisieren der E-Mail:', error);
+                console.error('Fehlerdetails:', error.response?.data);
                 throw error;
             }
         },
