@@ -169,7 +169,9 @@ function scrollToTop() {
                             <p>Sie können jederzeit Ihr Spielerkonto auflösen. Dabei werden alle personenbezogenen Daten sowie das 
                             Spielerguthaben permanent gelöscht. Ihr Spielername wird wieder anderen zur Verfügung stehen.
                             </p>
-                            <br>
+                            <button class="scroll-top-btn" @click="scrollToTop" aria-label="Nach oben" title="Zurück zum Seitenanfang">
+                                    &uarr;
+                            </button>
                         </section>
 
                         <section id="C5">
@@ -208,7 +210,9 @@ function scrollToTop() {
                             Webseite <a href="/fair-gaming">Verantwortungsvolles Spielen</a> stellen wir 
                             verschiedene Hilfsmittel zur Kontrolle oder Begrenzung des eigenen 
                             Spielverhaltens zur Verfügung.</p>
-                            <br>
+                            <button class="scroll-top-btn" @click="scrollToTop" aria-label="Nach oben" title="Zurück zum Seitenanfang">
+                                &uarr;
+                            </button>
                         </section>
 
                         <section id="C7">
@@ -241,7 +245,9 @@ function scrollToTop() {
                             <p>Die Verwendung der Personendaten ist in der Datenschutzerklärung geregelt. Die 
                             <a href="/privacy">Datenschutzerklärung</a> ist integraler und bindender Bestandteil 
                             dieser AGB.</p>
-                            <br>
+                            <button class="scroll-top-btn" @click="scrollToTop" aria-label="Nach oben" title="Zurück zum Seitenanfang">
+                                &uarr;
+                            </button>
                         </section>
 
                         <section id="C9">
@@ -277,7 +283,9 @@ function scrollToTop() {
                             Das (vollständige oder teilweise) Reproduzieren, Verbreiten, Übermitteln (elektronisch oder mit 
                             anderen Mitteln), Modifizieren, Verknüpfen oder Benutzen der Inhalte für öffentliche oder 
                             kommerzielle Zwecke ist ohne vorherige schriftliche Zustimmung von uns untersagt.</p>
-                            <br>
+                            <button class="scroll-top-btn" @click="scrollToTop" aria-label="Nach oben" title="Zurück zum Seitenanfang">
+                                &uarr;
+                            </button>
                         </section>
 
                         <section id="C11">
@@ -287,7 +295,9 @@ function scrollToTop() {
                                 in Kraft und bleiben bis zur Veröffentlichung einer neuen Version oder bis zu deren 
                                 Widerruf gültig. Durch die fortgesetzte Nutzung unserer Plattform stimmen Sie den jeweils aktuellen 
                             AGB zu.</p>
-                            <br>
+                            <button class="scroll-top-btn" @click="scrollToTop" aria-label="Nach oben" title="Zurück zum Seitenanfang">
+                                &uarr;
+                            </button>
                         </section>
 
                         <section id="C12">
@@ -435,10 +445,6 @@ function scrollToTop() {
 .sidebar-nav-link {
     text-decoration: none;
     color: inherit;
-}
-
-section {
-    margin-bottom: 15px;
 }
 
 article {

@@ -72,7 +72,9 @@ function scrollToTop() {
                                     <li>Schaffen Sie einen Ausgleich zwischen Spiel- und anderen Aktivitäten.</li>
                                     <li>Vermeiden Sie zu spielen, wenn Sie gestresst oder depressiv sind.</li>
                                 </ul>
-                                <br>
+                                <button class="scroll-top-btn" @click="scrollToTop" aria-label="Nach oben" title="Zurück zum Seitenanfang">
+                                    &uarr;
+                                </button>
                         </section> 
 
                         <section id="C3">
@@ -223,10 +225,6 @@ function scrollToTop() {
 .sidebar-nav-link {
     text-decoration: none;
     color: inherit;
-}
-
-section {
-    margin-bottom: 15px;
 }
 
 article {

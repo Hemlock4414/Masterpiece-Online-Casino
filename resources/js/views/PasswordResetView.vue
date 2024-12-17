@@ -32,40 +32,42 @@ async function submitForgotPassword() {
 </script>
 
 <template>
-  <div class="password-reset-container">
-    <div class="password-reset-form">
-      <div class="form-header">
-        <h2>Passwort zurücksetzen</h2>
+  <main>
+    <div class="password-reset-container">
+      <div class="password-reset-form">
+        <div class="form-header">
+          <h2>Passwort zurücksetzen</h2>
+        </div>
+
+        <form @submit.prevent="submitForgotPassword">
+          <div class="form-group">
+            <label for="email">E-Mail</label>
+            <input
+              id="email"
+              v-model="email"
+              type="email"
+              required
+              placeholder="ihre@email.de"
+            />
+            <p v-if="message" :class="{ 'error-message': isError, 'success-message': !isError }">
+              {{ message }}
+            </p>
+          </div>
+
+          <div class="form-group">
+            <button
+              type="submit"
+              :disabled="loading"
+              class="submit-button"
+            >
+              <span v-if="loading">Wird gesendet...</span>
+              <span v-else>Senden</span>
+            </button>
+          </div>
+        </form>
       </div>
-
-      <form @submit.prevent="submitForgotPassword">
-        <div class="form-group">
-          <label for="email">E-Mail</label>
-          <input
-            id="email"
-            v-model="email"
-            type="email"
-            required
-            placeholder="ihre@email.de"
-          />
-          <p v-if="message" :class="{ 'error-message': isError, 'success-message': !isError }">
-            {{ message }}
-          </p>
-        </div>
-
-        <div class="form-group">
-          <button
-            type="submit"
-            :disabled="loading"
-            class="submit-button"
-          >
-            <span v-if="loading">Wird gesendet...</span>
-            <span v-else>Senden</span>
-          </button>
-        </div>
-      </form>
     </div>
-  </div>
+  </main>
 </template>
   
   

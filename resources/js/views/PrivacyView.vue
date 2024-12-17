@@ -67,7 +67,9 @@ function scrollToTop() {
                             verknüpft sind. Weitere Informationen über Cookies und deren Verwaltung finden Sie in 
                             unserer <a href="/agb#C13">Cookie-Richtlinie</a>.
                             </p>
-                            <br>
+                            <button class="scroll-top-btn" @click="scrollToTop" aria-label="Nach oben" title="Zurück zum Seitenanfang">
+                                &uarr;
+                            </button>
                         </section>
 
                         <section id="C2">
@@ -102,7 +104,9 @@ function scrollToTop() {
                             <p>
                             Wir nutzen hauptsächlich Rechenzentren in der Schweiz für die Verarbeitung 
                             personenbezogener Daten.</p>
-                            <br>
+                            <button class="scroll-top-btn" @click="scrollToTop" aria-label="Nach oben" title="Zurück zum Seitenanfang">
+                                &uarr;
+                            </button>
                         </section>
 
                         <section id="C4">
@@ -133,14 +137,20 @@ function scrollToTop() {
                             Zwecke der Bearbeitung Ihrer Anfrage oder der Kontaktaufnahme zur kontaktaufnehmenden Person 
                             gespeichert. Die Nutzung unserer Kontaktformulare erfolgt auf ausdrücklich freiwilliger Basis und 
                             Ihrer Einwilligung.
-                            </p><br>
+                            </p>
+                            <button class="scroll-top-btn" @click="scrollToTop" aria-label="Nach oben" title="Zurück zum Seitenanfang">
+                                &uarr;
+                            </button>
                         </section>
 
                         <section id="C6">  
                             <h2 class="heading">Cookies</h2>
 
                             <p>Wir setzen auf unserer Webseite Cookies ein. Wir haben eine <a href="/agb#C13">Cookie-Richtlinie</a> festgelegt, die 
-                            ein integraler Bestandteil der vorliegenden Datenschutzerklärung ist.</p><br>
+                            ein integraler Bestandteil der vorliegenden Datenschutzerklärung ist.</p>
+                            <button class="scroll-top-btn" @click="scrollToTop" aria-label="Nach oben" title="Zurück zum Seitenanfang">
+                                &uarr;
+                            </button>
                         </section> 
 
                         <section id="C7">  
@@ -219,10 +229,6 @@ function scrollToTop() {
 .sidebar-nav-link {
     text-decoration: none;
     color: inherit;
-}
-
-section {
-    margin-bottom: 15px;
 }
 
 .scroll-top-btn {

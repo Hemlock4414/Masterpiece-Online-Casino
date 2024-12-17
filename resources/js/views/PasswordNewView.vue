@@ -66,6 +66,7 @@ async function handleSubmit() {
 </script>
 
 <template>
+  <main>
     <div class="password-new-container">
       <div class="password-new-form">
         <div class="form-header">
@@ -109,6 +110,7 @@ async function handleSubmit() {
         </form>
       </div>
     </div>
+  </main>  
 </template>
     
 <style scoped>
