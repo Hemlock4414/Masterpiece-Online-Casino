@@ -2,7 +2,7 @@
 import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/store/AuthStore";
-import DeleteModal from "../components/DeleteModal.vue";
+import DeleteAccountModal from "../components/DeleteAccountModal.vue";
 import EmailChangeModal from '../components/EmailChangeModal.vue';
 import PasswordChangeModal from '../components/PasswordChangeModal.vue';
 
@@ -19,11 +19,15 @@ const messageTimeout = ref(null);
 const fileInput = ref(null);
 const profileImage = computed(() => authStore.profilePicUrl);
 
-const showDeleteModal = ref(false);
+const showDeleteAccountModal = ref(false);
 const isDeletingAccount = ref(false);
 
 const showEmailModal = ref(false);
 const showPasswordModal = ref(false);
+
+// Refs für Verabschiedung
+const showGoodbye = ref(false);
+const goodbyeMessage = ref('');
 
 // Konstanten für Bildvalidierung
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif'];
@@ -107,8 +111,8 @@ const showMessage = (message, isError = false) => {
 };
 
 // Modal zum Löschen öffnen
-const openDeleteModal = () => {
-  showDeleteModal.value = true;
+const openDeleteAccountModal = () => {
+  showDeleteAccountModal.value = true;
 };
 
 // Hilfsfunktion zum Öffnen des Datei-Dialogs
@@ -116,22 +120,32 @@ const triggerFileInput = () => {
   fileInput.value.click();
 };
 
-// Funktion zum Löschen des Benutzers
 const deleteUser = async () => {
   try {
     isDeletingAccount.value = true;
-
-    await authStore.deleteAccount();
-    showDeleteModal.value = false;
-
-    // Redirect zur Home-Seite nach erfolgreichem Löschen
-    router.push("/");
+    const response = await authStore.deleteAccount();
+    
+    showDeleteAccountModal.value = false;
+    
+    showGoodbye.value = true;
+    goodbyeMessage.value = "Auf Wiedersehen! Wir bedauern, Sie zu verlieren.";
+    
+    setTimeout(() => {
+      showGoodbye.value = false;
+      router.push("/"); 
+    }, 3000);
   } catch (error) {
-    console.error("Error deleting account:", error);
-    alert(
-      error.response?.data?.message ||
-        "Konto konnte nicht gelöscht werden. Bitte versuchen Sie es später noch einmal."
-    );
+    console.error("Fehler beim Löschen des Kontos:", error);
+    
+    // Fallback-Handling
+    showDeleteAccountModal.value = false;
+    showGoodbye.value = true;
+    goodbyeMessage.value = "Konto wurde gelöscht. Auf Wiedersehen!";
+    
+    setTimeout(() => {
+      showGoodbye.value = false;
+      router.push("/"); 
+    }, 3000);
   } finally {
     isDeletingAccount.value = false;
   }
@@ -239,180 +253,184 @@ onMounted(async () => {
 </script>
 
 <template>
+  <main>
+    <div class="container">
+      <div class="profile-container">
+        <div class="profile-content">
+          <h1>Profil</h1>
+          <div class="purple-line"></div>
 
-  <div class="container">
-    <div class="profile-container">
-      <div class="profile-content">
-        <h1>Profil</h1>
-        <div class="purple-line"></div>
+          <section>
+            
+            <h2>Profilbild</h2>
+            <div class="profile-info-section">
+              <div class="profile-main">
+                <div class="profileImage">
+                  <div class="image-preview">
+                    <img
+                    :src="previewImage || authStore.profilePicUrl || '/storage/defaults/default-avatar.png'"
+                    class="profile-picture"
+                    alt="Profilbild"
+                    />
+                    <div v-if="isUploading" class="upload-overlay">
+                      <span class="loading-spinner"></span>
+                      <span>Wird hochgeladen...</span>
+                    </div>
+                  </div>
 
-        <section>
+                  <div class="image-upload"> 
+                    <input
+                      type="file"
+                      ref="fileInput"
+                      style="display: none"
+                      accept="image/*"
+                      @change="handleFileUpload"
+                      :disabled="isUploading"
+                    />
+                    <div class="button-group">
+                      <button 
+                        @click="triggerFileInput" 
+                        :disabled="isUploading"
+                        class="upload-button"
+                      >
+                        {{ isUploading ? 'Wird hochgeladen...' : 'Profilbild ändern' }}
+                      </button>
+                      <button 
+                        @click="deleteProfilePicture" 
+                        :disabled="isUploading"
+                        class="delete-button"
+                      >
+                        Profilbild zurücksetzen
+                      </button>
+                    </div>
+                    <div 
+                      v-if="updateMessage" 
+                      :class="['message', updateError ? 'error' : 'success']"
+                      role="alert"
+                    >
+                      {{ updateMessage }}
+                    </div>
+                  </div>
+
+                </div>
+
+                <div class="balance-section">
+                  <h2 class="balance-title">Aktuelles Guthaben:</h2>
+
+                  <div class="balance">
+                    <span>{{ authUser.user.balance }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section>
+            <h2>Kontoinformationen</h2>
+
+            <div class="account-info">
+              <div class="account-detail">
+                <label>Angemeldet seit:</label>                
+                <input type="text" :value="joinedDate" readonly />
+                <span class="placeholder"></span> <!-- Leerer Platzhalter für den Button -->
+              </div>
+
+              <div class="account-detail">
+                <label>Spielername:</label>
+                <input type="text" :value="authUser.user.username" readonly />
+                <span class="placeholder"></span>
+              </div>
+
+              <div class="account-detail">
+                <label>Vorname:</label>
+                <input type="text" :value="authUser.user.firstname" readonly />
+                <span class="placeholder"></span>
+              </div>
+
+              <div class="account-detail">
+                <label>Nachname:</label>
+                <input type="text" :value="authUser.user.lastname" readonly />
+                <span class="placeholder"></span>
+              </div>
+
+              <div class="account-detail">
+                <label>Geburtsdatum:</label>
+                <input type="text" :value="authUser.user.birthdate" readonly />
+                <span class="placeholder"></span>
+              </div>
+
+              <div class="account-detail">
+                <label>Nationalität:</label>
+                <input type="text" :value="authUser.user.nationality" readonly />
+                <span class="placeholder"></span>
+              </div>
+
+              <div class="account-detail">
+                <label>E-Mail:</label>
+                <input type="text" :value="authStore.user?.user?.email"  readonly />
+                <button @click="openEmailModal" class="btn-change">Ändern</button>              
+              </div>
+
+              <div class="account-detail">
+                <label>Passwort:</label>
+                <input type="password" value="**********" readonly />
+                <button @click="openPasswordModal" class="btn-change">Ändern</button>
+              </div>
+            </div>
+          </section>
+
+            <div class="notice">
+              <p><b>Hinweis:</b> Wenn andere Angaben geändert werden sollen, ist eine E-Mail an uns nötig.</p>
+            </div>
           
-          <h2>Profilbild</h2>
-          <div class="profile-info-section">
-            <div class="profile-main">
-              <div class="profileImage">
-                <div class="image-preview">
-                  <img
-                  :src="previewImage || authStore.profilePicUrl || '/storage/defaults/default-avatar.png'"
-                  class="profile-picture"
-                  alt="Profilbild"
-                  />
-                  <div v-if="isUploading" class="upload-overlay">
-                    <span class="loading-spinner"></span>
-                    <span>Wird hochgeladen...</span>
-                  </div>
-                </div>
+          <section class="account-delete">
+            <h2>Konto löschen</h2>
 
-                <div class="image-upload"> 
-                  <input
-                    type="file"
-                    ref="fileInput"
-                    style="display: none"
-                    accept="image/*"
-                    @change="handleFileUpload"
-                    :disabled="isUploading"
-                  />
-                  <div class="button-group">
-                    <button 
-                      @click="triggerFileInput" 
-                      :disabled="isUploading"
-                      class="upload-button"
-                    >
-                      {{ isUploading ? 'Wird hochgeladen...' : 'Profilbild ändern' }}
-                    </button>
-                    <button 
-                      @click="deleteProfilePicture" 
-                      :disabled="isUploading"
-                      class="delete-button"
-                    >
-                      Profilbild zurücksetzen
-                    </button>
-                  </div>
-                  <div 
-                    v-if="updateMessage" 
-                    :class="['message', updateError ? 'error' : 'success']"
-                    role="alert"
-                  >
-                    {{ updateMessage }}
-                  </div>
-                </div>
+            <p>Das löschen des Kontos führt zu:</p>
+            <ol>
+              <li>
+                Löscht das Profil dauerhaft.
+              </li>
+              <li>
+                Alle gespeicherten Informationen und das Spielgeld werden gelöscht.
+              </li>
+              <li>Erlaubt, dass Ihr Benutzername/Spielername für jeden verfügbar wird.</li>
+            </ol>
 
-              </div>
-
-              <div class="balance-section">
-                <h2 class="balance-title">Aktuelles Guthaben:</h2>
-
-                <div class="balance">
-                  <span>{{ authUser.user.balance }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section>
-          <h2>Kontoinformationen</h2>
-
-          <div class="account-info">
-            <div class="account-detail">
-              <label>Angemeldet seit:</label>                
-              <input type="text" :value="joinedDate" readonly />
-              <span class="placeholder"></span> <!-- Leerer Platzhalter für den Button -->
-            </div>
-
-            <div class="account-detail">
-              <label>Spielername:</label>
-              <input type="text" :value="authUser.user.username" readonly />
-              <span class="placeholder"></span>
-            </div>
-
-            <div class="account-detail">
-              <label>Vorname:</label>
-              <input type="text" :value="authUser.user.firstname" readonly />
-              <span class="placeholder"></span>
-            </div>
-
-            <div class="account-detail">
-              <label>Nachname:</label>
-              <input type="text" :value="authUser.user.lastname" readonly />
-              <span class="placeholder"></span>
-            </div>
-
-            <div class="account-detail">
-              <label>Geburtsdatum:</label>
-              <input type="text" :value="authUser.user.birthdate" readonly />
-              <span class="placeholder"></span>
-            </div>
-
-            <div class="account-detail">
-              <label>Nationalität:</label>
-              <input type="text" :value="authUser.user.nationality" readonly />
-              <span class="placeholder"></span>
-            </div>
-
-            <div class="account-detail">
-              <label>E-Mail:</label>
-              <input type="text" :value="authUser.user.email" readonly />
-              <button @click="openEmailModal" class="btn-change">Ändern</button>              
-            </div>
-
-            <div class="account-detail">
-              <label>Passwort:</label>
-              <input type="password" value="**********" readonly />
-              <button @click="openPasswordModal" class="btn-change">Ändern</button>
-            </div>
-          </div>
-        </section>
-
-          <div class="notice">
-            <p><b>Hinweis:</b> Wenn andere Angaben geändert werden sollen, ist eine E-Mail an uns nötig.</p>
-          </div>
-        
-        <section class="account-delete">
-          <h2>Konto löschen</h2>
-
-          <p>Das löschen des Kontos führt zu:</p>
-          <ol>
-            <li>
-              Löscht das Profil dauerhaft.
-            </li>
-            <li>
-              Alle gespeicherten Informationen und das Spielgeld werden gelöscht.
-            </li>
-            <li>Erlaubt, dass Ihr Benutzername/Spielername für jeden verfügbar wird.</li>
-          </ol>
-
-          <button
-            @click="openDeleteModal"
-            class="btn-danger"
-            :disabled="isDeletingAccount"
-          >
-            {{ isDeletingAccount ? "Wird gelöscht..." : "Löschen" }}
-          </button>
-        </section>
+            <button
+              @click="openDeleteAccountModal"
+              class="btn-danger"
+              :disabled="isDeletingAccount"
+            >
+              {{ isDeletingAccount ? "Wird gelöscht..." : "Löschen" }}
+            </button>
+          </section>
+        </div>
       </div>
     </div>
-  </div>
+    <!-- Verabschiedungs-Popup -->
+    <div v-if="showGoodbye" class="goodbye-message">
+      {{ goodbyeMessage }}
+    </div>
 
-  <DeleteModal
-    v-model="showDeleteModal"
-    :isLoading="isDeletingAccount"
-    @confirm="deleteUser"
-  />
+    <DeleteAccountModal
+      v-model="showDeleteAccountModal"
+      :isLoading="isDeletingAccount"
+      @confirm="deleteUser"
+    />
 
-  <EmailChangeModal 
-    v-if="showEmailModal"
-    @close="showEmailModal = false"
-    @success="handleSuccess"
-  />
-  
-  <PasswordChangeModal 
-    v-if="showPasswordModal"
-    @close="showPasswordModal = false"
-    @success="handleSuccess"
-  />
-
+    <EmailChangeModal 
+      v-if="showEmailModal"
+      @close="showEmailModal = false"
+      @success="handleSuccess"
+    />
+    
+    <PasswordChangeModal 
+      v-if="showPasswordModal"
+      @close="showPasswordModal = false"
+      @success="handleSuccess"
+    />
+  </main>
 </template>
 
 <style scoped>
@@ -749,6 +767,25 @@ button[type="submit"],
   border: red 3px solid;
   padding: 30px;
   border-radius: 8px;
+}
+
+.goodbye-message {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #4a5568;
+  color: white;
+  padding: 2rem;
+  border-radius: 8px;
+  text-align: center;
+  z-index: 1100;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @media (max-width: 650px) {

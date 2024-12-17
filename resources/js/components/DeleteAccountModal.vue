@@ -1,7 +1,7 @@
 <script setup>
-  import { defineEmits } from 'vue'
+import { defineProps, defineEmits } from 'vue'
 
-  const props = defineProps({
+const props = defineProps({
     modelValue: {
         type: Boolean,
         required: true
@@ -12,21 +12,19 @@
     }
 })
 
-  const emit = defineEmits(['update:modelValue', 'confirm']) // Event-Emitter für Schließen und Bestätigung
-  
+  const emit = defineEmits(['update:modelValue', 'confirm'])
+
   const closeModal = () => {
     if (!props.isLoading) {
         emit('update:modelValue', false)
     }
 }
-  
-const confirmAction = () => {
+
+const confirmAction = async () => {
     if (!props.isLoading) {
-        emit('confirm')
-        // Modal wird jetzt nicht mehr sofort geschlossen,
-        // sondern erst nach erfolgreicher Löschung
+        emit('confirm');
     }
-}
+};
 </script>
   
 <template>

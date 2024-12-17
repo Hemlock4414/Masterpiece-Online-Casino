@@ -4,20 +4,43 @@ import { useAuthStore } from '@/store/AuthStore';
 
 const authStore = useAuthStore();
 const newEmail = ref('');
+const currentPassword = ref('');
 const isSubmitting = ref(false);
+const showSuccess = ref(false);
+const showError = ref(false);
+const message = ref('');
+const showPassword = ref(false);
 const emit = defineEmits(['close', 'success']);
 
 const handleSubmit = async () => {
   try {
     isSubmitting.value = true;
-    await authStore.updateEmail({ email: newEmail.value });
-    emit('success', 'E-Mailadresse wurde erfolgreich geändert');
-    emit('close');
+    showError.value = false;
+    showSuccess.value = false;
+    
+    await authStore.updateEmail({ 
+      current_password: currentPassword.value,
+      email: newEmail.value 
+    });
+    
+    showSuccess.value = true;
+    message.value = 'E-Mailadresse wurde erfolgreich geändert';
+    
+    setTimeout(() => {
+      emit('close');
+    }, 2000);
+    
   } catch (error) {
-    console.error('Fehler beim Ändern der E-Mail:', error);
-  } finally {
-    isSubmitting.value = false;
-  }
+   console.error('Validierungsfehler:', error.response?.data);
+   showError.value = true;
+   if (error.response?.status === 401) {
+     message.value = error.response.data.error;
+   } else {
+     message.value = error.response?.data?.errors?.email?.[0] || 'Ein Fehler ist aufgetreten';
+   }
+ } finally {
+   isSubmitting.value = false;
+ }
 };
 </script>
 
@@ -25,9 +48,27 @@ const handleSubmit = async () => {
     <div class="modal-overlay">
       <div class="modal-content">
         <h3>E-Mail ändern</h3>
-        <p>Bitte neue E-Mailadresse eingeben</p>
+        <p>Bitte geben Sie Ihr aktuelles Passwort und Ihre neue E-Mail-Adresse ein</p>
         
         <form @submit.prevent="handleSubmit">
+          <div class="form-group">
+            <div class="password-input-wrapper">
+              <input 
+                :type="showPassword ? 'text' : 'password'"
+                v-model="currentPassword"
+                required 
+                placeholder="Aktuelles Passwort"
+                class="form-input"
+              />
+              <button 
+                type="button" 
+                @click="showPassword = !showPassword"
+                class="password-toggle"
+              >
+                {{ showPassword ? '🙈' : '👁️' }}
+              </button>
+            </div>
+          </div>
           <div class="form-group">
             <input 
               type="email" 
@@ -35,26 +76,37 @@ const handleSubmit = async () => {
               required 
               placeholder="Neue E-Mail"
               class="form-input"
+              :disabled="showSuccess"
             />
           </div>
-          
+                    
           <div class="button-group">
             <button 
               type="button" 
               @click="$emit('close')" 
               class="btn-secondary"
+              :disabled="isSubmitting || showSuccess"
             >
               Abbrechen
             </button>
             <button 
               type="submit" 
               class="btn-primary" 
-              :disabled="isSubmitting"
+              :disabled="isSubmitting || showSuccess"
             >
               {{ isSubmitting ? 'Wird gespeichert...' : 'Speichern' }}
             </button>
           </div>
         </form>
+
+        <div 
+          v-if="showSuccess || showError" 
+          class="message"
+          :class="{ 'success': showSuccess, 'error': showError }"
+          role="alert"
+        >
+          {{ message }}
+        </div>
       </div>
     </div>
 </template>
@@ -74,6 +126,7 @@ const handleSubmit = async () => {
 }
 
 .modal-content {
+  position: relative;
   background-color: white;
   padding: 2rem;
   border-radius: 8px;
@@ -124,6 +177,31 @@ p {
   box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
 }
 
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s;
+  opacity: 0.6;
+  font-size: 1.2rem;
+}
+
+.password-toggle:hover {
+  opacity: 1;
+}
+
 .button-group {
   display: flex;
   gap: 1rem;
@@ -162,6 +240,37 @@ p {
 .btn-primary:disabled {
   background-color: #9ca3af;
   cursor: not-allowed;
+}
+
+.message {
+ position: absolute;
+ bottom: -50px;
+ left: 0;
+ right: 0;
+ margin-top: 10px;
+ padding: 10px 15px;
+ border-radius: 4px;
+ font-size: 14px;
+ animation: fadeIn 0.3s ease;
+ z-index: 1;
+ text-align: center;
+}
+
+.success {
+ background-color: #d4edda;
+ color: #155724;
+ border: 1px solid #c3e6cb;
+}
+
+.error {
+ background-color: #f8d7da;
+ color: #721c24;
+ border: 1px solid #f5c6cb;
+}
+
+@keyframes fadeIn {
+ from { opacity: 0; transform: translateY(-10px); }
+ to { opacity: 1; transform: translateY(0); }
 }
 
 @media (max-width: 640px) {

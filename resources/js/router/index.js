@@ -60,6 +60,16 @@ const router = createRouter({
             name: "memory",
             component: () => import("../views/MemoryView.vue"),
         },
+        {
+            path: "/passwort-vergessen",
+            name: "password-reset",
+            component: () => import("../views/PasswordResetView.vue"),
+        },
+        {
+            path: "/passwort-neu-setzen",
+            name: "new-password",
+            component: () => import("../views/PasswordNewView.vue"),
+        },
         // {
         //     path: "/blackjack/play",
         //     name: "blackjack",

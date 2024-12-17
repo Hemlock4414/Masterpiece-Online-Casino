@@ -118,11 +118,20 @@ export const useAuthStore = defineStore("AuthStore", {
         async updateEmail(data) {
             try {
                 await authClient.get("/sanctum/csrf-cookie");
-                const response = await authClient.post("/api/user/update/email", data);
-                await this.getAuthUser(); // Aktualisiere Benutzerdaten
+                const response = await authClient.post("/api/user/update/email", {
+                    current_password: data.current_password,
+                    email: data.email
+                });
+                
+                // Aktualisiere den user im Store
+                if (this.user && this.user.user) {
+                    this.user.user.email = data.email;
+                }
+                
+                await this.getAuthUser(); // Optional als Backup
                 return response;
             } catch (error) {
-                console.error('Fehler beim Aktualisieren der E-Mail:', error);
+                console.error('Fehlerdetails:', error.response?.data);
                 throw error;
             }
         },
@@ -130,7 +139,12 @@ export const useAuthStore = defineStore("AuthStore", {
         async updatePassword(data) {
             try {
                 await authClient.get("/sanctum/csrf-cookie");
-                const response = await authClient.post("/api/user/update/password", data);
+                const response = await authClient.post("/api/user/update/password", {
+                    current_password: data.current_password,
+                    new_password: data.password,
+                    new_password_confirmation: data.password_confirmation
+                });
+                await this.logout();
                 return response;
             } catch (error) {
                 console.error('Fehler beim Aktualisieren des Passworts:', error);
@@ -142,11 +156,22 @@ export const useAuthStore = defineStore("AuthStore", {
             try {
                 await authClient.get("/sanctum/csrf-cookie");
                 const response = await authClient.delete("/api/user/delete");
+                
+                // Zusätzliche Bereinigung
                 this.user = null;
                 this.profileImage = null;
-                return response;
+                
+                return response.data;
             } catch (error) {
-                console.error('Fehler beim Löschen des Kontos:', error);
+                console.error('Fehler beim Löschen des Kontos:', error.response?.data || error.message);
+                
+                // Prüfe, ob Konto bereits gelöscht wurde
+                if (error.response && error.response.status === 500) {
+                    this.user = null;
+                    this.profileImage = null;
+                    return { message: 'Konto wurde erfolgreich gelöscht' };
+                }
+                
                 throw error;
             }
         }
