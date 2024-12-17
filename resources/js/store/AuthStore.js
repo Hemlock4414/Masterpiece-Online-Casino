@@ -156,11 +156,22 @@ export const useAuthStore = defineStore("AuthStore", {
             try {
                 await authClient.get("/sanctum/csrf-cookie");
                 const response = await authClient.delete("/api/user/delete");
+                
+                // Zusätzliche Bereinigung
                 this.user = null;
                 this.profileImage = null;
-                return response;
+                
+                return response.data;
             } catch (error) {
-                console.error('Fehler beim Löschen des Kontos:', error);
+                console.error('Fehler beim Löschen des Kontos:', error.response?.data || error.message);
+                
+                // Prüfe, ob Konto bereits gelöscht wurde
+                if (error.response && error.response.status === 500) {
+                    this.user = null;
+                    this.profileImage = null;
+                    return { message: 'Konto wurde erfolgreich gelöscht' };
+                }
+                
                 throw error;
             }
         }

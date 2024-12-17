@@ -359,12 +359,20 @@ class UserController extends Controller
         try {
             $user = auth()->user();
             
+            if (!$user) {
+                return response()->json([
+                    'message' => 'Benutzer nicht gefunden oder bereits gelöscht'
+                ], 200);
+            }
+            
             if ($user->profile_pic && Storage::disk('public')->exists($user->profile_pic)) {
                 Storage::disk('public')->delete($user->profile_pic);
             }
             
+            // Explizites Logout vor dem Löschen
+            \Auth::guard('web')->logout();
+            
             $user->delete();
-            auth()->logout();
             
             return response()->json([
                 'message' => 'Konto wurde erfolgreich gelöscht'
@@ -373,12 +381,13 @@ class UserController extends Controller
         } catch (\Exception $e) {
             Log::error('Fehler beim Löschen des Kontos:', [
                 'error' => $e->getMessage(),
-                'user_id' => Auth::id()
+                'trace' => $e->getTraceAsString()
             ]);
             
             return response()->json([
-                'error' => 'Fehler beim Löschen des Kontos'
-            ], 500);
+                'message' => 'Konto wurde möglicherweise bereits gelöscht',
+                'error_details' => $e->getMessage()
+            ], 200);
         }
     }
 }

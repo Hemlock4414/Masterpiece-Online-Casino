@@ -1,9 +1,5 @@
 <script setup>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { defineEmits } from 'vue'
-
-const router = useRouter();
+import { defineProps, defineEmits } from 'vue'
 
 const props = defineProps({
     modelValue: {
@@ -16,10 +12,7 @@ const props = defineProps({
     }
 })
 
-  const emit = defineEmits(['update:modelValue', 'confirm']) // Event-Emitter für Schließen und Bestätigung
-  
-  const showGoodbye = ref(false);
-  const goodbyeMessage = ref('');
+  const emit = defineEmits(['update:modelValue', 'confirm'])
 
   const closeModal = () => {
     if (!props.isLoading) {
@@ -28,16 +21,9 @@ const props = defineProps({
 }
 
 const confirmAction = async () => {
- if (!props.isLoading) {
-   emit('confirm');
-   showGoodbye.value = true;
-   goodbyeMessage.value = 'Auf Wiedersehen! Wir hoffen Sie bald wieder bei uns zu sehen.';
-   
-   setTimeout(() => {
-     showGoodbye.value = false;
-     router.push('/');
-   }, 3000);
- }
+    if (!props.isLoading) {
+        emit('confirm');
+    }
 };
 </script>
   
@@ -67,9 +53,6 @@ const confirmAction = async () => {
             </div>
         </div>
     </Transition>
-    <div v-if="showGoodbye" class="goodbye-message">
-        {{ goodbyeMessage }}
-    </div>
 </template>
 
 <style scoped>
@@ -194,25 +177,6 @@ button:disabled:hover {
 .modal-leave-to {
     opacity: 0;
     transform: scale(0.8) translateY(30px);
-}
-
-.goodbye-message {
- position: fixed;
- top: 50%;
- left: 50%;
- transform: translate(-50%, -50%);
- background-color: #4a5568;
- color: white;
- padding: 2rem;
- border-radius: 8px;
- text-align: center;
- z-index: 1100;
- animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
- from { opacity: 0; }
- to { opacity: 1; }
 }
 </style>
   
