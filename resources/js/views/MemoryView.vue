@@ -12,8 +12,8 @@ const flippedCards = ref([]);
 const currentPlayer = ref(null);
 const isProcessingMove = ref(false);
 const roundCount = ref(0);
-const timer = ref(0); 
-
+const timer = ref(0);
+const customThemes = ref([]);
 const showModal = ref(false);
 const gameResult = ref({
   points: 0,
@@ -21,23 +21,39 @@ const gameResult = ref({
   time: 0,
 });
 
-let timerInterval = null;
+const resetGameState = () => {
+  gameId.value = null;
+  cards.value = [];
+  flippedCards.value = [];
+  roundCount.value = 0;
+  timer.value = 0;
+  showModal.value = false;
+  gameStatus.value = 'waiting';
+};
 
+// Spielkonfiguration
 // Themen von der Memory Card Factory
 const availableThemes = [
   { id: 'emojis', name: 'Emojis', description: 'Lustige Tieremojis' },
   { id: 'flags', name: 'Länderflaggen', description: 'Flaggen aus aller Welt' },
-  { id: 'planets', name: 'Planeten', description: 'Astronomische Entdeckungsreise' },
-  { id: 'numbers', name: 'Zahlen', description: 'Zahlen von 1 bis 10' },
-  { id: 'sports', name: 'Sportarten', description: 'Verschiedene Sportarten-Emojis' }
+  { id: 'planets', name: 'Sonnensystem', description: 'Astronomische Entdeckungsreise' },
+  { id: 'sports', name: 'Sportarten', description: 'Sportliche Emojis für aktive Spieler' }
 ];
 
-const customThemes = ref([
-  // Hier können später benutzerdefinierte Themen hinzugefügt werden
-]);
+const fetchCustomThemes = async () => {
+  try {
+    const response = await axios.get('/api/memory-games/custom-themes');
+    customThemes.value = response.data.map(theme => ({
+      id: theme,
+      name: theme.charAt(0).toUpperCase() + theme.slice(1),
+      description: `Benutzerdefiniertes Thema: ${theme}`
+    }));
+  } catch (error) {
+    console.error('Fehler beim Abrufen benutzerdefinierter Themen:', error);
+  }
+};
 
 const cardCounts = [12, 16, 20];
-
 const selectedTheme = ref(availableThemes[0]);
 const selectedCardCount = ref(16);
 
@@ -50,22 +66,37 @@ const setStoredGuestId = (id) => {
   sessionStorage.setItem('memoryGuestId', id);
 };
 
+// Timer Management
+let timerInterval = null;
+
+const startTimer = () => {
+  if (timerInterval) return; // Timer läuft bereits
+  timer.value = 0; // Timer zurücksetzen
+  timerInterval = setInterval(() => {
+    timer.value += 1;
+  }, 1000);
+};
+
+const stopTimer = () => {
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+};
+
 const createNewGame = async () => {
   try {
-    console.log('Erstelle neues Spiel mit', selectedCardCount.value, 'Karten und Thema', selectedTheme.value.name); 
+    console.log('Erstelle neues Spiel mit', selectedCardCount.value, 'Karten und Thema', selectedTheme.value.id); 
     
-    const storedGuestId = getStoredGuestId();
-    console.log('Gespeicherte Gast-ID gefunden:', storedGuestId); // Debug
-
+    const storedGuestId = sessionStorage.getItem('memoryGuestId');
+    
     // Übergebe die ausgewählte Kartenzahl und das Thema
-    const game = await createGame(
-      selectedCardCount.value / 2,  // Paare berechnen
-      storedGuestId, 
-      selectedTheme.value.id
-    );
-    console.log('Server-Antwort:', game);
-    
-    console.log('Spiel erfolgreich erstellt:', game);
+    const game = await createGame({
+      cards_count: selectedCardCount.value,
+      theme: selectedTheme.value.id,
+      guest_id: storedGuestId ? parseInt(storedGuestId) : null
+    });
+
     gameId.value = game.game_id;
     gameStatus.value = 'waiting';
     cards.value = game.cards;
@@ -74,8 +105,7 @@ const createNewGame = async () => {
     // Speichere die Gast-ID wenn es ein neuer Gast ist
     const guestPlayer = players.value.find(p => p.name.includes('Gast'));
     if (guestPlayer && !storedGuestId) {
-      setStoredGuestId(guestPlayer.player_id);
-      console.log('Gast-ID gespeichert:', guestPlayer.player_id); // Debug
+      sessionStorage.setItem('memoryGuestId', guestPlayer.player_id);
     }
 
     currentPlayer.value = players.value[0];
@@ -89,23 +119,6 @@ const createNewGame = async () => {
   }
 };
 
-// Für eine manuelle, programmatische Hinzufügung von Themen gedacht, z.B. wenn Benutzer eigene Themen 
-//hochladen oder definieren möchten.
-/* const addCustomTheme = (theme) => {
-  // Validierung und Hinzufügen eines benutzerdefinierten Themas
-  if (theme && theme.name && theme.images && theme.images.length >= 6) {
-    const newTheme = {
-      id: `custom_${Date.now()}`,
-      name: theme.name,
-      description: theme.description || 'Benutzerdefiniertes Thema',
-      custom: true,
-      images: theme.images
-    };
-    customThemes.value.push(newTheme);
-  } else {
-    console.error('Ungültiges benutzerdefiniertes Thema');
-  }
-}; */
 
 // Kombinierte Themes für Auswahl
 const allThemes = computed(() => {
@@ -132,22 +145,30 @@ const handleGameStart = async () => {
   }
 };
 
-const startTimer = () => {
-  if (timerInterval) return; // Timer läuft bereits
-  timer.value = 0; // Timer zurücksetzen
-  timerInterval = setInterval(() => {
-    timer.value += 1;
-  }, 1000);
-};
+// Spielende
+const endGame = async () => {
+  try {
+    if (gameId.value) {
+      const response = await stopGame(gameId.value);
+      gameStatus.value = response.status || 'finished';
 
-const stopTimer = () => {
-  if (timerInterval) {
-    clearInterval(timerInterval);
-    timerInterval = null;
+      stopTimer();
+
+      if (gameStatus.value === 'finished') {
+        showModal.value = true;
+        gameResult.value = {
+          points: players.value.reduce((acc, player) => 
+            acc + (player.pivot?.player_score ?? 0), 0),
+          rounds: roundCount.value,
+          time: timer.value,
+        };
+      }
+    }
+  } catch (error) {
+    console.error('Fehler beim Beenden des Spiels:', error);
   }
 };
-
-const endGame = async () => {
+/* const endGame = async () => {
   try {
     if (gameId.value) {
       const response = await stopGame(gameId.value);
@@ -167,9 +188,30 @@ const endGame = async () => {
   } catch (error) {
     console.error('Fehler beim Beenden des Spiels:', error);
   }
-};
+}; */
 
+// Spiel neu starten
 const abortGame = async () => {
+  try {
+    if (!gameId.value) return;
+    
+    stopTimer();
+    await stopGame(gameId.value, 'aborted');
+    
+    // Spielzustand zurücksetzen aber Gast-ID behalten
+    const currentGuestId = players.value.find(p => 
+      p.name.includes('Gast'))?.player_id;
+    
+    resetGameState();
+    
+    // Sofort ein neues Spiel mit demselben Gast erstellen
+    await createNewGame(currentGuestId);
+    
+  } catch (error) {
+    console.error('Fehler beim Abbrechen des Spiels:', error);
+  }
+};
+/* const abortGame = async () => {
   try {
     if (!gameId.value) return;
     
@@ -197,7 +239,7 @@ const abortGame = async () => {
   } catch (error) {
     console.error('Fehler beim Abbrechen des Spiels:', error);
   }
-};
+}; */
 
 const switchPlayer = () => {
   const currentIndex = players.value.findIndex(p => p.player_id === currentPlayer.value.player_id);
@@ -220,7 +262,7 @@ const updatePlayerScore = async (playerId, score) => {
   }
 };
 
-const handleCardFlip = async (card) => {
+/* const handleCardFlip = async (card) => {
   if (
     isProcessingMove.value || 
     gameStatus.value !== 'in_progress' ||
@@ -286,9 +328,72 @@ const handleCardFlip = async (card) => {
     isProcessingMove.value = false;
   }
 };
+ */
+ const handleCardFlip = async (card) => {
+  if (
+    isProcessingMove.value || 
+    gameStatus.value !== 'in_progress' ||
+    card.matched_by ||  // Geändert von is_matched
+    flippedCards.value.find(c => c.card_id === card.card_id)
+  ) {
+    return;
+  }
 
+  try {
+    const currentCard = cards.value.find(c => c.card_id === card.card_id);
+    flippedCards.value.push(currentCard);
+    
+    if (flippedCards.value.length === 2) {
+      isProcessingMove.value = true;
+      roundCount.value++;
+      
+      const [first, second] = flippedCards.value;
+      
+      await new Promise(resolve => setTimeout(resolve, 700));
+
+      if (first.group_id === second.group_id) {
+        // Match gefunden
+        await updateMatchedCards(
+          gameId.value,
+          [first.card_id, second.card_id],
+          currentPlayer.value.player_id
+        );
+
+        // Update cards state
+        cards.value = cards.value.map(c => 
+          [first.card_id, second.card_id].includes(c.card_id)
+            ? { ...c, matched_by: currentPlayer.value.player_id }
+            : c
+        );
+
+        // Punktzahl erhöhen
+        if (currentPlayer.value) {
+          currentPlayer.value.pivot.player_score = 
+            (currentPlayer.value.pivot.player_score || 0) + 1;
+        }
+
+        // Prüfen ob Spiel beendet
+        if (cards.value.every(c => c.matched_by)) {
+          await endGame();
+        }
+      } else {
+        // Kein Match - Karten wieder umdrehen
+        await new Promise(resolve => setTimeout(resolve, 500));
+        switchPlayer();
+      }
+
+      flippedCards.value = [];
+      isProcessingMove.value = false;
+    }
+
+  } catch (error) {
+    console.error('Fehler beim Kartenflip:', error);
+    isProcessingMove.value = false;
+  }
+};
 onMounted(async () => {
   await createNewGame();
+  await fetchCustomThemes();
 });
 
 // Timer stoppen, wenn die Komponente zerstört wird
@@ -303,7 +408,7 @@ onUnmounted(() => {
 
       <div class="memory-game">
 
-        <!-- Theme und Kartenanzahl Auswahl vor dem Spielstart -->
+        <!-- Spielkonfiguration -->
         <div v-if="gameStatus === 'waiting'" class="game-configuration">
           <h2>Memory Konfiguration</h2>
 
@@ -340,13 +445,14 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <div class="header">
-          <h1>Memory</h1>
-          <div class="timer">
-            <h2>Timer</h2>
-            <p>{{ Math.floor(timer / 60) }}:{{ String(timer % 60).padStart(2, '0') }}</p>
+        <!-- Spielbereich -->
+          <div class="header">
+            <h1>Memory</h1>
+            <div class="timer">
+              <h2>Timer</h2>
+              <p>{{ Math.floor(timer / 60) }}:{{ String(timer % 60).padStart(2, '0') }}</p>
+            </div>
           </div>
-        </div>
 
         <div class="game-status">
           <p>Spielstatus: {{ gameStatus }}</p>
@@ -440,6 +546,11 @@ onUnmounted(() => {
   margin: 0 auto;
   padding: 20px;
   text-align: center;
+}
+
+.theme-selection {
+  margin-top: 20px;
+  margin-bottom: 10px;
 }
 
 .theme-grid {

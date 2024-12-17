@@ -5,10 +5,14 @@ namespace Database\Factories;
 use App\Models\MemoryCard;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 
 class MemoryCardFactory extends Factory
 {
     protected $model = MemoryCard::class;
+
+    // Verfügbare Kartenanzahlen für das Spiel
+    public const AVAILABLE_CARD_COUNTS = [12, 16, 20];
 
     private const FIXED_THEMES = [
 
@@ -67,17 +71,7 @@ class MemoryCardFactory extends Factory
                 'Mond' => 'https://upload.wikimedia.org/wikipedia/commons/e/e5/Aldrin_Looks_Back_at_Tranquility_Base_-_GPN-2000-001102.jpg',
             ]
         ],
-
-        'numbers' => [
-            'method' => 'generateNumber'
-        ],
     ];
-
-    // Zusätzliche Methode für Zahlen-Generierung
-    public function generateNumber()
-    {
-        return $this->faker->numberBetween(1, 10);
-    }
 
     public function definition()
     {
@@ -85,40 +79,59 @@ class MemoryCardFactory extends Factory
             'game_id' => null,
             'matched_by' => null,
             'group_id' => null,
-            'card_image' => null
         ];
     }
 
     /**
-     * Generiert Karten für ein bestimmtes Thema
+     * Generiert Karten für ein bestimmtes Thema mit variabler Anzahl
      *
      * @param string $theme
      * @param int $pairsCount
      * @return array
+     * @throws \InvalidArgumentException
      */
     
     public function generateCardsForTheme(string $theme, int $pairsCount)
     {
+        
         // Für Emojis
-        if ($theme === 'emojis') {
-            $selectedEmojis = $this->faker->randomElements(
-                self::FIXED_THEMES['emojis']['content'], 
-                min($pairsCount, count(self::FIXED_THEMES['emojis']['content']))
+        if ($theme === 'emojis' || $theme === 'sports') {
+            $selectedItems = $this->faker->randomElements(
+                self::FIXED_THEMES[$theme]['content'], 
+                min($pairsCount, count(self::FIXED_THEMES[$theme]['content']))
             );
 
             $cards = [];
             for ($i = 0; $i < $pairsCount * 2; $i++) {
                 $groupId = floor($i / 2) + 1;
-                $content = $selectedEmojis[floor($i / 2)];
-
+                
                 $cards[] = [
                     'game_id' => null,
                     'matched_by' => null,
-                    'group_id' => $groupId,
-                    'card_content' => $content
+                    'group_id' => $groupId
                 ];
             }
+            return $cards;
+        }
 
+        // Für Flags und Planets
+        if ($theme === 'flags' || $theme === 'planets') {
+            $items = self::FIXED_THEMES[$theme]['items'];
+            $selectedKeys = $this->faker->randomElements(
+                array_keys($items),
+                min($pairsCount, count($items))
+            );
+
+            $cards = [];
+            for ($i = 0; $i < $pairsCount * 2; $i++) {
+                $groupId = floor($i / 2) + 1;
+                
+                $cards[] = [
+                    'game_id' => null,
+                    'matched_by' => null,
+                    'group_id' => $groupId
+                ];
+            }
             return $cards;
         }
 
@@ -139,52 +152,31 @@ class MemoryCardFactory extends Factory
                     'game_id' => null,
                     'matched_by' => null,
                     'group_id' => $groupId,
-                    'card_content' => $sport['icon'],
-                    'card_name' => $sport['name']
                 ];
             }
         
             return $cards;
         }
 
-        // Für Zahlen
-
-        if ($theme === 'numbers') {
-            $cards = [];
-            $selectedNumbers = $this->faker->randomElements(
-                range(1, 10), 
-                min($pairsCount, 10)
-            );
-    
-            for ($i = 0; $i < $pairsCount * 2; $i++) {
-                $groupId = floor($i / 2) + 1;
-                $number = $selectedNumbers[floor($i / 2)];
-    
-                $cards[] = [
-                    'game_id' => null,
-                    'matched_by' => null,
-                    'group_id' => $groupId,
-                    'card_content' => $number
-                ];
-            }
-    
-            return $cards;
-        }
-
-        // Für benutzerdefinierte Themen
-        $customThemePath = public_path("img/memory/{$theme}");
+        // Für benutzerdefinierte Themen aus dem public/img/memory/ Ordner
+        return $this->generateCustomThemeCards($theme, $pairsCount);
     
         if (!File::exists($customThemePath)) {
             throw new \InvalidArgumentException("Thema nicht gefunden: {$theme}");
         }
     
         $images = collect(File::files($customThemePath))
-            ->map(function($file) use ($theme) {
-                return "/img/memory/{$theme}/" . $file->getFilename();
-            })
-            ->shuffle()
-            ->take($pairsCount)
-            ->toArray();
+        ->filter(function($file) {
+            // Nur Bild-Dateitypen zulassen
+            $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+            return in_array(strtolower($file->getExtension()), $allowedExtensions);
+        })
+        ->map(function($file) use ($theme) {
+            return "/img/memory/{$theme}/" . $file->getFilename();
+        })
+        ->shuffle()
+        ->take($pairsCount)
+        ->toArray();
 
         if (count($images) < $pairsCount) {
             throw new \InvalidArgumentException("Nicht genügend Bilder für das Thema {$theme}");
@@ -204,7 +196,148 @@ class MemoryCardFactory extends Factory
         }
 
         return $cards;
+
+        // Validiere die Kartenanzahl
+        if (!in_array($pairsCount * 2, self::AVAILABLE_CARD_COUNTS)) {
+            throw new \InvalidArgumentException(
+                "Ungültige Kartenanzahl. Erlaubt sind: " . implode(', ', self::AVAILABLE_CARD_COUNTS)
+            );
+        }
+
+        if (isset(self::FIXED_THEMES[$theme])) {
+            return $this->generateFixedThemeCards($theme, $pairsCount);
+        }
+
+        return $this->generateCustomThemeCards($theme, $pairsCount);
     }
+
+    private function generateFixedThemeCards(string $theme, int $pairsCount)
+    {
+        $cards = [];
+        
+        if ($theme === 'emojis' || $theme === 'sports') {
+            $content = self::FIXED_THEMES[$theme]['content'];
+            $selectedItems = $this->faker->randomElements(
+                $content,
+                min($pairsCount, count($content))
+            );
+
+            for ($i = 0; $i < $pairsCount * 2; $i++) {
+                $groupId = floor($i / 2) + 1;
+                $content = $selectedItems[floor($i / 2)];
+
+                $cards[] = [
+                    'game_id' => null,
+                    'matched_by' => null,
+                    'group_id' => $groupId,
+                    'card_content' => $content,
+                    'card_name' => null
+                ];
+            }
+        } elseif ($theme === 'flags' || $theme === 'planets') {
+            $items = self::FIXED_THEMES[$theme]['items'];
+            $selectedKeys = $this->faker->randomElements(
+                array_keys($items),
+                min($pairsCount, count($items))
+            );
+
+            for ($i = 0; $i < $pairsCount * 2; $i++) {
+                $groupId = floor($i / 2) + 1;
+                $key = $selectedKeys[floor($i / 2)];
+
+                $cards[] = [
+                    'game_id' => null,
+                    'matched_by' => null,
+                    'group_id' => $groupId,
+                    'card_image' => $items[$key],
+                    'card_name' => $key
+                ];
+            }
+        }
+
+        return $cards;
+    }
+    private function generateCustomThemeCards(string $theme, int $pairsCount)
+    {
+        $customThemePath = public_path("img/memory/{$theme}");
+    
+        if (!File::exists($customThemePath)) {
+            throw new \InvalidArgumentException("Thema nicht gefunden: {$theme}");
+        }
+    
+        $images = collect(File::files($customThemePath))
+            ->filter(function($file) {
+                $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+                return in_array(strtolower($file->getExtension()), $allowedExtensions);
+            })
+            ->map(function($file) use ($theme) {
+                return "/img/memory/{$theme}/" . $file->getFilename();
+            })
+            ->shuffle()
+            ->take($pairsCount)
+            ->toArray();
+
+        if (count($images) < $pairsCount) {
+            throw new \InvalidArgumentException(
+                "Nicht genügend Bilder für das Thema {$theme} und {$pairsCount} Paare"
+            );
+        }
+
+        $cards = [];
+        for ($i = 0; $i < $pairsCount * 2; $i++) {
+            $groupId = floor($i / 2) + 1;
+            $image = $images[floor($i / 2)];
+
+            $cards[] = [
+                'game_id' => null,
+                'matched_by' => null,
+                'group_id' => $groupId,
+            ];
+        }
+
+        return $cards;
+    }
+
+    /**
+     * Gibt den Titel eines Themas zurück
+     *
+     * @param string $theme
+     * @return string
+     */
+    public function getThemeTitle(string $theme): string
+    {
+        if (isset(self::FIXED_THEMES[$theme])) {
+            return self::FIXED_THEMES[$theme]['title'];
+        }
+        
+        // Für benutzerdefinierte Themen den Ordnernamen formatieren
+        return ucfirst(str_replace('-', ' ', $theme));
+    }
+
+    /**
+     * Listet alle verfügbaren Themen mit Titeln
+     *
+     * @return array
+     */
+    public function getAllThemesWithTitles(): array
+    {
+        $fixedThemes = array_map(function($theme, $key) {
+            return [
+                'id' => $key,
+                'title' => $theme['title']
+            ];
+        }, self::FIXED_THEMES, array_keys(self::FIXED_THEMES));
+
+        $customThemes = array_map(function($theme) {
+            return [
+                'id' => $theme,
+                'title' => $this->getThemeTitle($theme)
+            ];
+        }, $this->getCustomThemes());
+
+        return array_merge($fixedThemes, $customThemes);
+    }
+
 
     /**
      * Listet alle verfügbaren benutzerdefinierten Themen auf
@@ -219,11 +352,16 @@ class MemoryCardFactory extends Factory
             return [];
         }
     
-        return collect(File::directories($customThemePath))
+        // Debug-Ausgabe
+        $themes = collect(File::directories($customThemePath))
             ->map(function($dir) {
                 return basename($dir);
             })
             ->toArray();
+
+        Log::info('Custom Themes found:', $themes);
+
+        return $themes;
     }
    
     /**
@@ -237,5 +375,34 @@ class MemoryCardFactory extends Factory
             array_keys(self::FIXED_THEMES),
             $this->getCustomThemes()
         );
+    }
+
+        /**
+     * Gibt den Content für eine bestimmte Karte zurück
+     */
+    public function getCardContent(string $theme, int $groupId): array
+    {
+        if ($theme === 'emojis' || $theme === 'sports') {
+            return [
+                'content' => self::FIXED_THEMES[$theme]['content'][$groupId - 1] ?? '❓',
+                'name' => null
+            ];
+        }
+
+        if ($theme === 'flags' || $theme === 'planets') {
+            $items = self::FIXED_THEMES[$theme]['items'];
+            $keys = array_keys($items);
+            $key = $keys[$groupId - 1] ?? null;
+            
+            return [
+                'content' => $items[$key] ?? null,
+                'name' => $key ?? null
+            ];
+        }
+
+        return [
+            'content' => null,
+            'name' => null
+        ];
     }
 }

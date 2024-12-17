@@ -20,7 +20,6 @@ return new class extends Migration
                 ->nullable()
                 ->constrained('memory_players', 'player_id')
                 ->onDelete('set null');
-            $table->string('card_image');
             $table->unsignedInteger('group_id')->index();
             $table->timestamps();
     

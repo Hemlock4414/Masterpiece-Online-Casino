@@ -6,18 +6,21 @@ const apiClient = axios.create({
 });
 
 // Neues Spiel erstellen
-
-export const createGame = async (pairs = 8, guestId = null) => {
+export const createGame = async ({ cards_count, theme, guest_id } = {}) => {
   try {
     const requestData = {
-      pairs: pairs
+      cards_count: cards_count || 16,
+      theme: theme || 'emojis'
     };
-    if (guestId) {
-      requestData.guest_id = parseInt(guestId); // Sicherstellen dass es eine Zahl ist
-    }
     
-    const response = await apiClient.post('/memory-games/create', requestData);
+    if (guest_id) {
+      requestData.guest_id = parseInt(guest_id);
+    }
+
     console.log('Request Data:', requestData); // Debug
+    
+    console.log('Request Data:', requestData); // Debug
+    const response = await apiClient.post('/memory-games/create', requestData);
     return response.data;
   } catch (error) {
     console.error('Create Game Error:', error.response?.data || error);
@@ -80,6 +83,17 @@ export const nextTurn = async (gameId) => {
     return response.data;
   } catch (error) {
     console.error('Next Turn Error:', error.response?.data || error);
+    throw error;
+  }
+};
+
+// Neue Funktion für Custom Themes
+export const getCustomThemes = async () => {
+  try {
+    const response = await apiClient.get('/memory-games/custom-themes');
+    return response.data;
+  } catch (error) {
+    console.error('Custom Themes Error:', error.response?.data || error);
     throw error;
   }
 };

@@ -5,8 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\MemoryGame;
 use App\Models\MemoryCard;
 use App\Models\MemoryPlayer;
-use App\Models\User; 
-use App\Models\MemoryGamePlayer;
+use Database\Factories\MemoryCardFactory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
@@ -17,26 +16,27 @@ class MemoryGameController extends Controller
     {
         try {
             DB::beginTransaction();
+
+            Log::info('Create game request data:', $request->all());  // Debug-Log
             
             $validated = $request->validate([
-                'pairs' => 'integer|min:2|max:32',
+                'cards_count' => 'required|integer|in:12,16,20',
                 'guest_id' => 'nullable|integer'
             ]);
     
+            // Spiel erstellen
             $game = new MemoryGame([
-                'status' => 'waiting',
+                'status' => 'waiting'
             ]);
             $game->save();
     
             // Spieler erstellen/finden
             if (auth()->check()) {
-                // Eingeloggter User
                 $player = MemoryPlayer::firstOrCreate(
                     ['user_id' => auth()->id()],
                     ['name' => auth()->user()->username]
                 );
             } else {
-                // Gast-Spieler
                 if ($request->guest_id) {
                     Log::info('Suche existierenden Gast:', ['guest_id' => $request->guest_id]);
                     $player = MemoryPlayer::where('player_id', $request->guest_id)
@@ -45,12 +45,9 @@ class MemoryGameController extends Controller
                     
                     if ($player) {
                         Log::info('Existierender Gast gefunden:', ['player' => $player]);
-                    } else {
-                        Log::info('Gast nicht gefunden, erstelle neuen');
                     }
                 }
                 
-                // Nur wenn kein Gast gefunden wurde, einen neuen erstellen
                 if (!isset($player) || !$player) {
                     $player = new MemoryPlayer([
                         'name' => 'Gast ' . rand(1000, 9999)
@@ -62,33 +59,23 @@ class MemoryGameController extends Controller
             $game->players()->attach($player->player_id, [
                 'player_score' => 0
             ]);
-
-            // Erstelle und mische die Karten
-            $pairs = $validated['pairs'] ?? 8;
-            $cards = [];
-            for ($i = 1; $i <= $pairs; $i++) {
-                for ($j = 0; $j < 2; $j++) {
-                    $cards[] = [
-                        'game_id' => $game->game_id,
-                        'group_id' => $i,
-                        'card_image' => 'default.jpg',
-                        'created_at' => now(),
-                        'updated_at' => now()
-                    ];
-                }
-            }
-            shuffle($cards);
-            Log::info('Shuffled cards:', ['cards' => $cards]); // Debug-Log
+    
+            // Karten über Factory erstellen
+            $factory = new MemoryCardFactory();
+            $cards = $factory->generateCardsForTheme(
+                $request->theme ?? 'emojis',  // Theme wird nicht validiert/gespeichert, nur für Factory
+                $validated['cards_count'] / 2
+            );
             
-            MemoryCard::insert($cards);
-
+            foreach ($cards as $cardData) {
+                $cardData['game_id'] = $game->game_id;
+                MemoryCard::create($cardData);
+            }
+    
             DB::commit();
-
+    
             return response()->json([
-                'game_id' => $game->game_id,
-                'status' => $game->status,
-                'cards' => $game->cards,
-                'players' => $game->players,
+                'game' => $game->load(['cards', 'players']),
                 'message' => 'Spiel erfolgreich erstellt'
             ], 201);
     
@@ -96,6 +83,19 @@ class MemoryGameController extends Controller
             DB::rollBack();
             Log::error('Fehler beim Erstellen des Spiels:', ['error' => $e->getMessage()]);
             return response()->json(['error' => 'Fehler beim Erstellen des Spiels'], 500);
+        }
+    }
+
+    public function getCustomThemes()
+    {
+        try {
+            $factory = new MemoryCardFactory();
+            $themes = $factory->getCustomThemes();
+            
+            return response()->json($themes);
+        } catch (\Exception $e) {
+            Log::error('Fehler beim Abrufen der benutzerdefinierten Themen:', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Fehler beim Abrufen der Themen'], 500);
         }
     }
 

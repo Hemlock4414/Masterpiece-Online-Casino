@@ -16,38 +16,43 @@ const props = defineProps({
 const emit = defineEmits(['flipCard']);
 
 const isCardFlipped = (card) => {
-  return props.flippedCards.some(fc => fc.card_id === card.card_id) || card.is_matched;
+  return props.flippedCards.some(fc => fc.card_id === card.card_id) || card.matched_by;
 };
 
-// Compute grid columns based on total card count
-const gridColumns = computed(() => {
-  return props.cards.length === 12 ? 'grid-template-columns: repeat(3, 1fr);' :
-         props.cards.length === 16 ? 'grid-template-columns: repeat(4, 1fr);' :
-         props.cards.length === 20 ? 'grid-template-columns: repeat(5, 1fr);' :
-         'grid-template-columns: repeat(4, 1fr);';
-});
+// Style für das Grid, basierend auf der Zeilenanzahl
+const gridStyle = computed(() => ({
+  'grid-template-columns': 'repeat(4, 1fr)',
+  'grid-template-rows': `repeat(${gridRows.value}, 1fr)`
+}));
 </script>
 
 <template>
-  <div class="grid" :style="gridColumns">
-    <MemoryCard
-      v-for="card in cards"
-      :key="card.card_id"
-      :card="card"
-      :isFlipped="isCardFlipped(card)"
-      @flip="emit('flipCard', card)"
-    />
+  <div class="grid-container">
+    <div class="grid" :style="gridStyle">
+      <MemoryCard
+        v-for="card in cards"
+        :key="card.card_id"
+        :card="card"
+        :isFlipped="isCardFlipped(card)"
+        @flip="emit('flipCard', card)"
+      />
+    </div>
   </div>
 </template>
 
 <style scoped>
-.grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(120px, 1fr));
-  gap: 15px;
-  max-width: 800px; /* Maximale Breite des Spielfelds */
+.grid-container {
+  width: 100%;
+  max-width: 800px;
   margin: 0 auto;
   padding: 20px;
+}
+
+.grid {
+  display: grid;
+  gap: 15px;
+  /* Standardgröße für Tablets und Desktop */
+  grid-template-columns: repeat(4, minmax(120px, 1fr));
 }
 
 @media (min-width: 1024px) {
