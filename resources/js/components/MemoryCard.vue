@@ -114,6 +114,12 @@ const isImage = computed(() => {
   border: 2px solid #e0e0e0;
 }
 
+.card-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
 .card-content {
   transform: scale(1);
   transition: transform 0.3s ease;

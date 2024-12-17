@@ -11,13 +11,23 @@ class MemoryCardFactory extends Factory
     protected $model = MemoryCard::class;
 
     private const FIXED_THEMES = [
+
         'emojis' => [
             'content' => [
                 '🐶', '🐱', '🐭', '🐹', '🐰', 
                 '🦊', '🐻', '🐼', '🐨', '🐯', 
-                '🦁', '🐮', '🐷', '🐸', '🐵'
+                '🦁', '🐮', '🐷', '🐸', '🐵',
+                '🦄', '🐲', '🐙', '🦉', '🐧'
             ]
         ],
+        'sports' => [
+            'content' => [
+                '⚽', '🏀', '🎾', '🏐', '⚾', 
+                '🏊', '🏃', '🚴', '🏌️', '🥊', 
+                '🤼', '🥋', '🏇', '🎯', '🏓', 
+                '🏒', '🎿', '🏂', '⛵', '🤿'
+            ]
+            ],
         'flags' => [
             'items' => [
                 'Deutschland' => 'https://flagcdn.com/w320/de.png',
@@ -57,12 +67,17 @@ class MemoryCardFactory extends Factory
                 'Mond' => 'https://upload.wikimedia.org/wikipedia/commons/e/e5/Aldrin_Looks_Back_at_Tranquility_Base_-_GPN-2000-001102.jpg',
             ]
         ],
+
         'numbers' => [
-            'method' => function($faker) { 
-                return $faker->numberBetween(1, 10);
-            }
-        ]
+            'method' => 'generateNumber'
+        ],
     ];
+
+    // Zusätzliche Methode für Zahlen-Generierung
+    public function generateNumber()
+    {
+        return $this->faker->numberBetween(1, 10);
+    }
 
     public function definition()
     {
@@ -107,6 +122,31 @@ class MemoryCardFactory extends Factory
             return $cards;
         }
 
+        // Für Sportarten
+
+        if ($theme === 'sports') {
+            $cards = [];
+            $selectedSports = $this->faker->randomElements(
+                self::FIXED_THEMES['sports']['content'], 
+                min($pairsCount, count(self::FIXED_THEMES['sports']['content']))
+            );
+        
+            for ($i = 0; $i < $pairsCount * 2; $i++) {
+                $groupId = floor($i / 2) + 1;
+                $sport = $selectedSports[floor($i / 2)];
+        
+                $cards[] = [
+                    'game_id' => null,
+                    'matched_by' => null,
+                    'group_id' => $groupId,
+                    'card_content' => $sport['icon'],
+                    'card_name' => $sport['name']
+                ];
+            }
+        
+            return $cards;
+        }
+
         // Für Zahlen
 
         if ($theme === 'numbers') {
@@ -115,11 +155,11 @@ class MemoryCardFactory extends Factory
                 range(1, 10), 
                 min($pairsCount, 10)
             );
-        
+    
             for ($i = 0; $i < $pairsCount * 2; $i++) {
                 $groupId = floor($i / 2) + 1;
                 $number = $selectedNumbers[floor($i / 2)];
-        
+    
                 $cards[] = [
                     'game_id' => null,
                     'matched_by' => null,
@@ -127,7 +167,7 @@ class MemoryCardFactory extends Factory
                     'card_content' => $number
                 ];
             }
-        
+    
             return $cards;
         }
 

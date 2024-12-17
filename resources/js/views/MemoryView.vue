@@ -25,10 +25,11 @@ let timerInterval = null;
 
 // Themen von der Memory Card Factory
 const availableThemes = [
-  { id: 'animals', name: 'Tiere', description: 'Süße Tierbilder zum Merken' },
-  { id: 'fruits', name: 'Früchte', description: 'Bunte Früchte zum Matching' },
+  { id: 'emojis', name: 'Emojis', description: 'Lustige Tieremojis' },
   { id: 'flags', name: 'Länderflaggen', description: 'Flaggen aus aller Welt' },
-  { id: 'planets', name: 'Planeten', description: 'Astronomische Entdeckungsreise' }
+  { id: 'planets', name: 'Planeten', description: 'Astronomische Entdeckungsreise' },
+  { id: 'numbers', name: 'Zahlen', description: 'Zahlen von 1 bis 10' },
+  { id: 'sports', name: 'Sportarten', description: 'Verschiedene Sportarten-Emojis' }
 ];
 
 const customThemes = ref([
@@ -88,7 +89,9 @@ const createNewGame = async () => {
   }
 };
 
-const addCustomTheme = (theme) => {
+// Für eine manuelle, programmatische Hinzufügung von Themen gedacht, z.B. wenn Benutzer eigene Themen 
+//hochladen oder definieren möchten.
+/* const addCustomTheme = (theme) => {
   // Validierung und Hinzufügen eines benutzerdefinierten Themas
   if (theme && theme.name && theme.images && theme.images.length >= 6) {
     const newTheme = {
@@ -102,7 +105,7 @@ const addCustomTheme = (theme) => {
   } else {
     console.error('Ungültiges benutzerdefiniertes Thema');
   }
-};
+}; */
 
 // Kombinierte Themes für Auswahl
 const allThemes = computed(() => {
