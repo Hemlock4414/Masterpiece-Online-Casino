@@ -17,6 +17,45 @@ class MemoryCardFactory extends Factory
                 '🦊', '🐻', '🐼', '🐨', '🐯', 
                 '🦁', '🐮', '🐷', '🐸', '🐵'
             ]
+        ],
+        'flags' => [
+            'items' => [
+                'Deutschland' => 'https://flagcdn.com/w320/de.png',
+                'Frankreich' => 'https://flagcdn.com/w320/fr.png', 
+                'Italien' => 'https://flagcdn.com/w320/it.png',
+                'Spanien' => 'https://flagcdn.com/w320/es.png',
+                'USA' => 'https://flagcdn.com/w320/us.png',
+                'Kanada' => 'https://flagcdn.com/w320/ca.png',
+                'Brasilien' => 'https://flagcdn.com/w320/br.png',
+                'Japan' => 'https://flagcdn.com/w320/jp.png',
+                'Australien' => 'https://flagcdn.com/w320/au.png',
+                'Großbritannien' => 'https://flagcdn.com/w320/gb.png',
+                'China' => 'https://flagcdn.com/w320/cn.png',
+                'Russland' => 'https://flagcdn.com/w320/ru.png',
+                'Indien' => 'https://flagcdn.com/w320/in.png',
+                'Mexiko' => 'https://flagcdn.com/w320/mx.png',
+                'Südafrika' => 'https://flagcdn.com/w320/za.png',
+                'Südkorea' => 'https://flagcdn.com/w320/kr.png',
+                'Argentinien' => 'https://flagcdn.com/w320/ar.png',
+                'Niederlande' => 'https://flagcdn.com/w320/nl.png',
+                'Schweden' => 'https://flagcdn.com/w320/se.png',
+                'Schweiz' => 'https://flagcdn.com/w320/ch.png'
+            ]
+        ],
+        'planets' => [
+            'items' => [
+                'Merkur' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d9/Mercury_in_color_-_Prockter07-edit1.jpg/640px-Mercury_in_color_-_Prockter07-edit1.jpg',
+                'Venus' => 'https://upload.wikimedia.org/wikipedia/commons/e/e5/Venus-real_color.jpg',
+                'Erde' => 'https://upload.wikimedia.org/wikipedia/commons/9/97/The_Earth_seen_from_Apollo_17.jpg',
+                'Mars' => 'https://upload.wikimedia.org/wikipedia/commons/0/02/OSIRIS_Mars_true_color.jpg',
+                'Jupiter' => 'https://upload.wikimedia.org/wikipedia/commons/2/2b/Jupiter_and_its_shrunken_Great_Red_Spot.jpg',
+                'Saturn' => 'https://upload.wikimedia.org/wikipedia/commons/c/c7/Saturn_during_Equinox.jpg',
+                'Uranus' => 'https://upload.wikimedia.org/wikipedia/commons/3/3d/Uranus2.jpg',
+                'Neptun' => 'https://upload.wikimedia.org/wikipedia/commons/6/63/Neptune_-_Voyager_2_%2829347980845%29_flatten_crop.jpg',
+                'Pluto' => 'https://upload.wikimedia.org/wikipedia/commons/a/a7/Pluto-01_Stern_background.jpg',
+                'Sonne' => 'https://upload.wikimedia.org/wikipedia/commons/b/b4/The_Sun_by_the_Atmospheric_Imaging_Assembly_of_NASA%27s_Solar_Dynamics_Observatory_-_20100819.jpg',
+                'Mond' => 'https://upload.wikimedia.org/wikipedia/commons/e/e5/Aldrin_Looks_Back_at_Tranquility_Base_-_GPN-2000-001102.jpg',
+            ]
         ]
     ];
 
