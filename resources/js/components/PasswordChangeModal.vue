@@ -31,7 +31,7 @@ const showMessage = (message, isError = false) => {
   updateMessage.value = message;
   updateError.value = isError;
 
-  // Nachricht nach 3 Sekunden ausblenden
+  // Nachricht nach 4 Sekunden ausblenden
   messageTimeout.value = setTimeout(() => {
     updateMessage.value = '';
     updateError.value = false;
@@ -52,12 +52,12 @@ const handleSubmit = async () => {
       password_confirmation: confirmPassword.value
     });
     
-    showMessage('Passwort wurde erfolgreich geändert. Aus Sicherheitsgründen werden Sie nun ausgeloggt. Bitte benutzen Sie anschliessend Ihr neues Passwort');
+    showMessage('Passwort wurde erfolgreich geändert. Aus Sicherheitsgründen werden Sie nun ausgeloggt. Bitte benutzen Sie anschliessend Ihr neues Passwort.');
     
     setTimeout(() => {
       emit('success', 'Passwort erfolgreich geändert');
       router.push('/');
-    }, 3000);
+    }, 4000);
   } catch (error) {
   console.error('Fehler:', error);
   const errorMessage = 

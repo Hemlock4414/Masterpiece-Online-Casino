@@ -255,7 +255,12 @@ class UserController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'current_password' => 'required',
-            'new_email' => 'required|email|unique:users,email',
+            'email' => 'required|email|unique:users,email',
+        ], [
+            'email.unique' => 'Diese E-Mail-Adresse wird bereits verwendet.',
+            'email.email' => 'Bitte geben Sie eine gültige E-Mail-Adresse ein.',
+            'email.required' => 'E-Mail-Adresse ist erforderlich.',
+            'current_password.required' => 'Bitte geben Sie Ihr aktuelles Passwort ein.'
         ]);
 
         if ($validator->fails()) {
@@ -268,7 +273,7 @@ class UserController extends Controller
             return response()->json(['error' => 'Das Passwort ist falsch'], 401);
         }
 
-        $user->email = $request->new_email;
+        $user->email = $request->email;
         $user->save();
 
         return response()->json(['message' => 'E-Mail-Adresse erfolgreich aktualisiert'], 200);
