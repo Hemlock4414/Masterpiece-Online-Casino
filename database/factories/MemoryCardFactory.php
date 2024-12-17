@@ -102,6 +102,30 @@ class MemoryCardFactory extends Factory
             return $cards;
         }
 
+        // Für Zahlen
+
+        if ($theme === 'numbers') {
+            $cards = [];
+            $selectedNumbers = $this->faker->randomElements(
+                range(1, 10), 
+                min($pairsCount, 10)
+            );
+        
+            for ($i = 0; $i < $pairsCount * 2; $i++) {
+                $groupId = floor($i / 2) + 1;
+                $number = $selectedNumbers[floor($i / 2)];
+        
+                $cards[] = [
+                    'game_id' => null,
+                    'matched_by' => null,
+                    'group_id' => $groupId,
+                    'card_content' => $number
+                ];
+            }
+        
+            return $cards;
+        }
+
         // Für benutzerdefinierte Themen
         $customThemePath = public_path("img/memory/{$theme}");
     
