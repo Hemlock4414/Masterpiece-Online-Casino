@@ -17,6 +17,19 @@ const handleClick = () => {
     emit('flip', props.card);
   }
 };
+
+// Ermittle die Bild-URL für die Karte
+const cardBackgroundImage = computed(() => {
+  // Wenn ein spezifisches Bild definiert ist, nutze dieses
+  if (props.card.card_image) {
+    // Stelle sicher, dass der Pfad korrekt ist
+    return props.card.card_image.startsWith('/') 
+      ? props.card.card_image 
+      : `/${props.card.card_image}`;
+  }
+  // Fallback auf Standardverhalten
+  return null;
+});
 </script>
 
 <template>
@@ -30,11 +43,20 @@ const handleClick = () => {
     @click="handleClick"
   >
     <div class="card-inner">
-      <div class="card-front">
+      <div class="card-hidden">
         <div class="card-content">?</div>
       </div>
-      <div class="card-back">
-        <div class="card-content">{{ card.group_id }}</div>
+      <div class="card-revealed">
+        <!-- Zeige Bild oder Textinhalt -->
+        <div v-if="card.card_image" class="card-image">
+          <img :src="card.card_image" alt="Kartenbild">
+        </div>
+        <div v-else-if="card.card_content" class="card-text-content">
+          {{ card.card_content }}
+        </div>
+        <div v-else class="card-content">
+          {{ card.group_id }}
+        </div>
       </div>
     </div>
   </div>
@@ -69,8 +91,8 @@ const handleClick = () => {
   transform: rotateY(180deg);
 }
 
-.card-front,
-.card-back {
+.card-hidden,
+.card-revealed {
   position: absolute;
   width: 100%;
   height: 100%;
@@ -89,11 +111,11 @@ const handleClick = () => {
   transition: transform 0.3s ease;
 }
 
-.card-front {
+.card-hidden {
   background: linear-gradient(145deg, #f0f0f0, #e6e6e6);
 }
 
-.card-back {
+.card-revealed {
   background: linear-gradient(145deg, #ffffff, #f5f5f5);
   transform: rotateY(180deg);
 }

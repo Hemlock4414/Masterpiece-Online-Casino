@@ -1,4 +1,5 @@
 <script setup>
+import { computed } from 'vue';
 import MemoryCard from './MemoryCard.vue';
 
 const props = defineProps({
@@ -17,10 +18,18 @@ const emit = defineEmits(['flipCard']);
 const isCardFlipped = (card) => {
   return props.flippedCards.some(fc => fc.card_id === card.card_id) || card.is_matched;
 };
+
+// Compute grid columns based on total card count
+const gridColumns = computed(() => {
+  return props.cards.length === 12 ? 'grid-template-columns: repeat(3, 1fr);' :
+         props.cards.length === 16 ? 'grid-template-columns: repeat(4, 1fr);' :
+         props.cards.length === 20 ? 'grid-template-columns: repeat(5, 1fr);' :
+         'grid-template-columns: repeat(4, 1fr);';
+});
 </script>
 
 <template>
-  <div class="grid">
+  <div class="grid" :style="gridColumns">
     <MemoryCard
       v-for="card in cards"
       :key="card.card_id"

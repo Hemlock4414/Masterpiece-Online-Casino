@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
 import MemoryGrid from '../components/MemoryGrid.vue';
 import MemoryEndModal from '../components/MemoryEndModal.vue';
 import { createGame, stopGame, updateMatchedCards, startGame as startGameAPI } from '../services/MemoryService';
@@ -23,6 +23,23 @@ const gameResult = ref({
 
 let timerInterval = null;
 
+// Themen von der Memory Card Factory
+const availableThemes = [
+  { id: 'animals', name: 'Tiere', description: 'Süße Tierbilder zum Merken' },
+  { id: 'fruits', name: 'Früchte', description: 'Bunte Früchte zum Matching' },
+  { id: 'flags', name: 'Länderflaggen', description: 'Flaggen aus aller Welt' },
+  { id: 'planets', name: 'Planeten', description: 'Astronomische Entdeckungsreise' }
+];
+
+const customThemes = ref([
+  // Hier können später benutzerdefinierte Themen hinzugefügt werden
+]);
+
+const cardCounts = [12, 16, 20];
+
+const selectedTheme = ref(availableThemes[0]);
+const selectedCardCount = ref(16);
+
 // Helper-Funktionen für sessionStorage
 const getStoredGuestId = () => {
   return sessionStorage.getItem('memoryGuestId');
@@ -34,13 +51,18 @@ const setStoredGuestId = (id) => {
 
 const createNewGame = async () => {
   try {
-    console.log('Erstelle neues Spiel...'); 
+    console.log('Erstelle neues Spiel mit', selectedCardCount.value, 'Karten und Thema', selectedTheme.value.name); 
     
     const storedGuestId = getStoredGuestId();
     console.log('Gespeicherte Gast-ID gefunden:', storedGuestId); // Debug
 
-    const game = await createGame(8, storedGuestId);
-    console.log('Server-Antwort:', game); // Debug
+    // Übergebe die ausgewählte Kartenzahl und das Thema
+    const game = await createGame(
+      selectedCardCount.value / 2,  // Paare berechnen
+      storedGuestId, 
+      selectedTheme.value.id
+    );
+    console.log('Server-Antwort:', game);
     
     console.log('Spiel erfolgreich erstellt:', game);
     gameId.value = game.game_id;
@@ -65,6 +87,27 @@ const createNewGame = async () => {
     console.error('Fehler beim Erstellen des Spiels:', error);
   }
 };
+
+const addCustomTheme = (theme) => {
+  // Validierung und Hinzufügen eines benutzerdefinierten Themas
+  if (theme && theme.name && theme.images && theme.images.length >= 6) {
+    const newTheme = {
+      id: `custom_${Date.now()}`,
+      name: theme.name,
+      description: theme.description || 'Benutzerdefiniertes Thema',
+      custom: true,
+      images: theme.images
+    };
+    customThemes.value.push(newTheme);
+  } else {
+    console.error('Ungültiges benutzerdefiniertes Thema');
+  }
+};
+
+// Kombinierte Themes für Auswahl
+const allThemes = computed(() => {
+  return [...availableThemes, ...customThemes.value];
+});
 
 const handleGameStart = async () => {
   try {
@@ -151,14 +194,6 @@ const abortGame = async () => {
   } catch (error) {
     console.error('Fehler beim Abbrechen des Spiels:', error);
   }
-};
-
-// Basis-Funktion zum Zurücksetzen des Spielstatus
-const resetGameState = () => {
-  flippedCards.value = [];
-  roundCount.value = 0;
-  timer.value = 0;
-  showModal.value = false;
 };
 
 const switchPlayer = () => {
@@ -260,93 +295,130 @@ onUnmounted(() => {
 </script>
 
 <template>
+  <main>
+    <div class="memory-container">
 
-  <div class="memory-container">
+      <div class="memory-game">
 
-    <div class="memory-game">
+        <!-- Theme und Kartenanzahl Auswahl vor dem Spielstart -->
+        <div v-if="gameStatus === 'waiting'" class="game-configuration">
+          <h2>Memory Konfiguration</h2>
 
-      <div class="header">
-        <h1>Memory</h1>
-        <div class="timer">
-          <h2>Timer</h2>
-          <p>{{ Math.floor(timer / 60) }}:{{ String(timer % 60).padStart(2, '0') }}</p>
+          <!-- Thema-Auswahl -->
+          <div class="theme-selection">
+            <h3>Thema wählen</h3>
+            <div class="theme-grid">
+              <div 
+                v-for="theme in allThemes" 
+                :key="theme.id"
+                class="theme-card"
+                :class="{ 'selected': selectedTheme.id === theme.id }"
+                @click="selectedTheme = theme"
+              >
+                <h4>{{ theme.name }}</h4>
+                <p>{{ theme.description }}</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Kartenanzahl-Auswahl -->
+          <div class="card-count-selection">
+            <h3>Anzahl der Karten</h3>
+            <div class="card-count-buttons">
+              <button 
+                v-for="count in cardCounts" 
+                :key="count"
+                :class="{ 'selected': selectedCardCount === count }"
+                @click="selectedCardCount = count"
+              >
+                {{ count }} Karten
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
 
-      <div class="game-status">
-        <p>Spielstatus: {{ gameStatus }}</p>
-      </div>
-
-      <div class="game-layout">
-        <div class="player-list">
-          <h2>Spieler</h2>
-          <ul>
-            <li 
-              v-for="player in players" 
-              :key="player.player_id"
-              :class="{ 'active-player': currentPlayer?.player_id === player.player_id }"
-            >
-              {{ player.name }}: {{ player.pivot?.player_score ?? 0 }} Punkte
-            </li>
-          </ul>
+        <div class="header">
+          <h1>Memory</h1>
+          <div class="timer">
+            <h2>Timer</h2>
+            <p>{{ Math.floor(timer / 60) }}:{{ String(timer % 60).padStart(2, '0') }}</p>
+          </div>
         </div>
 
-        <div class="player-info" v-if="currentPlayer">
-          <p>Am Zug: {{ currentPlayer.name }}</p>
+        <div class="game-status">
+          <p>Spielstatus: {{ gameStatus }}</p>
         </div>
 
-        <div class="round-info">
-          <h2>Runden</h2>
-          <p>{{ roundCount }}</p>
+        <div class="game-layout">
+          <div class="player-list">
+            <h2>Spieler</h2>
+            <ul>
+              <li 
+                v-for="player in players" 
+                :key="player.player_id"
+                :class="{ 'active-player': currentPlayer?.player_id === player.player_id }"
+              >
+                {{ player.name }}: {{ player.pivot?.player_score ?? 0 }} Punkte
+              </li>
+            </ul>
+          </div>
+
+          <div class="player-info" v-if="currentPlayer">
+            <p>Am Zug: {{ currentPlayer.name }}</p>
+          </div>
+
+          <div class="round-info">
+            <h2>Runden</h2>
+            <p>{{ roundCount }}</p>
+          </div>
         </div>
+
+        <div class="game-controls">
+          <button 
+            v-if="gameStatus === 'waiting'" 
+            @click="handleGameStart"
+            class="btn-primary"
+          >
+            Spiel Starten
+          </button>
+
+          <button 
+            v-if="gameStatus === 'in_progress'" 
+            @click="abortGame"
+            class="btn-secondary"
+          >
+            Spiel abbrechen
+          </button>
+
+          <button 
+            v-if="gameStatus === 'finished'" 
+            @click="createNewGame"
+            class="btn-primary"
+          >
+            Neues Spiel
+          </button>
+        </div>
+
+        <MemoryGrid 
+          v-if="(gameStatus === 'in_progress' || gameStatus === 'finished') && cards.length" 
+          :cards="cards"
+          :flippedCards="flippedCards"
+          @flipCard="handleCardFlip" 
+        />
+
+        <MemoryEndModal
+        v-if="showModal"
+        :title="'Spiel beendet!'"
+        :points="gameResult.points"
+        :rounds="gameResult.rounds"
+        :time="gameResult.time"
+        :on-new-game="createNewGame"
+        :on-go-to-home="() => $router.push('/')"
+        />
+
       </div>
-
-      <div class="game-controls">
-        <button 
-          v-if="gameStatus === 'waiting'" 
-          @click="handleGameStart"
-          class="btn-primary"
-        >
-          Spiel Starten
-        </button>
-
-        <button 
-          v-if="gameStatus === 'in_progress'" 
-          @click="abortGame"
-          class="btn-secondary"
-        >
-          Spiel abbrechen
-        </button>
-
-        <button 
-          v-if="gameStatus === 'finished'" 
-          @click="createNewGame"
-          class="btn-primary"
-        >
-          Neues Spiel
-        </button>
-      </div>
-
-      <MemoryGrid 
-        v-if="(gameStatus === 'in_progress' || gameStatus === 'finished') && cards.length" 
-        :cards="cards"
-        :flippedCards="flippedCards"
-        @flipCard="handleCardFlip" 
-      />
-
-      <MemoryEndModal
-      v-if="showModal"
-      :title="'Spiel beendet!'"
-      :points="gameResult.points"
-      :rounds="gameResult.rounds"
-      :time="gameResult.time"
-      :on-new-game="createNewGame"
-      :on-go-to-home="() => $router.push('/')"
-      />
-
     </div>
-  </div>
-
+  </main>
 </template>
 
 <style scoped>
@@ -358,6 +430,53 @@ onUnmounted(() => {
 
 .memory-game {
   max-width: 100%;
+}
+
+.game-configuration {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  text-align: center;
+}
+
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+}
+
+.theme-card {
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.theme-card.selected {
+  border-color: #4CAF50;
+  background-color: #e8f5e9;
+}
+
+.card-count-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.card-count-buttons button {
+  padding: 10px 20px;
+  border: 2px solid #e0e0e0;
+  border-radius: 5px;
+  background-color: white;
+  cursor: pointer;
+}
+
+.card-count-buttons button.selected {
+  background-color: #4CAF50;
+  color: white;
+  border-color: #4CAF50;
 }
 
 .header {
