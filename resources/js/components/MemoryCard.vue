@@ -1,4 +1,6 @@
 <script setup>
+import { computed } from 'vue'
+
 const props = defineProps({
   card: {
     type: Object,
@@ -18,17 +20,23 @@ const handleClick = () => {
   }
 };
 
-// Ermittle die Bild-URL für die Karte
-const cardBackgroundImage = computed(() => {
-  // Wenn ein spezifisches Bild definiert ist, nutze dieses
-  if (props.card.card_image) {
-    // Stelle sicher, dass der Pfad korrekt ist
-    return props.card.card_image.startsWith('/') 
-      ? props.card.card_image 
-      : `/${props.card.card_image}`;
+// Bestimmt den Anzeigeinhalt der Karte
+const cardContent = computed(() => {
+  // Prioritätenreihenfolge: card_content, card_image, group_id
+  if (props.card.card_content !== undefined) {
+    return props.card.card_content;
   }
-  // Fallback auf Standardverhalten
-  return null;
+  if (props.card.card_image) {
+    return props.card.card_image;
+  }
+  return props.card.group_id;
+});
+
+// Prüft, ob es sich um ein Bild handelt
+const isImage = computed(() => {
+  return props.card.card_image && 
+         (props.card.card_image.startsWith('http') || 
+          props.card.card_image.startsWith('/'));
 });
 </script>
 
@@ -47,15 +55,15 @@ const cardBackgroundImage = computed(() => {
         <div class="card-content">?</div>
       </div>
       <div class="card-revealed">
-        <!-- Zeige Bild oder Textinhalt -->
-        <div v-if="card.card_image" class="card-image">
-          <img :src="card.card_image" alt="Kartenbild">
-        </div>
-        <div v-else-if="card.card_content" class="card-text-content">
-          {{ card.card_content }}
-        </div>
-        <div v-else class="card-content">
-          {{ card.group_id }}
+        <!-- Bild-Anzeige -->
+        <img v-if="isImage" 
+             :src="cardContent" 
+             :alt="card.card_name || 'Memory Karte'" 
+             class="card-image"
+        />
+        <!-- Text-Anzeige -->
+        <div v-else class="card-text-content">
+          {{ cardContent }}
         </div>
       </div>
     </div>
@@ -109,6 +117,11 @@ const cardBackgroundImage = computed(() => {
 .card-content {
   transform: scale(1);
   transition: transform 0.3s ease;
+}
+
+.card-text-content {
+  font-size: 2rem;
+  font-weight: bold;
 }
 
 .card-hidden {

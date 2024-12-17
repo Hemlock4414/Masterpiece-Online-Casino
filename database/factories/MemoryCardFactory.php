@@ -56,6 +56,11 @@ class MemoryCardFactory extends Factory
                 'Sonne' => 'https://upload.wikimedia.org/wikipedia/commons/b/b4/The_Sun_by_the_Atmospheric_Imaging_Assembly_of_NASA%27s_Solar_Dynamics_Observatory_-_20100819.jpg',
                 'Mond' => 'https://upload.wikimedia.org/wikipedia/commons/e/e5/Aldrin_Looks_Back_at_Tranquility_Base_-_GPN-2000-001102.jpg',
             ]
+        ],
+        'numbers' => [
+            'method' => function($faker) { 
+                return $faker->numberBetween(1, 10);
+            }
         ]
     ];
 
