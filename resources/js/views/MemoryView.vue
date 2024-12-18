@@ -48,11 +48,22 @@ const fetchCustomThemes = async () => {
     customThemes.value = response.data.map(theme => ({
       id: theme,
       name: theme.charAt(0).toUpperCase() + theme.slice(1),
-      description: `Benutzerdefiniertes Thema: ${theme}`
+      description: getCustomThemeDescription(theme)
     }));
   } catch (error) {
     console.error('Fehler beim Abrufen benutzerdefinierter Themen:', error);
   }
+};
+
+// Helper Funktion für Theme Beschreibungen
+const getCustomThemeDescription = (theme) => {
+  const descriptions = {
+    'Star Wars': 'oder so ähnlich',
+    'Halloween': 'Niedliche Charaktere im Chibi-Stil',
+    // Hier können weitere Custom Theme Beschreibungen hinzugefügt werden
+  };
+  
+  return descriptions[theme] || `Benutzerdefinierte Bilder aus dem Theme ${theme}`;
 };
 
 const cardCounts = [12, 16, 20];
