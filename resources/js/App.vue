@@ -36,9 +36,12 @@ const handleLogin = async () => {
 const handleLogout = async () => {
   try {
     await logout();
-    // router.push("/"); // Diese Zeile entfernen
+    // Nur zur Startseite weiterleiten, wenn man sich auf der Profilseite befindet
+    if (router.currentRoute.value.path === '/profil') {
+      router.push("/");
+    }
   } catch (error) {
-    console.error("Logout error:", error);
+    console.error("Logout-Fehler:", error);
   }
 };
 

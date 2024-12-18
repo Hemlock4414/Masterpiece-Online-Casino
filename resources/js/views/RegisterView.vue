@@ -77,7 +77,7 @@ const previousStep = () => {
     <div class="container">
       <div class="registration-wrapper">
         <div class="text-wrapper">
-          <h3>Herzlich Willkommen auf NAME</h3>
+          <h3>Herzlich Willkommen auf Fortuna Fortune</h3>
           <p>Beginnen Sie jetzt Ihre Registrierung in nur wenigen Schritten</p>
         </div>
   
