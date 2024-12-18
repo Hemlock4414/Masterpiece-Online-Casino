@@ -5,6 +5,7 @@ import { useAuthStore } from "@/store/AuthStore";
 import DeleteAccountModal from "../components/DeleteAccountModal.vue";
 import EmailChangeModal from '../components/EmailChangeModal.vue';
 import PasswordChangeModal from '../components/PasswordChangeModal.vue';
+import CharacterGenerator from '../components/CharacterGenerator.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -323,6 +324,8 @@ onMounted(async () => {
                 </div>
               </div>
             </div>
+
+            <CharacterGenerator />
           </section>
 
           <section>
