@@ -58,7 +58,7 @@ const fetchCustomThemes = async () => {
 // Helper Funktion für Theme Beschreibungen
 const getCustomThemeDescription = (theme) => {
   const descriptions = {
-    'Star Wars': 'oder so ähnlich',
+    'Star Wars': '...oder so ähnlich',
     'Halloween': 'Niedliche Charaktere im Chibi-Stil',
     // Hier können weitere Custom Theme Beschreibungen hinzugefügt werden
   };
