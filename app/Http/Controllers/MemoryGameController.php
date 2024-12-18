@@ -25,6 +25,7 @@ class MemoryGameController extends Controller
     
             $game = new MemoryGame([
                 'status' => 'waiting',
+                'theme' => $validated['theme']
             ]);
             $game->save();
     
@@ -149,12 +150,25 @@ class MemoryGameController extends Controller
                 'player_turn' => $firstPlayer->player_id
             ]);
     
-            // Lade die aktualisierten Beziehungen
-            $game->load(['cards', 'players']);
+            // Factory für Karteninhalte
+            $factory = new MemoryCardFactory();
+            
+            // Karten mit Inhalten anreichern
+            $cards = $game->cards->map(function($card) use ($game, $factory) {
+                $content = $factory->getCardContent($game->theme, $card->group_id);
+                
+                return array_merge($card->toArray(), [
+                    'content' => $content['content'],
+                    'name' => $content['name']
+                ]);
+            });
     
+            // Lade die aktualisierten Beziehungen und setze die angereicherten Karten
+            $game->load('players');
+            
             return response()->json([
                 'message' => 'Spiel erfolgreich gestartet',
-                'game' => $game,
+                'game' => array_merge($game->toArray(), ['cards' => $cards]),
                 'active_player' => $firstPlayer
             ]);
         } catch (\Exception $e) {

@@ -1,6 +1,4 @@
 <script setup>
-import { computed } from 'vue'
-
 const props = defineProps({
   card: {
     type: Object,
@@ -20,49 +18,43 @@ const handleClick = () => {
   }
 };
 
-const cardContent = computed(() => {
-    console.log('Card data in component:', {
-        content: props.card.content,
-        fullCard: props.card
-    });
-    return props.card.content || '❓';
-});
-
 // Prüft, ob es sich um ein Bild handelt
-/* const isImage = computed(() => {
-  return props.card.content && 
-         (props.card.content.startsWith('http') || 
-          props.card.content.startsWith('/'));
-}); */
-
-// Für Bildunterschriften
-/* const cardName = computed(() => {
-  return props.card.name || '';
-}); */
+const isImagePath = (content) => {
+    return content && (
+        content.startsWith('/') || 
+        content.startsWith('http') || 
+        content.endsWith('.jpg') || 
+        content.endsWith('.jpeg') || 
+        content.endsWith('.png') || 
+        content.endsWith('.gif')
+    );
+};
 </script>
 
 <template>
-  <div 
-    class="card" 
-    :class="{ 
-      'flipped': isFlipped,
-      'matched': props.card.matched_by,
-      'disabled': props.card.matched_by 
-    }" 
-    @click="handleClick"
-  >
-    <div class="card-inner">
-      <div class="card-hidden">
-        <div class="card-content">?</div>
-      </div>
-      <div class="card-revealed">
-        <div class="content-wrapper">
-          <div class="card-text-content">
-            {{ cardContent }}
+  <div class="card" 
+       :class="{ 
+         'flipped': isFlipped,
+         'matched': props.card.matched_by,
+         'disabled': props.card.matched_by 
+       }" 
+       @click="handleClick">
+      <div class="card-inner">
+          <div class="card-hidden">?</div>
+          <div class="card-revealed">
+              <div class="content-wrapper">
+                  <!-- Bild anzeigen wenn der content eine URL ist -->
+                  <img v-if="isImagePath(props.card.content)" 
+                       :src="props.card.content" 
+                       :alt="props.card.name || 'Memory Card'"
+                       class="card-image">
+                  <!-- Sonst den content direkt anzeigen (für Emojis) -->
+                  <div v-else class="card-text-content">
+                      {{ props.card.content || '❓' }}
+                  </div>
+              </div>
           </div>
-        </div>
       </div>
-    </div>
   </div>
 </template>
 
@@ -72,6 +64,7 @@ const cardContent = computed(() => {
   perspective: 1000px;
   cursor: pointer;
   transition: transform 0.2s ease;
+  border-radius: 10px;
 }
 
 .card:hover:not(.disabled) {
@@ -104,6 +97,7 @@ const cardContent = computed(() => {
   border-radius: 10px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   overflow: hidden;
+  border-radius: inherit;
 }
 
 .content-wrapper {
@@ -113,17 +107,20 @@ const cardContent = computed(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 10%;
+  /* Grösse einstellen */
+  padding: 3%;   
 }
 
 .card-image {
-  max-width: 90%;
-  max-height: 75%;
+  /* Grösse einstellen */
+  max-width: 100%;
+  max-height: 100%;
   object-fit: contain;
 }
 
+  /* Größe bei Emojis */
 .card-text-content {
-  font-size: clamp(1rem, 4vw, 2rem);
+  font-size: clamp(2rem, 8vw, 4rem);
   font-weight: bold;
 }
 
@@ -165,11 +162,11 @@ const cardContent = computed(() => {
 /* Responsive Anpassungen */
 @media (max-width: 767px) {
   .content-wrapper {
-    padding: 5%;
+    padding: 2%;
   }
   
   .card-caption {
-    font-size: clamp(0.6rem, 1.5vw, 0.8rem);
+    font-size: clamp(1.5rem, 6vw, 3rem);
   }
 }
 
@@ -179,7 +176,7 @@ const cardContent = computed(() => {
   }
   
   .content-wrapper {
-    padding: 3%;
+    padding: 0%;
   }
 }
 </style>

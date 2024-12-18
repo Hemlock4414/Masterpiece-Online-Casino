@@ -271,30 +271,35 @@ class MemoryCardFactory extends Factory
                 return in_array(strtolower($file->getExtension()), $allowedExtensions);
             })
             ->map(function($file) use ($theme) {
+                // Frontend-URL statt Dateisystempfad
                 return "/img/memory/{$theme}/" . $file->getFilename();
             })
             ->shuffle()
             ->take($pairsCount)
             ->toArray();
-
+    
         if (count($images) < $pairsCount) {
             throw new \InvalidArgumentException(
                 "Nicht genügend Bilder für das Thema {$theme} und {$pairsCount} Paare"
             );
         }
-
+    
         $cards = [];
         for ($i = 0; $i < $pairsCount * 2; $i++) {
             $groupId = floor($i / 2) + 1;
             $image = $images[floor($i / 2)];
-
+    
             $cards[] = [
+                'card_id' => null,
                 'game_id' => null,
                 'matched_by' => null,
                 'group_id' => $groupId,
+                // Das Bild als content zurückgeben, damit es wie die anderen Themes behandelt wird
+                'content' => $image,
+                'name' => null
             ];
         }
-
+    
         return $cards;
     }
 

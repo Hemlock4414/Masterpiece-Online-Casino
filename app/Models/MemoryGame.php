@@ -16,6 +16,7 @@ class MemoryGame extends Model
         'status',
         'player_turn',
         'stopped_at',
+        'theme'
     ];
 
     protected $casts = [

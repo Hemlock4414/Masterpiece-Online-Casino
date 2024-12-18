@@ -89,44 +89,46 @@ const createNewGame = async () => {
       guest_id: storedGuestId ? parseInt(storedGuestId) : null
     });
 
-    console.log('Raw Response cards:', JSON.stringify(response.game.cards)); // Alle Daten sehen
+    console.log('Raw Response cards:', JSON.stringify(response.game.cards));
 
-    gameId.value = response.game.game_id;
-    gameStatus.value = response.game.status;
-    cards.value = response.game.cards.map(card => ({
-      ...card, 
-    content: card.content,  // Explizit content übernehmen
-    name: card.name || null       // Explizit name übernehmen  
-    }));
+    // Hier das Mapping korrigieren
+    cards.value = response.game.cards.map(serverCard => {
+        console.log('Card before mapping:', {
+            id: serverCard.card_id,
+            content: serverCard.content,
+            full: serverCard
+        });
 
-    console.log('Cards after mapping:', cards.value.map(c => ({ 
-      id: c.card_id, 
-      content: c.content 
-    })));
+        // Explizit ein neues Objekt mit allen Properties erstellen
+        const mappedCard = {
+            card_id: serverCard.card_id,
+            game_id: serverCard.game_id,
+            matched_by: serverCard.matched_by,
+            group_id: serverCard.group_id,
+            created_at: serverCard.created_at,
+            updated_at: serverCard.updated_at,
+            content: serverCard.content,
+            name: serverCard.name
+        };
 
-    // console.log('Processed cards:', JSON.stringify(cards.value)); // Verarbeitete Daten sehen
+        console.log('Card after mapping:', {
+            id: mappedCard.card_id,
+            content: mappedCard.content,
+            full: mappedCard
+        });
 
-    // Debug-Log hinzufügen
-    console.log('Server Response:', response);
-    console.log('Response cards:', response.game.cards);
+        return mappedCard;
+    });
 
-    // Prüfen ob die Antwort die erwartete Struktur hat
-    if (!response.game) {
-      throw new Error('Ungültiges Antwortformat vom Server');
-    }
 
-    // cards.value = response.game.cards;  // Hier sollten die Karten mit content ankommen
-    players.value = response.game.players || [];  // Fallback zu leerem Array
-
-    // Debug-Log für players
-    console.log('Players:', players.value);
+    players.value = response.game.players || [];
     
     const guestPlayer = players.value?.find(p => p.name?.includes('Gast'));
     if (guestPlayer && !storedGuestId) {
       sessionStorage.setItem('memoryGuestId', guestPlayer.player_id);
     }
 
-    currentPlayer.value = players.value[0] || null;  // Fallback zu null
+    currentPlayer.value = players.value[0] || null;
     flippedCards.value = [];
     roundCount.value = 0;
     timer.value = 0;
@@ -145,14 +147,26 @@ const allThemes = computed(() => {
 const handleGameStart = async () => {
   try {
     if (!gameId.value) {
-      // Neues Spiel erstellen mit gewählter Konfiguration
-      await createNewGame();
+      // Neues Spiel erstellen
+      console.log('Starte neues Spiel');
+      
+      const response = await createGame({
+        cards_count: selectedCardCount.value,
+        theme: selectedTheme.value.id,
+        guest_id: sessionStorage.getItem('memoryGuestId')
+      });
 
-      if (!gameId.value) {
+      console.log('Create game response:', response);
+      
+      if (!response.game?.game_id) {
         throw new Error('Spiel konnte nicht erstellt werden');
       }
+
+      // Game ID setzen
+      gameId.value = response.game.game_id;
     }
 
+    console.log('Starting game with ID:', gameId.value);
     const response = await startGameAPI(gameId.value);
 
     if (response.game) {
@@ -160,8 +174,6 @@ const handleGameStart = async () => {
       players.value = response.game.players;
       gameStatus.value = response.game.status;
       currentPlayer.value = players.value[0];
-
-      // Timer starten
       startTimer();
     }
   } catch (error) {
