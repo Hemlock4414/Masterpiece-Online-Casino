@@ -54,6 +54,7 @@ const router = createRouter({
             path: "/profil",
             name: "profile",
             component: () => import("../views/ProfileView.vue"),
+            meta: { requiresAuth: true },
         },
         {
             path: "/memory/play",
