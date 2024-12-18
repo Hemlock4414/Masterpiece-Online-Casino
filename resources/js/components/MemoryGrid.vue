@@ -15,8 +15,10 @@ const props = defineProps({
 
 const emit = defineEmits(['flipCard']);
 
+const gridRows = computed(() => Math.ceil(props.cards.length / 4));
+
 const isCardFlipped = (card) => {
-  return props.flippedCards.some(fc => fc.card_id === card.card_id) || card.matched_by;
+  return props.flippedCards.some(fc => fc.card_id === card.card_id) || Boolean(card.matched_by);
 };
 
 // Style für das Grid, basierend auf der Zeilenanzahl

@@ -13,6 +13,7 @@ const currentPlayer = ref(null);
 const isProcessingMove = ref(false);
 const roundCount = ref(0);
 const timer = ref(0);
+
 const customThemes = ref([]);
 const showModal = ref(false);
 const gameResult = ref({
@@ -40,6 +41,7 @@ const availableThemes = [
   { id: 'sports', name: 'Sportarten', description: 'Sportliche Emojis für aktive Spieler' }
 ];
 
+// Custom Themes laden
 const fetchCustomThemes = async () => {
   try {
     const response = await axios.get('/api/memory-games/custom-themes');
@@ -56,15 +58,6 @@ const fetchCustomThemes = async () => {
 const cardCounts = [12, 16, 20];
 const selectedTheme = ref(availableThemes[0]);
 const selectedCardCount = ref(16);
-
-// Helper-Funktionen für sessionStorage
-const getStoredGuestId = () => {
-  return sessionStorage.getItem('memoryGuestId');
-};
-
-const setStoredGuestId = (id) => {
-  sessionStorage.setItem('memoryGuestId', id);
-};
 
 // Timer Management
 let timerInterval = null;
@@ -90,25 +83,50 @@ const createNewGame = async () => {
     
     const storedGuestId = sessionStorage.getItem('memoryGuestId');
     
-    // Übergebe die ausgewählte Kartenzahl und das Thema
-    const game = await createGame({
+    const response = await createGame({
       cards_count: selectedCardCount.value,
       theme: selectedTheme.value.id,
       guest_id: storedGuestId ? parseInt(storedGuestId) : null
     });
 
-    gameId.value = game.game_id;
-    gameStatus.value = 'waiting';
-    cards.value = game.cards;
-    players.value = game.players;
+    console.log('Raw Response cards:', JSON.stringify(response.game.cards)); // Alle Daten sehen
+
+    gameId.value = response.game.game_id;
+    gameStatus.value = response.game.status;
+    cards.value = response.game.cards.map(card => ({
+      ...card, 
+    content: card.content,  // Explizit content übernehmen
+    name: card.name || null       // Explizit name übernehmen  
+    }));
+
+    console.log('Cards after mapping:', cards.value.map(c => ({ 
+      id: c.card_id, 
+      content: c.content 
+    })));
+
+    // console.log('Processed cards:', JSON.stringify(cards.value)); // Verarbeitete Daten sehen
+
+    // Debug-Log hinzufügen
+    console.log('Server Response:', response);
+    console.log('Response cards:', response.game.cards);
+
+    // Prüfen ob die Antwort die erwartete Struktur hat
+    if (!response.game) {
+      throw new Error('Ungültiges Antwortformat vom Server');
+    }
+
+    // cards.value = response.game.cards;  // Hier sollten die Karten mit content ankommen
+    players.value = response.game.players || [];  // Fallback zu leerem Array
+
+    // Debug-Log für players
+    console.log('Players:', players.value);
     
-    // Speichere die Gast-ID wenn es ein neuer Gast ist
-    const guestPlayer = players.value.find(p => p.name.includes('Gast'));
+    const guestPlayer = players.value?.find(p => p.name?.includes('Gast'));
     if (guestPlayer && !storedGuestId) {
       sessionStorage.setItem('memoryGuestId', guestPlayer.player_id);
     }
 
-    currentPlayer.value = players.value[0];
+    currentPlayer.value = players.value[0] || null;  // Fallback zu null
     flippedCards.value = [];
     roundCount.value = 0;
     timer.value = 0;
@@ -119,7 +137,6 @@ const createNewGame = async () => {
   }
 };
 
-
 // Kombinierte Themes für Auswahl
 const allThemes = computed(() => {
   return [...availableThemes, ...customThemes.value];
@@ -127,7 +144,14 @@ const allThemes = computed(() => {
 
 const handleGameStart = async () => {
   try {
-    if (!gameId.value) return;
+    if (!gameId.value) {
+      // Neues Spiel erstellen mit gewählter Konfiguration
+      await createNewGame();
+
+      if (!gameId.value) {
+        throw new Error('Spiel konnte nicht erstellt werden');
+      }
+    }
 
     const response = await startGameAPI(gameId.value);
 
@@ -168,27 +192,6 @@ const endGame = async () => {
     console.error('Fehler beim Beenden des Spiels:', error);
   }
 };
-/* const endGame = async () => {
-  try {
-    if (gameId.value) {
-      const response = await stopGame(gameId.value);
-      gameStatus.value = response.status || 'finished';
-
-      stopTimer();
-
-      if (gameStatus.value === 'finished') {
-        showModal.value = true;
-        gameResult.value = {
-          points: players.value.reduce((acc, player) => acc + (player.pivot?.player_score ?? 0), 0),
-          rounds: roundCount.value,
-          time: timer.value,
-        };
-      }
-    }
-  } catch (error) {
-    console.error('Fehler beim Beenden des Spiels:', error);
-  }
-}; */
 
 // Spiel neu starten
 const abortGame = async () => {
@@ -204,42 +207,10 @@ const abortGame = async () => {
     
     resetGameState();
     
-    // Sofort ein neues Spiel mit demselben Gast erstellen
-    await createNewGame(currentGuestId);
-    
   } catch (error) {
     console.error('Fehler beim Abbrechen des Spiels:', error);
   }
 };
-/* const abortGame = async () => {
-  try {
-    if (!gameId.value) return;
-    
-    // Zuerst den Timer stoppen
-    stopTimer();
-       
-    // API-Aufruf
-    await stopGame(gameId.value, 'aborted');
-    
-    // Spielzustand komplett zurücksetzen
-    const currentGuestId = players.value.find(p => p.name.includes('Gast'))?.player_id;
-    
-    // Spielzustand zurücksetzen aber Gast-ID behalten
-    gameId.value = null;
-    cards.value = [];
-    flippedCards.value = [];
-    roundCount.value = 0;
-    timer.value = 0;
-    showModal.value = false;
-    gameStatus.value = 'waiting';
-    
-    // Sofort ein neues Spiel mit demselben Gast erstellen
-    await createNewGame(currentGuestId);
-    
-  } catch (error) {
-    console.error('Fehler beim Abbrechen des Spiels:', error);
-  }
-}; */
 
 const switchPlayer = () => {
   const currentIndex = players.value.findIndex(p => p.player_id === currentPlayer.value.player_id);
@@ -262,73 +233,7 @@ const updatePlayerScore = async (playerId, score) => {
   }
 };
 
-/* const handleCardFlip = async (card) => {
-  if (
-    isProcessingMove.value || 
-    gameStatus.value !== 'in_progress' ||
-    card.is_matched ||
-    flippedCards.value.find(c => c.card_id === card.card_id)
-  ) {
-    return;
-  }
-
-  try {
-    // Karte zum flippedCards Array hinzufügen
-    const currentCard = cards.value.find(c => c.card_id === card.card_id);
-    flippedCards.value.push(currentCard);
-    
-    // Wenn zwei Karten aufgedeckt sind
-    if (flippedCards.value.length === 2) {
-      isProcessingMove.value = true;
-      roundCount.value++;
-      
-      const [first, second] = flippedCards.value;
-      
-      // Kurze Pause damit Spieler die Karten sehen kann
-      await new Promise(resolve => setTimeout(resolve, 700));
-
-      if (first.group_id === second.group_id) {
-        // Match gefunden
-        await updateMatchedCards(
-          gameId.value,
-          [first.card_id, second.card_id],
-          currentPlayer.value.player_id
-        );
-
-        // Update cards state
-        cards.value = cards.value.map(c => 
-          [first.card_id, second.card_id].includes(c.card_id)
-            ? { ...c, is_matched: true, matched_by: currentPlayer.value.player_id }
-            : c
-        );
-
-        // Punktzahl erhöhen
-        if (currentPlayer.value) {
-          currentPlayer.value.pivot.player_score = 
-            (currentPlayer.value.pivot.player_score || 0) + 1;
-        }
-
-        // Prüfen ob Spiel beendet
-        if (cards.value.every(c => c.is_matched)) {
-          await endGame();
-        }
-      } else {
-        // Kein Match - Karten wieder umdrehen
-        await new Promise(resolve => setTimeout(resolve, 500));
-        switchPlayer();
-      }
-
-      // Aufgedeckte Karten zurücksetzen
-      flippedCards.value = [];
-      isProcessingMove.value = false;
-    }
-
-  } catch (error) {
-    console.error('Fehler beim Kartenflip:', error);
-    isProcessingMove.value = false;
-  }
-};
- */
+// Card Management
  const handleCardFlip = async (card) => {
   if (
     isProcessingMove.value || 
@@ -392,7 +297,6 @@ const updatePlayerScore = async (playerId, score) => {
   }
 };
 onMounted(async () => {
-  await createNewGame();
   await fetchCustomThemes();
 });
 
@@ -405,14 +309,12 @@ onUnmounted(() => {
 <template>
   <main>
     <div class="memory-container">
-
       <div class="memory-game">
-
         <!-- Spielkonfiguration -->
-        <div v-if="gameStatus === 'waiting'" class="game-configuration">
+        <div v-if="!gameId || gameStatus === 'waiting'" class="game-configuration">
           <h2>Memory Konfiguration</h2>
 
-          <!-- Thema-Auswahl -->
+          <!-- Themenauswahl -->
           <div class="theme-selection">
             <h3>Thema wählen</h3>
             <div class="theme-grid">
@@ -429,7 +331,7 @@ onUnmounted(() => {
             </div>
           </div>
           
-          <!-- Kartenanzahl-Auswahl -->
+          <!-- Kartenanzahl -->
           <div class="card-count-selection">
             <h3>Anzahl der Karten</h3>
             <div class="card-count-buttons">
@@ -443,88 +345,79 @@ onUnmounted(() => {
               </button>
             </div>
           </div>
+
+          <div class="game-controls">
+            <button 
+              @click="handleGameStart"
+              class="btn-primary"
+            >
+              Spiel starten
+            </button>
+          </div>
         </div>
 
         <!-- Spielbereich -->
+        <div v-else>
           <div class="header">
-            <h1>Memory</h1>
+            <h1>Memory: {{ selectedTheme.name }}</h1>
             <div class="timer">
-              <h2>Timer</h2>
-              <p>{{ Math.floor(timer / 60) }}:{{ String(timer % 60).padStart(2, '0') }}</p>
+              <span>Zeit: {{ Math.floor(timer / 60) }}:{{ String(timer % 60).padStart(2, '0') }}</span>
             </div>
           </div>
 
-        <div class="game-status">
-          <p>Spielstatus: {{ gameStatus }}</p>
-        </div>
+          <div class="game-info">
+            <div class="player-list">
+              <h3>Spieler</h3>
+              <ul>
+                <li 
+                  v-for="player in players" 
+                  :key="player.player_id"
+                  :class="{ 'active-player': currentPlayer?.player_id === player.player_id }"
+                >
+                  {{ player.name }}: {{ player.pivot?.player_score ?? 0 }} Punkte
+                </li>
+              </ul>
+            </div>
 
-        <div class="game-layout">
-          <div class="player-list">
-            <h2>Spieler</h2>
-            <ul>
-              <li 
-                v-for="player in players" 
-                :key="player.player_id"
-                :class="{ 'active-player': currentPlayer?.player_id === player.player_id }"
-              >
-                {{ player.name }}: {{ player.pivot?.player_score ?? 0 }} Punkte
-              </li>
-            </ul>
+            <div class="round-info">
+              <h3>Runde {{ roundCount }}</h3>
+              <p v-if="currentPlayer">Am Zug: {{ currentPlayer.name }}</p>
+            </div>
           </div>
 
-          <div class="player-info" v-if="currentPlayer">
-            <p>Am Zug: {{ currentPlayer.name }}</p>
+          <div class="game-controls">
+            <button 
+              v-if="gameStatus === 'in_progress'" 
+              @click="abortGame"
+              class="btn-secondary"
+            >
+              Spiel abbrechen
+            </button>
+
+            <button 
+              v-if="gameStatus === 'finished'" 
+              @click="createNewGame"
+              class="btn-primary"
+            >
+              Neues Spiel
+            </button>
           </div>
 
-          <div class="round-info">
-            <h2>Runden</h2>
-            <p>{{ roundCount }}</p>
-          </div>
+          <MemoryGrid 
+            v-if="cards.length"
+            :cards="cards"
+            :flippedCards="flippedCards"
+            @flipCard="handleCardFlip"
+          />
         </div>
-
-        <div class="game-controls">
-          <button 
-            v-if="gameStatus === 'waiting'" 
-            @click="handleGameStart"
-            class="btn-primary"
-          >
-            Spiel Starten
-          </button>
-
-          <button 
-            v-if="gameStatus === 'in_progress'" 
-            @click="abortGame"
-            class="btn-secondary"
-          >
-            Spiel abbrechen
-          </button>
-
-          <button 
-            v-if="gameStatus === 'finished'" 
-            @click="createNewGame"
-            class="btn-primary"
-          >
-            Neues Spiel
-          </button>
-        </div>
-
-        <MemoryGrid 
-          v-if="(gameStatus === 'in_progress' || gameStatus === 'finished') && cards.length" 
-          :cards="cards"
-          :flippedCards="flippedCards"
-          @flipCard="handleCardFlip" 
-        />
 
         <MemoryEndModal
-        v-if="showModal"
-        :title="'Spiel beendet!'"
-        :points="gameResult.points"
-        :rounds="gameResult.rounds"
-        :time="gameResult.time"
-        :on-new-game="createNewGame"
-        :on-go-to-home="() => $router.push('/')"
+          v-if="showModal"
+          :points="gameResult.points"
+          :rounds="gameResult.rounds"
+          :time="gameResult.time"
+          @newGame="createNewGame"
         />
-
       </div>
     </div>
   </main>

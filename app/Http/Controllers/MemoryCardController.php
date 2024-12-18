@@ -14,8 +14,20 @@ class MemoryCardController extends Controller
         try {
             $game = MemoryGame::findOrFail($gameId);
             $cards = $game->cards()->inRandomOrder()->get();
-            
-            return response()->json($cards->map(function($card) {
+            $factory = new MemoryCardFactory();
+    
+            // Debug: Theme prüfen
+            Log::info('Current game theme:', ['theme' => $game->theme ?? 'emojis']);
+    
+            $mappedCards = $cards->map(function($card) use ($game, $factory) {
+                $content = $factory->getCardContent($game->theme ?? 'emojis', $card->group_id);
+                
+                // Debug: Karteninhalt prüfen
+                Log::info('Card content:', [
+                    'group_id' => $card->group_id,
+                    'content' => $content
+                ]);
+    
                 return [
                     'card_id' => $card->card_id,
                     'game_id' => $card->game_id,
@@ -24,7 +36,9 @@ class MemoryCardController extends Controller
                     'content' => $content['content'],
                     'name' => $content['name']
                 ];
-            }));
+            });
+    
+            return response()->json($mappedCards);
         } catch (\Exception $e) {
             Log::error('Fehler beim Abrufen der Karten:', ['error' => $e->getMessage()]);
             return response()->json(['error' => 'Fehler beim Abrufen der Karten'], 500);

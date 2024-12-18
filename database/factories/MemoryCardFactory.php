@@ -381,27 +381,64 @@ class MemoryCardFactory extends Factory
      * Gibt den Content für eine bestimmte Karte zurück
      */
     public function getCardContent(string $theme, int $groupId): array
-    {
-        if ($theme === 'emojis' || $theme === 'sports') {
+    {   
+        $index = $groupId - 1;
+
+        if ($theme === 'emojis') {
             return [
-                'content' => self::FIXED_THEMES[$theme]['content'][$groupId - 1] ?? '❓',
+                'content' => self::FIXED_THEMES['emojis']['content'][$index] ?? '❓',
                 'name' => null
             ];
         }
 
-        if ($theme === 'flags' || $theme === 'planets') {
-            $items = self::FIXED_THEMES[$theme]['items'];
-            $keys = array_keys($items);
-            $key = $keys[$groupId - 1] ?? null;
-            
+        if ($theme === 'sports') {
             return [
-                'content' => $items[$key] ?? null,
-                'name' => $key ?? null
+                'content' => self::FIXED_THEMES['sports']['content'][$index] ?? '❓',
+                'name' => null
             ];
         }
 
+        if ($theme === 'flags') {
+            $keys = array_keys(self::FIXED_THEMES['flags']['items']);
+            $key = $keys[$index] ?? null;
+            
+            return [
+                'content' => self::FIXED_THEMES['flags']['items'][$key] ?? null,
+                'name' => $key
+            ];
+        }
+
+        if ($theme === 'planets') {
+            $keys = array_keys(self::FIXED_THEMES['planets']['items']);
+            $key = $keys[$index] ?? null;
+            
+            return [
+                'content' => self::FIXED_THEMES['planets']['items'][$key] ?? null,
+                'name' => $key
+            ];
+        }
+
+        // Für Custom Themes
+        $customThemePath = public_path("img/memory/{$theme}");
+        if (File::exists($customThemePath)) {
+            $images = collect(File::files($customThemePath))
+                ->filter(function($file) {
+                    $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+                    return in_array(strtolower($file->getExtension()), $allowedExtensions);
+                })
+                ->values();
+
+            if ($images->count() > $index) {
+                $image = $images[$index];
+                return [
+                    'content' => "/img/memory/{$theme}/" . $image->getFilename(),
+                    'name' => null
+                ];
+            }
+        }
+
         return [
-            'content' => null,
+            'content' => '❓',
             'name' => null
         ];
     }

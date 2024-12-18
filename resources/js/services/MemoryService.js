@@ -19,7 +19,6 @@ export const createGame = async ({ cards_count, theme, guest_id } = {}) => {
 
     console.log('Request Data:', requestData); // Debug
     
-    console.log('Request Data:', requestData); // Debug
     const response = await apiClient.post('/memory-games/create', requestData);
     return response.data;
   } catch (error) {

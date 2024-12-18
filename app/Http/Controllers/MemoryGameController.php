@@ -16,21 +16,19 @@ class MemoryGameController extends Controller
     {
         try {
             DB::beginTransaction();
-
-            Log::info('Create game request data:', $request->all());  // Debug-Log
             
             $validated = $request->validate([
                 'cards_count' => 'required|integer|in:12,16,20',
-                'guest_id' => 'nullable|integer'
+                'guest_id' => 'nullable|integer',
+                'theme' => 'required|string'
             ]);
     
-            // Spiel erstellen
             $game = new MemoryGame([
-                'status' => 'waiting'
+                'status' => 'waiting',
             ]);
             $game->save();
     
-            // Spieler erstellen/finden
+            // Spieler erstellen/finden...
             if (auth()->check()) {
                 $player = MemoryPlayer::firstOrCreate(
                     ['user_id' => auth()->id()],
@@ -38,14 +36,9 @@ class MemoryGameController extends Controller
                 );
             } else {
                 if ($request->guest_id) {
-                    Log::info('Suche existierenden Gast:', ['guest_id' => $request->guest_id]);
                     $player = MemoryPlayer::where('player_id', $request->guest_id)
                                         ->where('name', 'LIKE', 'Gast%')
                                         ->first();
-                    
-                    if ($player) {
-                        Log::info('Existierender Gast gefunden:', ['player' => $player]);
-                    }
                 }
                 
                 if (!isset($player) || !$player) {
@@ -60,24 +53,54 @@ class MemoryGameController extends Controller
                 'player_score' => 0
             ]);
     
-            // Karten über Factory erstellen
+            // Karten erstellen
             $factory = new MemoryCardFactory();
             $cards = $factory->generateCardsForTheme(
-                $request->theme ?? 'emojis',  // Theme wird nicht validiert/gespeichert, nur für Factory
+                $validated['theme'],
                 $validated['cards_count'] / 2
             );
             
+            // Karten speichern und mit Inhalten anreichern
+            $createdCards = collect();
             foreach ($cards as $cardData) {
                 $cardData['game_id'] = $game->game_id;
-                MemoryCard::create($cardData);
+                $card = MemoryCard::create($cardData);
+                
+                // Inhalt hinzufügen
+                $content = $factory->getCardContent($validated['theme'], $card->group_id);                
+                $card = array_merge($card->toArray(), [
+                    'content' => $content['content'],
+                    'name' => $content['name']
+                ]);
+
+                $createdCards->push($card);
             }
     
             DB::commit();
+
+            $cardsData = $createdCards->map(function($card) {
+                Log::info('Card before sending:', [
+                    'id' => $card['card_id'],
+                    'groupId' => $card['group_id'],
+                    'content' => $card['content'] ?? 'no content',
+                    'name' => $card['name'] ?? 'no name'
+                ]);
+                return $card;
+            })->shuffle();
     
-            return response()->json([
-                'game' => $game->load(['cards', 'players']),
+            $response = [
+                'game' => [
+                    'game_id' => $game->game_id,
+                    'status' => $game->status,
+                    'cards' => $cardsData,
+                    'players' => $game->players
+                ],
                 'message' => 'Spiel erfolgreich erstellt'
-            ], 201);
+            ];
+            
+            // Log::info('Final response:', $response);
+            
+            return response()->json($response, 201);
     
         } catch (\Exception $e) {
             DB::rollBack();

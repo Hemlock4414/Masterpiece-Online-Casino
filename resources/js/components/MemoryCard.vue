@@ -21,29 +21,33 @@ const handleClick = () => {
 };
 
 const cardContent = computed(() => {
-  return props.card.content || '';
+    console.log('Card data in component:', {
+        content: props.card.content,
+        fullCard: props.card
+    });
+    return props.card.content || '❓';
 });
 
-// Prüft, ob es sich um ein Bild handelt (für Flags/Planeten)
-const isImage = computed(() => {
+// Prüft, ob es sich um ein Bild handelt
+/* const isImage = computed(() => {
   return props.card.content && 
          (props.card.content.startsWith('http') || 
           props.card.content.startsWith('/'));
-});
+}); */
 
-// Für Bildunterschriften bei Flags/Planeten
-const cardName = computed(() => {
+// Für Bildunterschriften
+/* const cardName = computed(() => {
   return props.card.name || '';
-});
+}); */
 </script>
 
 <template>
   <div 
     class="card" 
     :class="{ 
-      'flipped': isFlipped || card.matched_by,
-      'matched': card.matched_by,
-      'disabled': card.matched_by 
+      'flipped': isFlipped,
+      'matched': props.card.matched_by,
+      'disabled': props.card.matched_by 
     }" 
     @click="handleClick"
   >
@@ -53,19 +57,8 @@ const cardName = computed(() => {
       </div>
       <div class="card-revealed">
         <div class="content-wrapper">
-          <!-- Bild-Anzeige -->
-          <img v-if="isImage" 
-               :src="cardContent" 
-               :alt="cardName" 
-               class="card-image"
-          />
-          <!-- Text/Emoji-Anzeige -->
-          <div v-else class="card-text-content">
+          <div class="card-text-content">
             {{ cardContent }}
-          </div>
-          <!-- Bildunterschrift für Flags/Planeten -->
-          <div v-if="cardName" class="card-caption">
-            {{ cardName }}
           </div>
         </div>
       </div>
