@@ -267,12 +267,12 @@ onMounted(() => {
             title="Bitte geben Sie das Datum im Format TT.MM.JJJJ ein"
           >
           <div class="calendar-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-              <line x1="16" y1="2" x2="16" y2="6"></line>
-              <line x1="8" y1="2" x2="8" y2="6"></line>
-              <line x1="3" y1="10" x2="21" y2="10"></line>
-            </svg>
+            <img 
+              src="/public/img/icons8-18-plus-50.png" 
+              alt="18+" 
+              width="30" 
+              height="30"
+            />
           </div>
         </div>
         <div class="error-container">
@@ -285,7 +285,7 @@ onMounted(() => {
 
       <!-- Nationalität -->
       <div class="input-container">
-        <label for="nationalitaet">Nationalität (optional)</label>
+        <label for="nationalitaet">Nationalität</label>
         <select
           id="nationalitaet"
           v-model="modelValue.nationalitaet"
@@ -356,7 +356,9 @@ onMounted(() => {
   right: 12px;
   top: 50%;
   transform: translateY(-50%);
-  color: #6b7280;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   pointer-events: none;
 }
 

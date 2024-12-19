@@ -81,9 +81,21 @@ const handleInput = (field) => {
   if (field === 'spielername') {
     checkUsername(props.modelValue.spielername);
   } else if (field === 'email') {
-    if (validateEmail(props.modelValue.email)) {
-      checkEmail(props.modelValue.email);
+    // Basis Email-Validierung
+    const basicEmailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!basicEmailRegex.test(props.modelValue.email)) {
+      validationErrors.value.email = 'Bitte geben Sie eine gültige E-Mail-Adresse ein';
+      return;
     }
+    
+    const parts = props.modelValue.email.split('@');
+    if (parts[0].length < 2) {
+      validationErrors.value.email = 'Der lokale Teil der E-Mail-Adresse ist zu kurz';
+      return;
+    }
+    
+    // Wenn Email-Format gültig ist, prüfe Verfügbarkeit
+    checkEmail(props.modelValue.email);
   }
 };
 
