@@ -3,7 +3,9 @@ import { ref, onMounted, onUnmounted, computed } from 'vue';
 import MemoryGrid from '../components/MemoryGrid.vue';
 import MemoryEndModal from '../components/MemoryEndModal.vue';
 import { createGame, stopGame, updateMatchedCards, startGame as startGameAPI } from '../services/MemoryService';
+import { useAuthStore } from '../store/AuthStore';
 
+const authStore = useAuthStore();
 const gameId = ref(null);
 const gameStatus = ref(null);
 const players = ref([]);
@@ -22,7 +24,14 @@ const gameResult = ref({
   time: 0,
 });
 
+// Spieler-ID aus der Session erhalten
+const getStoredGuestId = () => {
+  return sessionStorage.getItem('memoryGuestId');
+};
+
 const resetGameState = () => {
+  // Gastspieler-ID speichern, bevor wir zurücksetzen
+  const guestId = getStoredGuestId();
   gameId.value = null;
   cards.value = [];
   flippedCards.value = [];
@@ -30,6 +39,11 @@ const resetGameState = () => {
   timer.value = 0;
   showModal.value = false;
   gameStatus.value = 'waiting';
+
+  // Wenn es einen Gastspieler gab, ID wieder in Session speichern
+  if (guestId) {
+  sessionStorage.setItem('memoryGuestId', guestId);
+  }
 };
 
 // Spielkonfiguration
@@ -333,6 +347,20 @@ onUnmounted(() => {
   <main>
     <div class="memory-container">
       <div class="memory-game">
+
+        <!-- Player Info - Always visible -->
+        <div class="player-info-section">
+          <h3>Spieler</h3>
+          <div class="avatar-container">
+            <img 
+              :src="authStore.user ? authStore.profileImage : '/storage/defaults/default-avatar.png'"
+              alt="Player Avatar"
+              class="player-avatar"
+            />
+          </div>
+          <p class="player-name">{{ currentPlayer?.name || 'Nicht angemeldet' }}</p>
+        </div>
+
         <!-- Spielkonfiguration -->
         <div v-if="!gameId || gameStatus === 'waiting'" class="game-configuration">
           <h2>Memory Konfiguration</h2>
