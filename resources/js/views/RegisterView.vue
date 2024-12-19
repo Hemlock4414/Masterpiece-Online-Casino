@@ -1,12 +1,15 @@
 <script setup>
-import { ref } from "vue";
+import { ref, } from "vue";
 import { useAuthStore } from "@/store/AuthStore";
 import router from "@/router";
 
 import RegStepOne from '../components/RegStepOne.vue';
 import RegStepTwo from '../components/RegStepTwo.vue';
+import SuccessReg from '../components/SuccessReg.vue';
 
 const { register, getAuthUser } = useAuthStore();
+
+const showSuccess = ref(false);
 
 const currentStep = ref(1);
 const formData = ref({
@@ -49,7 +52,11 @@ const handleRegister = async () => {
 
     if (respReg.status === 201) {
       await getAuthUser();
-      router.push("/");
+      showSuccess.value = true;  // Zeige das Popup
+      // Warte 3 Sekunden, dann weiterleiten
+      setTimeout(() => {
+        router.push("/");
+      }, 3000);
     }
   } catch (error) {
     if (error.response?.data?.errors) {
@@ -101,6 +108,10 @@ const previousStep = () => {
           />
         </div>
       </div>
+      <SuccessReg 
+        :is-visible="showSuccess"
+        message="Registrierung erfolgreich! Sie werden weitergeleitet..."
+      />
     </div>
   </main>  
 </template>

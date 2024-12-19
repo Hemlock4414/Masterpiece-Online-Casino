@@ -81,7 +81,9 @@ const handleInput = (field) => {
   if (field === 'spielername') {
     checkUsername(props.modelValue.spielername);
   } else if (field === 'email') {
-    checkEmail(props.modelValue.email);
+    if (validateEmail(props.modelValue.email)) {
+      checkEmail(props.modelValue.email);
+    }
   }
 };
 
@@ -105,14 +107,25 @@ const validateForm = () => {
     isValid = false;
   }
   
+  // Erweiterte Email-Validierung
   if (!props.modelValue.email) {
     validationErrors.value.email = 'Bitte geben Sie eine E-Mail-Adresse ein';
     isValid = false;
-  } else if (!props.modelValue.email.includes('@')) {
-    validationErrors.value.email = 'Bitte geben Sie eine gültige E-Mail-Adresse ein';
-    isValid = false;
+  } else {
+    const basicEmailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!basicEmailRegex.test(props.modelValue.email)) {
+      validationErrors.value.email = 'Bitte geben Sie eine gültige E-Mail-Adresse ein';
+      isValid = false;
+    } else {
+      const parts = props.modelValue.email.split('@');
+      if (parts[0].length < 2) {
+        validationErrors.value.email = 'Der lokale Teil der E-Mail-Adresse ist zu kurz';
+        isValid = false;
+      }
+    }
   }
   
+  // Passwort-Validierung bleibt gleich
   if (!props.modelValue.password) {
     validationErrors.value.password = 'Bitte geben Sie ein Passwort ein';
     isValid = false;

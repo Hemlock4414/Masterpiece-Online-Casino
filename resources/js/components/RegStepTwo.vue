@@ -1,7 +1,6 @@
 <!-- RegStepTwo.vue -->
 <script setup>
-import { ref, onMounted, computed } from 'vue';
-import { authClient } from '@/services/AuthService';
+import { ref, onMounted } from 'vue';
 import CancelRegModal from './CancelRegModal.vue';
 
 const props = defineProps({
@@ -14,75 +13,20 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue', 'previous', 'submit']);
 
 const showCancelModal = ref(false);
+const agbAccepted = ref(false);
 const validationErrors = ref({
   vorname: '',
   nachname: '',
   geburtsdatum: '',
-  nationalitaet: ''
+  agb: ''
 });
 
-const hauptLaender = ref([]);
-const uebrigeLaender = ref([]);
-
-// Kalenderdaten
-const selectedDay = ref('');
-const selectedMonth = ref('');
-const selectedYear = ref('');
-
-// Berechne das minimale Jahr (18 Jahre zurück)
-const minYear = computed(() => {
-  const date = new Date();
-  return date.getFullYear() - 100; // Maximales Alter 100 Jahre
-});
-
-const maxYear = computed(() => {
-  const date = new Date();
-  return date.getFullYear() - 18; // Minimales Alter 18 Jahre
-});
-
-// Generiere Arrays für die Dropdowns
-const years = computed(() => {
-  const years = [];
-  for (let year = maxYear.value; year >= minYear.value; year--) {
-    years.push(year);
-  }
-  return years;
-});
-
-const months = computed(() => {
-  return Array.from({ length: 12 }, (_, i) => {
-    return {
-      value: i + 1,
-      label: new Date(2000, i).toLocaleString('de-DE', { month: 'long' })
-    };
-  });
-});
-
-const days = computed(() => {
-  if (!selectedYear.value || !selectedMonth.value) return Array.from({ length: 31 }, (_, i) => i + 1);
-  
-  const daysInMonth = new Date(selectedYear.value, selectedMonth.value, 0).getDate();
-  return Array.from({ length: daysInMonth }, (_, i) => i + 1);
-});
-
-// Laden der Länderdaten
-onMounted(async () => {
-  try {
-    const response = await authClient.get('/api/countries');
-    hauptLaender.value = response.data.hauptLaender;
-    uebrigeLaender.value = response.data.uebrigeLaender;
-    
-    // Setze Schweiz als Standard wenn noch kein Land gewählt wurde
-    if (!props.modelValue.nationalitaet) {
-      emit('update:modelValue', { 
-        ...props.modelValue, 
-        nationalitaet: 'Schweiz' 
-      });
-    }
-  } catch (error) {
-    console.error('Fehler beim Laden der Länder:', error);
-  }
-});
+const hauptLaender = [
+    "Schweiz",
+    "Deutschland",
+    "Österreich",
+    "Liechtenstein"
+];
 
 // Berechne das maximale Datum (18 Jahre zurück)
 const calculateMaxDate = () => {
@@ -220,6 +164,12 @@ const handleSubmit = () => {
     isValid = false;
   }
 
+  // AGB Validierung hierhin
+  if (!agbAccepted.value) {
+    validationErrors.value.agb = 'Bitte akzeptieren Sie die AGB';
+    isValid = false;
+  }
+
   if (isValid) {
     emit('submit');
   }
@@ -233,22 +183,13 @@ const closeCancelModal = () => {
   showCancelModal.value = false;
 };
 
-onMounted(async () => {
-  try {
-    const response = await authClient.get('/api/countries');
-    hauptLaender.value = response.data.hauptLaender;
-    uebrigeLaender.value = response.data.uebrigeLaender;
-    
-    // Setze Schweiz als Standard
+onMounted(() => {
     if (!props.modelValue.nationalitaet) {
-      emit('update:modelValue', { 
-        ...props.modelValue, 
-        nationalitaet: 'Schweiz' 
-      });
+        emit('update:modelValue', { 
+            ...props.modelValue, 
+            nationalitaet: 'Schweiz' 
+        });
     }
-  } catch (error) {
-    console.error('Fehler beim Laden der Länder:', error);
-  }
 });
 </script>
 
@@ -344,7 +285,7 @@ onMounted(async () => {
 
       <!-- Nationalität -->
       <div class="input-container">
-        <label for="nationalitaet">Nationalität</label>
+        <label for="nationalitaet">Nationalität (optional)</label>
         <select
           id="nationalitaet"
           v-model="modelValue.nationalitaet"
@@ -358,15 +299,29 @@ onMounted(async () => {
           >
             {{ land }}
           </option>
-          <option disabled>──────────</option>
-          <option 
-            v-for="land in uebrigeLaender" 
-            :key="land" 
-            :value="land"
-          >
-            {{ land }}
-          </option>
         </select>
+      </div>
+
+      <!-- Checkbox -->
+      <div class="input-container">
+        <div class="agb-checkbox">
+          <input 
+            type="checkbox" 
+            id="agb-acceptance" 
+            v-model="agbAccepted"
+            :class="{ 'input-error': validationErrors.agb }"
+          >
+          <label for="agb-acceptance">
+            Ich akzeptiere die
+            <a href="/agb" target="_blank">AGB</a>&nbsp;*
+          </label>
+        </div>
+        <div class="error-container">
+          <span v-if="validationErrors.agb" class="error-message">
+            {{ validationErrors.agb }}
+          </span>
+          <span v-else class="error-placeholder">&nbsp;</span>
+        </div>
       </div>
 
       <div class="button-group">
@@ -499,6 +454,33 @@ input:focus, select:focus {
 
 .btn-cancel:hover {
   color: #374151;
+}
+
+.agb-checkbox {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.agb-checkbox input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+}
+
+.agb-checkbox label {
+  display: inline;
+  font-weight: 400;
+  margin: 0;
+}
+
+.agb-checkbox a {
+  color: #3b82f6;
+  text-decoration: none;
+}
+
+.agb-checkbox a:hover {
+  text-decoration: underline;
 }
 
 .hint {
