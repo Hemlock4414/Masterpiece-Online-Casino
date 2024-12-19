@@ -1,0 +1,12 @@
+{
+    "name": "rmmz-game",
+    "main": "index.html",
+    "chromium-args": "--force-color-profile=srgb --disable-devtools",
+    "window": {
+        "title": "Pixel Fantasy Character Generator",
+        "width": 1472,
+        "height": 828,
+        "position": "center",
+        "icon": "icon/icon.png"
+    }
+}
