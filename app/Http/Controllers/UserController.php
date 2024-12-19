@@ -157,6 +157,18 @@ class UserController extends Controller
         }
     }
 
+    public function checkUsername(Request $request)
+    {
+        $exists = User::where('username', $request->username)->exists();
+        return response()->json(['available' => !$exists]);
+    }
+
+    public function checkEmail(Request $request)
+    {
+        $exists = User::where('email', $request->email)->exists();
+        return response()->json(['available' => !$exists]); 
+    }
+
     public function login(Request $request)
     {
         $credentials = $request->validate([

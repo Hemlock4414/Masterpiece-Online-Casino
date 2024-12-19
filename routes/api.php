@@ -23,6 +23,11 @@ Route::post('/register', [UserController::class, 'register']);
 
 Route::get('/users-info', [UserController::class, 'index']);
 
+Route::post('/check-username', [UserController::class, 'checkUsername']);
+Route::post('/check-email', [UserController::class, 'checkEmail']);
+
+Route::get('/countries', [CountryController::class, 'getCountries']);
+
 //Contact
 // Route::post('/contact', [ContactController::class, 'send']);
 
