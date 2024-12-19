@@ -114,7 +114,7 @@ onUnmounted(() => {
                 <RouterLink to="/memory/play" style="text-decoration: none;">
                     <div class="card-container">
                         <div class="card">
-                            <img src="/public/img/casino-placeholder.jpg" alt="Bild 2" class="card-image">
+                            <img src="/public/img/memory-tux.png" alt="Bild 2" class="card-image">
                         </div>
                         <button class="button">Play Memory</button>
                     </div>
