@@ -15,8 +15,7 @@ class MemoryCard extends Model
     protected $fillable = [
         'game_id',
         'matched_by',
-        'card_image',
-        'group_id',
+        'group_id'
     ];
 
     // Relationships
@@ -31,11 +30,9 @@ class MemoryCard extends Model
     }
 
     // Helper Methoden
-
     public function match(MemoryPlayer $player)
     {
         $this->update([
-            'is_matched' => true,
             'matched_by' => $player->player_id
         ]);
         return $this;
@@ -44,27 +41,8 @@ class MemoryCard extends Model
     public function reset()
     {
         $this->update([
-            'is_flipped' => false,
-            'is_matched' => false,
             'matched_by' => null
         ]);
         return $this;
-    }
-
-    public function canBeFlippedBy(MemoryPlayer $player): bool
-    {
-        return !$this->is_matched && 
-            $this->game->isInProgress() && 
-            $this->game->player_turn === $player->player_id;
-    }
-
-    public function hasMatchingCardFlipped(): bool
-    {
-        return $this->game->cards()
-            ->where('group_id', $this->group_id)
-            ->where('card_id', '!=', $this->card_id)
-            ->where('is_flipped', true)
-            ->where('is_matched', false)
-            ->exists();
     }
 }

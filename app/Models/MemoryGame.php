@@ -16,12 +16,13 @@ class MemoryGame extends Model
         'status',
         'player_turn',
         'stopped_at',
+        'theme'
     ];
 
     protected $casts = [
         'game_id' => 'integer',
         'player_turn' => 'integer',
-        'stopped_at' => 'datetime',
+        'stopped_at' => 'datetime'
     ];
 
     // Status-Konstanten
@@ -30,19 +31,19 @@ class MemoryGame extends Model
     const STATUS_FINISHED = 'finished';
 
     protected static function booted()
-{
-    static::saving(function ($game) {
-        if ($game->status === self::STATUS_IN_PROGRESS && !$game->player_turn) {
-            throw new \Exception('Ein laufendes Spiel muss einen aktiven Spieler haben');
-        }
-    });
-}
+    {
+        static::saving(function ($game) {
+            if ($game->status === self::STATUS_IN_PROGRESS && !$game->player_turn) {
+                throw new \Exception('Ein laufendes Spiel muss einen aktiven Spieler haben');
+            }
+        });
+    }
 
-    // Rest der Beziehungen
+    // Relationships
     public function cards()
     {
         return $this->hasMany(MemoryCard::class, 'game_id')
-                    ->inRandomOrder();  // Direkt in der Relationship definiert
+                    ->inRandomOrder();
     }
 
     public function players()
@@ -53,7 +54,7 @@ class MemoryGame extends Model
                     ->withTimestamps();
     }
 
-    // Helper Methoden
+    // Status Helper
     public function isWaiting(): bool
     {
         return $this->status === self::STATUS_WAITING;
@@ -69,6 +70,7 @@ class MemoryGame extends Model
         return $this->status === self::STATUS_FINISHED;
     }
 
+    // Spieler Management
     public function getActivePlayer()
     {
         return $this->players()->where('player_id', $this->player_turn)->first();
@@ -79,27 +81,20 @@ class MemoryGame extends Model
         return $this->isInProgress() && $this->player_turn === $player->player_id;
     }
 
-    public function getFlippedCards()
+    public function checkGameCompletion(): bool
     {
-        return $this->cards()
-            ->where('is_flipped', true)
-            ->where('is_matched', false)
-            ->get();
-    }
-
-    public function checkGameCompletion()
-    {
-        $allMatched = $this->cards()->where('is_matched', false)->count() === 0;
+        $allMatched = $this->cards()->whereNull('matched_by')->count() === 0;
+        
         if ($allMatched) {
             $this->update([
                 'status' => self::STATUS_FINISHED,
                 'stopped_at' => now()
             ]);
         }
+        
         return $allMatched;
     }
 
-    // Neue Methode für Status-Änderung
     public function start()
     {
         if (!$this->isWaiting()) {
@@ -136,5 +131,4 @@ class MemoryGame extends Model
         $this->update(['player_turn' => $nextPlayer->player_id]);
         return $this;
     }
-
 }
