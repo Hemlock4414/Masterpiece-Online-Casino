@@ -5,7 +5,7 @@ import router from "@/router";
 
 import RegStepOne from '../components/RegStepOne.vue';
 import RegStepTwo from '../components/RegStepTwo.vue';
-import SuccessReg from '../components/SuccessReg.vue';
+import RegSuccess from '../components/RegSuccess.vue';
 
 const { register, getAuthUser } = useAuthStore();
 
@@ -108,7 +108,7 @@ const previousStep = () => {
           />
         </div>
       </div>
-      <SuccessReg 
+      <RegSuccess 
         :is-visible="showSuccess"
         message="Registrierung erfolgreich! Sie werden weitergeleitet..."
       />
