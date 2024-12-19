@@ -350,15 +350,18 @@ onUnmounted(() => {
 
         <!-- Player Info - Always visible -->
         <div class="player-info-section">
-          <h3>Spieler</h3>
           <div class="avatar-container">
             <img 
               :src="authStore.user ? authStore.profileImage : '/storage/defaults/default-avatar.png'"
-              alt="Player Avatar"
+              alt="Spieler Avatar"
               class="player-avatar"
             />
           </div>
-          <p class="player-name">{{ currentPlayer?.name || 'Nicht angemeldet' }}</p>
+          <div class="player-details">
+            <h3>Spieler</h3>
+            <p class="player-name">{{ currentPlayer?.name || (getStoredGuestId() ? `Gast ${getStoredGuestId()}` : '') }}</p>
+            <p class="player-score">Punkte: {{ currentPlayer?.pivot?.player_score ?? 0 }}</p>
+          </div>
         </div>
 
         <!-- Spielkonfiguration -->
@@ -411,30 +414,19 @@ onUnmounted(() => {
         <div v-else>
           <div class="header">
             <h1>Memory: {{ selectedTheme.name }}</h1>
-            <div class="timer-section">
-              <div class="timer">
-                <span>Zeit: {{ Math.floor(timer / 60) }}:{{ String(timer % 60).padStart(2, '0') }}</span>
-              </div>
+          </div>
+
+          <div class="game-stats">
+            <div class="round-info">
               <h3 class="round-count">Runde {{ roundCount }}</h3>
+            </div>
+            <div class="timer">
+              <span>Zeit: {{ Math.floor(timer / 60) }}:{{ String(timer % 60).padStart(2, '0') }}</span>
             </div>
           </div>
 
           <div class="current-player-info">
             <p v-if="currentPlayer">Am Zug: {{ currentPlayer.name }}</p>
-          </div>
-
-          <div class="game-info">
-            <div class="player-list">
-              <ul>
-                <li 
-                  v-for="player in players" 
-                  :key="player.player_id"
-                  :class="{ 'active-player': currentPlayer?.player_id === player.player_id }"
-                >
-                  {{ player.name }}: {{ player.pivot?.player_score ?? 0 }} Punkte
-                </li>
-              </ul>
-            </div>
           </div>
 
           <MemoryGrid 
@@ -488,50 +480,50 @@ onUnmounted(() => {
 }
 
 .player-info-section {
-  text-align: center;
-  margin: 20px 0;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin: 20px;
+  padding: 15px;
+  background-color: #f5f5f5;
+  border-radius: 10px;
 }
 
 .avatar-container {
-  margin: 10px auto;
+  flex-shrink: 0;
 }
 
 .player-avatar {
-  width: 120px;
-  height: 120px;
+  width: 140px;
+  height: 140px;
   border-radius: 25%;
-  overflow: hidden;
   border: 2px solid #909090;
   object-fit: cover;
 }
 
-.player-name {
-  margin-top: 10px;
-  font-weight: bold;
-}
-
-.current-player-info {
-  text-align: center;
-  margin: 15px 0;
-  font-size: 1.2em;
-  font-weight: bold;
-}
-
-.timer-section {
+.player-details {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-}
-
-.round-count {
-  margin-top: 5px;
-  color: #666;
-}
-
-.bottom-controls {
-  margin-top: 20px;
-  display: flex;
   justify-content: center;
+  gap: 8px;
+}
+
+.player-details h3 {
+  margin: 0;
+  color: #666;
+  font-size: 1.1em;
+}
+
+.player-name {
+  margin: 0;
+  font-weight: bold;
+  font-size: 1.2em;
+}
+
+.player-score {
+  margin: 0;
+  color: #4CAF50;
+  font-weight: bold;
 }
 
 .game-configuration {
@@ -586,72 +578,6 @@ onUnmounted(() => {
   border-color: #4CAF50;
 }
 
-.header {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-wrap: wrap;
-  text-align: center;
-  position: relative;
-}
-
-.header h1 {
-  flex-grow: 1; /* Erweitert den Platz des h1 für die Zentrierung */
-}
-
-.timer {
-  position: absolute;
-  right: 0; /* Positioniert den Timer ganz rechts */
-  top: 50%; /* Vertikal zentriert den Timer */
-  transform: translateY(-50%); /* Korrigiert die vertikale Position */
-  text-align: right;
-}
-
-.timer h2 {
-  font-size: 1.2em;
-}
-
-.timer p {
-  font-size: 1.5em;
-  font-weight: bold;
-}
-
-.game-layout {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  text-align: center;
-  margin: 20px 0;
-}
-
-.game-status {
-  margin: 20px 0;
-  text-align: center;
-}
-
-.player-list, .player-info, .round-info {
-  width: 30%;
-}
-
-.player-list ul {
-  list-style: none;
-  padding: 0;
-}
-
-.active-player {
-  color: #4CAF50;
-  font-weight: bold;
-}
-
-.round-info {
-  text-align: center;
-}
-
-h1, h2 {
-  text-align: center;
-  font-family: Arial, sans-serif;
-}
-
 .game-controls {
   margin: 20px 0;
   display: flex;
@@ -666,6 +592,70 @@ h1, h2 {
   border: none;
   border-radius: 5px;
   cursor: pointer;
+}
+
+.header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  text-align: center;
+  position: relative;
+}
+
+h1, h2 {
+  text-align: center;
+}
+
+.game-stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 20px 0;
+  padding: 0 20px;
+}
+
+.timer {
+  text-align: right;
+  font-weight: bold;
+}
+
+.timer h2 {
+  font-size: 1.2em;
+}
+
+.timer p {
+  font-size: 1.5em;
+  font-weight: bold;
+}
+
+.round-info {
+  text-align: right;
+  margin: 20px 0;
+  padding-right: 20px;
+}
+
+.round-info {
+  text-align: left;
+}
+
+.round-count {
+  color: #666;
+  margin: 0;
+  font-size: 1.1em;
+}
+
+.current-player-info {
+  text-align: center;
+  margin: 15px 0;
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+.bottom-controls {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
 }
 
 .btn-secondary {
@@ -698,11 +688,7 @@ button:hover {
     margin-top: 20px; /* Abstand zwischen h1 und Timer */
     text-align: center;
   }
-  .game-layout {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
+
   .player-list, .player-info, .round-info {
     width: 100%;
     margin-bottom: 20px;
