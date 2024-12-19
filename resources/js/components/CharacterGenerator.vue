@@ -59,7 +59,8 @@ const showMessage = (message, isError = false) => {
 <template>
     <div class="character-generator">
       <div class="generator-controls">
-        <h2>Pixel Charakter Generator</h2>
+        <h2>Pixel Fantasy - Charakter Generator</h2>
+        <p>(experimentell, v0.05 created by Caz Wolf)</p>
         
         <div class="generator-actions">
           <button 
@@ -69,6 +70,8 @@ const showMessage = (message, isError = false) => {
             Charakter erstellen
           </button>
         </div>
+        <p>Hinweis: Nach dem Erstellen auf "Export Bust" klicken, 
+          Bild wird dann runtergeladen. Bitte manuell wieder hochladen.</p>
       </div>
   
       <!-- Generator Modal -->
@@ -79,19 +82,13 @@ const showMessage = (message, isError = false) => {
       >
         <div class="generator-window">
           <iframe 
-            src="/Pixel Fantasy Character Generator/index.html"
+            src="/Pixel_Fantasy_Character_Generator/index.html"
             width="100%" 
-            height="660px"
+            height="790px"
             ref="generatorFrame"
             @load="onGeneratorLoad"
           ></iframe>
           <div class="modal-actions">
-            <button 
-              @click="exportCharacter"
-              class="btn-export-character"
-            >
-              Charakter exportieren
-            </button>
             <button 
               @click="closeGenerator" 
               class="btn-close-generator"
@@ -116,18 +113,20 @@ const showMessage = (message, isError = false) => {
   display: flex;
   flex-direction: column;
   align-items: center;
+  text-align: center;
 }
 
 h2 {
   font-size: 24px;
   font-weight: 600;
-  margin-bottom: 20px;
+  margin-bottom: 0px;
   color: #333;
 }
 
 .generator-actions {
   display: flex;
   gap: 15px;
+  padding: 15px 0;
 }
 
 .btn-open-generator,
@@ -190,7 +189,7 @@ h2 {
   background: white;
   border-radius: 10px;
   width: 90%;
-  max-width: 1200px;
+  max-width: 1440px;
   padding: 20px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
