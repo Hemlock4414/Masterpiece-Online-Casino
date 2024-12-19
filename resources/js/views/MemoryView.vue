@@ -411,14 +411,20 @@ onUnmounted(() => {
         <div v-else>
           <div class="header">
             <h1>Memory: {{ selectedTheme.name }}</h1>
-            <div class="timer">
-              <span>Zeit: {{ Math.floor(timer / 60) }}:{{ String(timer % 60).padStart(2, '0') }}</span>
+            <div class="timer-section">
+              <div class="timer">
+                <span>Zeit: {{ Math.floor(timer / 60) }}:{{ String(timer % 60).padStart(2, '0') }}</span>
+              </div>
+              <h3 class="round-count">Runde {{ roundCount }}</h3>
             </div>
+          </div>
+
+          <div class="current-player-info">
+            <p v-if="currentPlayer">Am Zug: {{ currentPlayer.name }}</p>
           </div>
 
           <div class="game-info">
             <div class="player-list">
-              <h3>Spieler</h3>
               <ul>
                 <li 
                   v-for="player in players" 
@@ -429,29 +435,6 @@ onUnmounted(() => {
                 </li>
               </ul>
             </div>
-
-            <div class="round-info">
-              <h3>Runde {{ roundCount }}</h3>
-              <p v-if="currentPlayer">Am Zug: {{ currentPlayer.name }}</p>
-            </div>
-          </div>
-
-          <div class="game-controls">
-            <button 
-              v-if="gameStatus === 'in_progress'" 
-              @click="abortGame"
-              class="btn-secondary"
-            >
-              Spiel abbrechen
-            </button>
-
-            <button 
-              v-if="gameStatus === 'finished'" 
-              @click="createNewGame"
-              class="btn-primary"
-            >
-              Neues Spiel
-            </button>
           </div>
 
           <MemoryGrid 
@@ -460,6 +443,25 @@ onUnmounted(() => {
             :flippedCards="flippedCards"
             @flipCard="handleCardFlip"
           />
+
+          <!-- Buttons unter dem Spielfeld -->
+          <div class="bottom-controls">
+            <button 
+              v-if="gameStatus === 'in_progress'" 
+              @click="abortGame"
+              class="btn-secondary"
+            >
+              Spiel abbrechen
+            </button>
+            
+            <button 
+              v-if="gameStatus === 'finished'" 
+              @click="createNewGame"
+              class="btn-primary"
+            >
+              Neues Spiel
+            </button>
+          </div>
         </div>
 
         <MemoryEndModal
@@ -483,6 +485,53 @@ onUnmounted(() => {
 
 .memory-game {
   max-width: 100%;
+}
+
+.player-info-section {
+  text-align: center;
+  margin: 20px 0;
+}
+
+.avatar-container {
+  margin: 10px auto;
+}
+
+.player-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 25%;
+  overflow: hidden;
+  border: 2px solid #909090;
+  object-fit: cover;
+}
+
+.player-name {
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+.current-player-info {
+  text-align: center;
+  margin: 15px 0;
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+.timer-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.round-count {
+  margin-top: 5px;
+  color: #666;
+}
+
+.bottom-controls {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
 }
 
 .game-configuration {
