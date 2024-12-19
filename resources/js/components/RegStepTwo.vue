@@ -84,14 +84,115 @@ onMounted(async () => {
   }
 });
 
+// Berechne das maximale Datum (18 Jahre zurück)
+const calculateMaxDate = () => {
+  const today = new Date();
+  const maxDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+  return maxDate.toISOString().split('T')[0];
+};
+
+// Konvertierung des Datums in deutsches Format für die Anzeige
+const formatDateToGerman = (isoDate) => {
+  if (!isoDate) return '';
+  const [year, month, day] = isoDate.split('-');
+  return `${day}.${month}.${year}`;
+};
+
+// Konvertierung des deutschen Datums zurück in ISO-Format für v-model
+const formatDateToISO = (germanDate) => {
+  if (!germanDate) return '';
+  const [day, month, year] = germanDate.split('.');
+  return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+};
+
+// Lokales Date-Handling
+const localDate = ref(formatDateToGerman(props.modelValue.geburtsdatum));
+
+// Hilfsfunktion zur Überprüfung eines gültigen Datums
+const isValidDate = (day, month, year) => {
+  // Erstelle ein Date-Objekt und prüfe ob die Werte übereinstimmen
+  const date = new Date(year, month - 1, day);
+  return date 
+    && date.getDate() === Number(day)
+    && date.getMonth() === Number(month) - 1
+    && date.getFullYear() === Number(year);
+};
+
 // Datum-Update Handler
-const handleDateChange = () => {
-  if (selectedDay.value && selectedMonth.value && selectedYear.value) {
-    const formattedDate = `${selectedYear.value}-${String(selectedMonth.value).padStart(2, '0')}-${String(selectedDay.value).padStart(2, '0')}`;
-    emit('update:modelValue', {
-      ...props.modelValue,
-      geburtsdatum: formattedDate
-    });
+const handleDateChange = (event) => {
+  const germanDate = event.target.value;
+  localDate.value = germanDate;
+
+  // Wenn das Datum nicht vollständig ist, noch keine Validierung
+  if (germanDate.length !== 10) {
+    return;
+  }
+
+  // Validiere das Format
+  if (!/^\d{2}\.\d{2}\.\d{4}$/.test(germanDate)) {
+    validationErrors.value.geburtsdatum = 'Bitte geben Sie das Datum im Format TT.MM.JJJJ ein';
+    return;
+  }
+
+  // Zerlege das Datum
+  const [day, month, year] = germanDate.split('.').map(Number);
+
+  // Prüfe ob es ein gültiges Datum ist
+  if (!isValidDate(day, month, year)) {
+    validationErrors.value.geburtsdatum = 'Bitte geben Sie ein gültiges Datum ein';
+    return;
+  }
+
+  const isoDate = formatDateToISO(germanDate);
+  const inputDate = new Date(isoDate);
+  const maxDate = new Date(calculateMaxDate());
+
+  // Prüfe ob das Datum in der Zukunft liegt
+  if (inputDate > new Date()) {
+    validationErrors.value.geburtsdatum = 'Das Datum darf nicht in der Zukunft liegen';
+    return;
+  }
+  
+  // Prüfe das Mindestalter von 18 Jahren
+  if (inputDate > maxDate) {
+    validationErrors.value.geburtsdatum = 'Sie müssen mindestens 18 Jahre alt sein';
+    return;
+  }
+
+  // Wenn alle Validierungen bestanden wurden
+  validationErrors.value.geburtsdatum = '';
+  emit('update:modelValue', {
+    ...props.modelValue,
+    geburtsdatum: isoDate
+  });
+};
+
+// Validierungsregeln für Namen
+const nameRegex = /^[a-zA-ZäöüÄÖÜß\- ]+$/;
+
+// Input-Handler für Namen
+const handleNameInput = (field) => {
+  validationErrors.value[field] = '';
+  const value = props.modelValue[field];
+
+  if (!value) {
+    validationErrors.value[field] = field === 'vorname' 
+      ? 'Bitte geben Sie Ihren Vornamen ein'
+      : 'Bitte geben Sie Ihren Nachnamen ein';
+    return;
+  }
+
+  if (!nameRegex.test(value)) {
+    validationErrors.value[field] = 'Bitte verwenden Sie nur Buchstaben, Bindestriche und Leerzeichen';
+    return;
+  }
+
+  // Mindestlänge prüfen
+  if (value.length < 2) {
+    validationErrors.value[field] = field === 'vorname' 
+      ? 'Der Vorname muss mindestens 2 Zeichen lang sein'
+      : 'Der Nachname muss mindestens 2 Zeichen lang sein';
+    return;
   }
 };
 
@@ -172,7 +273,10 @@ onMounted(async () => {
             type="text"
             id="vorname"
             v-model="modelValue.vorname"
+            @input="handleNameInput('vorname')"
+            @blur="handleNameInput('vorname')"
             :class="{ 'input-error': validationErrors.vorname }"
+            placeholder="Ihr Vorname"
           >
         </div>
         <div class="error-container">
@@ -191,7 +295,10 @@ onMounted(async () => {
             type="text"
             id="nachname"
             v-model="modelValue.nachname"
+            @input="handleNameInput('nachname')"
+            @blur="handleNameInput('nachname')"
             :class="{ 'input-error': validationErrors.nachname }"
+            placeholder="Ihr Nachname"
           >
         </div>
         <div class="error-container">
@@ -204,44 +311,20 @@ onMounted(async () => {
 
       <!-- Geburtsdatum -->
       <div class="input-container">
-        <label>Geburtsdatum *</label>
-        <div class="date-inputs-wrapper">
-          <div class="date-select-container">
-            <select 
-              v-model="selectedDay"
-              @change="handleDateChange"
-              class="date-select"
-            >
-              <option value="" disabled selected>Tag</option>
-              <option v-for="day in days" :key="day" :value="day">
-                {{ day }}
-              </option>
-            </select>
-
-            <select 
-              v-model="selectedMonth"
-              @change="handleDateChange"
-              class="date-select"
-            >
-              <option value="" disabled selected>Monat</option>
-              <option v-for="month in months" 
-                      :key="month.value" 
-                      :value="month.value">
-                {{ month.label }}
-              </option>
-            </select>
-
-            <select 
-              v-model="selectedYear"
-              @change="handleDateChange"
-              class="date-select"
-            >
-              <option value="" disabled selected>Jahr</option>
-              <option v-for="year in years" :key="year" :value="year">
-                {{ year }}
-              </option>
-            </select>
-          </div>
+        <label for="geburtsdatum">Geburtsdatum *</label>
+        <div class="input-wrapper">
+          <input
+            type="text"
+            id="geburtsdatum"
+            :value="localDate"
+            @input="handleDateChange"
+            required
+            placeholder="TT.MM.JJJJ"
+            pattern="\d{2}.\d{2}.\d{4}"
+            maxlength="10"
+            :class="{ 'input-error': validationErrors.geburtsdatum }"
+            title="Bitte geben Sie das Datum im Format TT.MM.JJJJ ein"
+          >
           <div class="calendar-icon">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -311,34 +394,15 @@ onMounted(async () => {
 
 .input-wrapper {
   position: relative;
-  width: 100%;
-}
-
-.date-inputs-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-}
-
-.date-select-container {
-  display: flex;
-  gap: 10px;
-  flex: 1;
-}
-
-.date-select {
-  padding: 0.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  outline: none;
-  transition: border-color 0.2s;
-  flex: 1;
 }
 
 .calendar-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
   color: #6b7280;
-  margin-right: 10px;
+  pointer-events: none;
 }
 
 label {
@@ -439,7 +503,7 @@ input:focus, select:focus {
 
 .hint {
   display: block;
-  margin-top: 1.5rem;
+  margin-top: 1.69rem;
   font-size: 0.875rem;
   color: #6b7280;
 }
